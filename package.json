@@ -1,0 +1,15 @@
+{
+  "name": "Entu CMS",
+  "version": "0.1.0",
+  "author": "Argo Roots <argo@roots.ee>",
+  "private": true,
+  "dependencies": {
+    "fs-extra": "^0.26.5",
+    "jade": "^1.11.0",
+    "js-yaml": "^3.5.4",
+    "jstransformer-markdown": "^1.1.0",
+    "jstransformer-uglify-js": "^1.1.1",
+    "markdown": "^0.5.0",
+    "marked": "^0.3.5"
+  }
+}
