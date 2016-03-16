@@ -1,7 +1,7 @@
 [![npm version](https://badge.fury.io/js/entu-cms.svg)](https://badge.fury.io/js/entu-cms)
 [![Dependency Status](https://david-dm.org/argoroots/entu-cms.svg)](https://david-dm.org/argoroots/entu-cms)
 
-## Entu CMS
+# Entu CMS
 
 - Simple file based CMS.
 - Generate static HTML files from [Jade](http://jade-lang.com) templates.
@@ -17,11 +17,26 @@
 
 ### Usage
 
-    entu-cms ./config.yaml
+    node entu-cms.js ./config.yaml
 
 
-##### config.yaml
+### Site's build configuration
 
+Build configuration is set by Yaml file and its path must be first argument for entu-cms.js. Required parameters are:
+- __locales__  
+  List of locale folders to generate. You can put locale identificator to filename (like index_.en_.jade or index_.et_.yaml) for locale speciffic content.
+- __source__  
+  Folder with source files (realtive to build config.yaml). Folders beginning with _ are ignored.
+- __build__  
+  Folder to put generated HTML (realtive to build config.yaml).
+- __timeout__  
+  Seconds to sleep after each run.
+- __jade.basedir__  
+  Jade basedir for simpler include/extend.
+- __jade.pretty__  
+  Boolean to set if output HTML is pretty formatted or not.
+
+##### Example build configuration file:
     locales:
       - en
       - et
@@ -32,33 +47,26 @@
       basedir: ./source/_templates
       pretty: false
 
-- __locales__: List of locale folders to generate. You can put locale identificator to filename (like index__.en__.jade or index__.et__.yaml) for locale speciffic content.
-- __source__: Folder with source files.
-- __build__: Folder to put generated HTML.
-- __timeout__: Seconds to sleep after each run.
-- __jade.basedir__: Jade basedir for simpler include/extend
-- __jade.pretty__: Boolean to set if output HTML is prettified or not.
 
-
-##### Source folder like this ...
+##### On build, source folder like this ...
 
     - source
-        |- _templatež
+        |- _templates
         |   |- layout.jade
         |   +- mixins.jade
 
         |- testpage1
-        |   |- index.en.yaml
-        |   |- index.et.yaml
+        |   |- data.en.yaml
+        |   |- data.et.yaml
         |   +- index.jade
         |
         |- testpage2
         |   |- index.en.jade
         |   |- index.et.jade
-        |   |- index.yaml
+        |   |- data.yaml
         |   +- testpage2en
         |       |- index.en.jade
-        |       +- index.en.yaml
+        |       +- data.en.yaml
         |
         +- index.jade
 
@@ -75,6 +83,7 @@
         |       |- index.html
         |       +- testpage2en
         |           +- index.html
+        |
         +- et
             |- index.html
             |- testpage1
@@ -82,3 +91,6 @@
             |
             +- testpage2
                 +- index.html
+
+
+__Note:__ Folders beginning with _ are ignored

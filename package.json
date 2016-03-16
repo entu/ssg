@@ -1,29 +1,29 @@
 {
-    "name": "entu-cms",
-    "version": "0.1.7",
-    "author": "Argo Roots <argo@roots.ee>",
-    "description": "Simple (Jade) filebased CMS",
-    "homepage": "https://github.com/argoroots/entu-cms",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/argoroots/entu-cms.git"
-    },
-    "bugs": {
-        "url": "https://github.com/argoroots/entu-cms/issues"
-    },
-    "scripts": {
-        "start": "node ./cms.js"
-    },
-    "engines": {
-        "node": "4.x"
-    },
-    "dependencies": {
-        "fs-extra": "0.*",
-        "jade": "1.*",
-        "js-yaml": "3.*",
-        "jstransformer-markdown-it": "0.*",
-        "jstransformer-uglify-js": "1.*",
-        "markdown-it": "6.*"
-    }
+  "name": "entu-cms",
+  "version": "0.1.9",
+  "author": "Argo Roots <argo@roots.ee>",
+  "description": "Simple (Jade) filebased CMS",
+  "homepage": "https://github.com/argoroots/entu-cms",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/argoroots/entu-cms.git"
+  },
+  "bugs": {
+    "url": "https://github.com/argoroots/entu-cms/issues"
+  },
+  "scripts": {
+    "start": "node ./entu-cms.js"
+  },
+  "engines": {
+    "node": "4.x"
+  },
+  "dependencies": {
+    "fs-extra": "0.*",
+    "jade": "1.*",
+    "js-yaml": "3.*",
+    "jstransformer-markdown-it": "0.*",
+    "jstransformer-uglify-js": "1.*",
+    "markdown-it": "6.*"
+  }
 }
