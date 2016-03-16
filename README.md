@@ -42,38 +42,43 @@
 
 ##### Source folder like this ...
 
-    |-- source
-        |-- _template
-            |-- layout.jade
-            |-- mixins.jade
-        |-- testpage1
-            |-- index.en.yaml
-            |-- index.et.yaml
-            |-- index.jade
-        |-- testpage2
-            |-- index.en.jade
-            |-- index.et.jade
-            |-- index.yaml
-            |-- testpage2en
-                |-- index.en.jade
-                |-- index.en.yaml
-        |-- index.jade
+    - source
+        |- _templatež
+        |   |- layout.jade
+        |   +- mixins.jade
+
+        |- testpage1
+        |   |- index.en.yaml
+        |   |- index.et.yaml
+        |   +- index.jade
+        |
+        |- testpage2
+        |   |- index.en.jade
+        |   |- index.et.jade
+        |   |- index.yaml
+        |   +- testpage2en
+        |       |- index.en.jade
+        |       +- index.en.yaml
+        |
+        +- index.jade
 
 
 ##### ... will be converted to buld folder like this
 
-    |-- build
-        |-- en
-            |-- index.html
-            |-- testpage1
-                |-- index.html
-            |-- testpage2
-                |-- index.html
-                |-- testpage2en
-                    |-- index.html
-        |-- et
-            |-- index.html
-            |-- testpage1
-                |-- index.html
-            |-- testpage2
-                |-- index.html
+    - build
+        |- en
+        |   |- index.html
+        |   |- testpage1
+        |   |   |- index.html
+        |   |
+        |   +- testpage2
+        |       |- index.html
+        |       +- testpage2en
+        |           +- index.html
+        +- et
+            |- index.html
+            |- testpage1
+            |   +- index.html
+            |
+            +- testpage2
+                +- index.html
