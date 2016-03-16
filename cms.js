@@ -9,11 +9,33 @@ var yaml = require('js-yaml')
 
 
 
-APP_LOCALES = ['et', 'en', 'ru']
-APP_DIR = process.argv[2] || __dirname
-APP_SOURCE_DIR = path.join(APP_DIR, 'source')
-APP_BUILD_DIR = path.join(APP_DIR, 'build')
-APP_TEMPLATES_DIR = path.join(APP_SOURCE_DIR, '_templates')
+// Open config.yaml
+try {
+    appConfFile = process.argv[2] || path.join(__dirname, 'config.yaml')
+    appConf = yaml.safeLoad(fs.readFileSync(appConfFile))
+} catch (e) {
+    console.error('Invalid configuration file: ' + appConfFile)
+    console.error(e.message)
+    process.exit(1)
+}
+
+
+
+// Set config variables
+appConf.locales = appConf.locales || '.'
+appConf.source  = appConf.source  || path.join(__dirname, 'source')
+appConf.build   = appConf.build   || path.join(__dirname, 'build')
+appConf.timeout = appConf.timeout || 60
+
+if(appConf.source.substr(0, 1) === '.') {
+    appConf.source = path.join(path.dirname(appConfFile), appConf.source)
+}
+if(appConf.build.substr(0, 1) === '.') {
+    appConf.build = path.join(path.dirname(appConfFile), appConf.build)
+}
+if(appConf.jade_basedir.substr(0, 1) === '.') {
+    appConf.jade_basedir = path.join(path.dirname(appConfFile), appConf.jade_basedir)
+}
 
 
 
@@ -36,36 +58,37 @@ var getFilePath = function(dirName, fileName, locale) {
 
 
 var worker = function() {
+    console.log('Started to scan folder ' + appConf.source)
     htmlFiles = []
-    fse.walk(APP_SOURCE_DIR)
+    fse.walk(appConf.source)
         .on('data', function (item) {
             if(item.path.indexOf('/_') > -1) { return }
 
-            for (var l in APP_LOCALES) {
+            for (var l in appConf.locales) {
                 try {
-                    if (!APP_LOCALES.hasOwnProperty(l)) { continue }
+                    if (!appConf.locales.hasOwnProperty(l)) { continue }
 
-                    var jadeFile = getFilePath(item.path, 'index.jade', APP_LOCALES[l])
+                    var jadeFile = getFilePath(item.path, 'index.jade', appConf.locales[l])
                     if (!jadeFile) { continue }
 
-                    var configFile = getFilePath(item.path, 'config.yaml', APP_LOCALES[l])
+                    var configFile = getFilePath(item.path, 'config.yaml', appConf.locales[l])
                     var config = {}
                     if (configFile) {
                         config = yaml.safeLoad(fs.readFileSync(configFile))
                     }
 
-                    var dataFile = getFilePath(item.path, 'data.yaml', APP_LOCALES[l])
+                    var dataFile = getFilePath(item.path, 'data.yaml', appConf.locales[l])
                     var data = {}
                     if (dataFile) {
                         data = yaml.safeLoad(fs.readFileSync(dataFile))
                     }
 
-                    // data.pretty = true
-                    data.basedir = APP_TEMPLATES_DIR
+                    data.pretty = !appConf.uglify || true
+                    data.basedir = appConf.jade_basedir || null
                     data.md = md
 
                     var html = jade.renderFile(jadeFile, data)
-                    var htmlDir = path.dirname(jadeFile.replace(APP_SOURCE_DIR, path.join(APP_BUILD_DIR,  APP_LOCALES[l])))
+                    var htmlDir = path.dirname(jadeFile.replace(appConf.source, path.join(appConf.build,  appConf.locales[l])))
                     var htmlFile = path.join(htmlDir, 'index.html')
 
                     htmlFiles.push(htmlFile)
@@ -79,7 +102,7 @@ var worker = function() {
         })
         .on('end', function () {
             // console.log(htmlFiles.join('\n'))
-            setTimeout(worker, 20000)
+            setTimeout(worker, (appConf.timeout * 1000))
         })
 }
 worker()
