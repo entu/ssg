@@ -20,13 +20,14 @@
     node entu-cms.js ./config.yaml
 
 
-### Site's build configuration
+### Build configuration
 
-Build configuration is set by Yaml file and its path must be first argument for entu-cms.js. Required parameters are:
+Sites build process is configurable by Yaml file and its path must be first argument for entu-cms.js. Required parameters are:
+
 - __locales__  
-  List of locale folders to generate. You can put locale identificator to filename (like index_.en_.jade or index_.et_.yaml) for locale speciffic content.
+  List of locale folders to generate. You can put locale identificator to filename (like index.en.jade or index.et.yaml) for locale speciffic content.
 - __source__  
-  Folder with source files (realtive to build config.yaml). Folders beginning with _ are ignored.
+  Folder with source files (realtive to build config.yaml). Folders beginning with underscore are ignored.
 - __build__  
   Folder to put generated HTML (realtive to build config.yaml).
 - __timeout__  
@@ -47,6 +48,14 @@ Build configuration is set by Yaml file and its path must be first argument for 
       basedir: ./source/_templates
       pretty: false
 
+### Page configuration
+
+Each folder can contain page configuration file __config.yaml__. Parameters are:
+
+- __path__  
+  If set, it will override folder based path.
+- __aliases__
+  List of path aliases
 
 ##### On build, source folder like this ...
 
@@ -91,6 +100,3 @@ Build configuration is set by Yaml file and its path must be first argument for 
             |
             +- testpage2
                 +- index.html
-
-
-__Note:__ Folders beginning with _ are ignored
