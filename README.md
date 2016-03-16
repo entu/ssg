@@ -15,9 +15,11 @@
     npm install -g entu-cms
 
 
+
 ### Usage
 
     node entu-cms.js ./config.yaml
+
 
 
 ### Build configuration
@@ -37,6 +39,7 @@ Sites build process is configurable by Yaml file and its path must be first argu
 - __jade.pretty__  
   Boolean to set if output HTML is pretty formatted or not.
 
+
 ##### Example build configuration file:
     locales:
       - en
@@ -48,6 +51,8 @@ Sites build process is configurable by Yaml file and its path must be first argu
       basedir: ./source/_templates
       pretty: false
 
+
+
 ### Page configuration
 
 Each folder can contain page configuration file __config.yaml__. Parameters are:
@@ -57,7 +62,19 @@ Each folder can contain page configuration file __config.yaml__. Parameters are:
 - __aliases__  
   List of path aliases
 
-##### On build, source folder like this ...
+
+##### Example page configuration file:
+
+    path: /testpage1
+    aliases:
+      - /test
+      - /test123
+
+
+
+### On build ...
+
+##### .. source folder like this ...
 
     - source
         |- _templates
