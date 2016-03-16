@@ -54,7 +54,7 @@ Each folder can contain page configuration file __config.yaml__. Parameters are:
 
 - __path__  
   If set, it will override folder based path.
-- __aliases__
+- __aliases__  
   List of path aliases
 
 ##### On build, source folder like this ...
