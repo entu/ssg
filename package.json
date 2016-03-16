@@ -1,9 +1,10 @@
 {
     "name": "entu-cms",
-    "version": "0.1.0",
+    "version": "0.1.2",
     "author": "Argo Roots <argo@roots.ee>",
     "description": "Simple (Jade) filebased CMS",
     "homepage": "https://github.com/argoroots/entu-cms",
+    "license": "MIT",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/argoroots/entu-cms.git"
@@ -12,7 +13,7 @@
         "url": "https://github.com/argoroots/entu-cms/issues"
     },
     "scripts": {
-        "start": "node ./master.js"
+        "start": "node ./cms.js"
     },
     "engines": {
         "node": "4.x"
