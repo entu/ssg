@@ -3,7 +3,7 @@
 var fs   = require('fs')
 var fse  = require('fs-extra')
 var jade = require('jade')
-var md   = require('marked')
+var md   = require('markdown-it')()
 var path = require('path')
 var yaml = require('js-yaml')
 
@@ -38,6 +38,14 @@ if(appConf.jade_basedir.substr(0, 1) === '.') {
 }
 
 
+
+var markdown = function(text) {
+    if(text) {
+        return md.render(text)
+    } else {
+        return ''
+    }
+}
 
 var getFilePath = function(dirName, fileName, locale) {
     var localeFile = fileName.split('.')
@@ -83,9 +91,9 @@ var worker = function() {
                         data = yaml.safeLoad(fs.readFileSync(dataFile))
                     }
 
-                    data.pretty = !appConf.uglify || true
-                    data.basedir = appConf.jade_basedir || null
-                    data.md = md
+                    data.pretty = appConf.jade_pretty
+                    data.basedir = appConf.jade_basedir
+                    data.md = markdown
 
                     var html = jade.renderFile(jadeFile, data)
                     var htmlDir = path.dirname(jadeFile.replace(appConf.source, path.join(appConf.build,  appConf.locales[l])))
