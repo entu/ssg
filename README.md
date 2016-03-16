@@ -3,7 +3,11 @@
 
 ## Entu CMS
 
-Simple ([Jade](http://jade-lang.com)) file based CMS with multilanguage support
+- Simple file based CMS.
+- Generate static HTML files from [Jade](http://jade-lang.com) templates.
+- Pass data to templates with [Yaml](http://yaml.org) files.
+- Use locale identificator in filenames to generate locale specific content.
+- ...
 
 
 ### Installation
@@ -16,7 +20,7 @@ Simple ([Jade](http://jade-lang.com)) file based CMS with multilanguage support
     npm-cms ./config.yaml
 
 
-#### Example config.yaml
+##### config.yaml
 
     locales:
       - en
@@ -28,24 +32,16 @@ Simple ([Jade](http://jade-lang.com)) file based CMS with multilanguage support
       basedir: ./source/_templates
       pretty: false
 
+- __locales__: List of locale folders to generate. You can put locale identificator to filename (like index__.en__.jade or index__.et__.yaml) for locale speciffic content.
+- __source__: Folder with source files.
+- __build__: Folder to put generated HTML.
+- __timeout__: Seconds to sleep after each run.
+- __jade.basedir__: Jade basedir for simpler include/extend
+- __jade.pretty__: Boolean to set if output HTML is prettified or not.
 
-#### Example file structure
-    |-- config.yaml
-    |-- build
-        |-- en
-            |-- index.html
-            |-- testpage1
-                |-- index.html
-            |-- testpage2
-                |-- index.html
-            |-- testpage3
-                |-- index.html
-        |-- et
-            |-- index.html
-            |-- testpage
-                |-- index.html
-            |-- testpage2
-                |-- index.html
+
+##### Source folder like this ...
+
     |-- source
         |-- _template
             |-- layout.jade
@@ -58,7 +54,26 @@ Simple ([Jade](http://jade-lang.com)) file based CMS with multilanguage support
             |-- index.en.jade
             |-- index.et.jade
             |-- index.yaml
-        |-- testpage3
-            |-- index.en.jade
-            |-- index.en.yaml
+            |-- testpage2en
+                |-- index.en.jade
+                |-- index.en.yaml
         |-- index.jade
+
+
+##### ... will be converted to buld folder like this
+
+    |-- build
+        |-- en
+            |-- index.html
+            |-- testpage1
+                |-- index.html
+            |-- testpage2
+                |-- index.html
+                |-- testpage2en
+                    |-- index.html
+        |-- et
+            |-- index.html
+            |-- testpage1
+                |-- index.html
+            |-- testpage2
+                |-- index.html
