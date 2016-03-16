@@ -14,3 +14,17 @@ Simple ([Jade](http://jade-lang.com)) file based CMS with multilanguage support
 ### Usage
 
     npm-cms ./config.yaml
+
+
+#### Example config.yaml
+
+    locales:
+      - en
+      - et
+      - ru
+    source: ./source
+    build: ./build
+    timeout: 10
+    jade:
+      basedir: ./source/_templates
+      pretty: false

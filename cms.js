@@ -33,12 +33,13 @@ if(appConf.source.substr(0, 1) === '.') {
 if(appConf.build.substr(0, 1) === '.') {
     appConf.build = path.join(path.dirname(appConfFile), appConf.build)
 }
-if(appConf.jade_basedir.substr(0, 1) === '.') {
-    appConf.jade_basedir = path.join(path.dirname(appConfFile), appConf.jade_basedir)
+if(appConf.jade.basedir.substr(0, 1) === '.') {
+    appConf.jade.basedir = path.join(path.dirname(appConfFile), appConf.jade.basedir)
 }
 
 
 
+// Markdown-it wrapper to handle empty text
 var markdown = function(text) {
     if(text) {
         return md.render(text)
@@ -47,6 +48,7 @@ var markdown = function(text) {
     }
 }
 
+// Returns file path with locale if exists
 var getFilePath = function(dirName, fileName, locale) {
     var localeFile = fileName.split('.')
     localeFile.splice(localeFile.length - 1, 0, locale)
@@ -91,8 +93,8 @@ var worker = function() {
                         data = yaml.safeLoad(fs.readFileSync(dataFile))
                     }
 
-                    data.pretty = appConf.jade_pretty
-                    data.basedir = appConf.jade_basedir
+                    data.pretty = appConf.jade.pretty
+                    data.basedir = appConf.jade.basedir
                     data.md = markdown
 
                     var html = jade.renderFile(jadeFile, data)
