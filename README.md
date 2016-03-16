@@ -12,12 +12,12 @@
 
 ### Installation
 
-    npm install -g npm-cms
+    npm install -g entu-cms
 
 
 ### Usage
 
-    npm-cms ./config.yaml
+    entu-cms ./config.yaml
 
 
 ##### config.yaml
