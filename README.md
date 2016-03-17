@@ -27,7 +27,7 @@
 Sites build process is configurable by Yaml file and its path must be first argument for entu-cms.js. Required parameters are:
 
 - __locales__  
-  List of locale folders to generate. You can put locale identificator to filename (like index.en.jade or index.et.yaml) for locale speciffic content.
+  List of locale folders to generate. You can put locale identificator to filename (like index.en.jade or data.et.yaml) for locale speciffic content.
 - __source__  
   Folder with source files (realtive to build config.yaml). Folders beginning with underscore are ignored.
 - __build__  
@@ -61,6 +61,8 @@ Each folder can contain page configuration file __config.yaml__. Parameters are:
   If set, it will override folder based path.
 - __aliases__  
   List of path aliases
+- __redirect__  
+  Path or url to redirect (if user visits this page)
 
 
 ##### Example page configuration file:
@@ -69,12 +71,12 @@ Each folder can contain page configuration file __config.yaml__. Parameters are:
     aliases:
       - /test
       - /test123
-
+    redirect: https://github.com
 
 
 ### On build ...
 
-##### .. source folder like this ...
+##### ... source folder like this ...
 
     - source
         |- _templates
