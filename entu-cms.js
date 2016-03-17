@@ -10,9 +10,11 @@ var yaml = require('js-yaml')
 
 
 // Open config.yaml
+var appConf = {}
+var appConfFile = process.argv[2] || path.join(__dirname, 'config.yaml')
+
 try {
-    var appConfFile = process.argv[2] || path.join(__dirname, 'config.yaml')
-    var appConf = yaml.safeLoad(fs.readFileSync(appConfFile))
+    appConf = yaml.safeLoad(fs.readFileSync(appConfFile))
 } catch (e) {
     console.error('Invalid configuration file: ' + appConfFile)
     console.error(e.message)
@@ -109,7 +111,6 @@ var worker = function() {
             }
         })
         .on('end', function () {
-            // console.log(htmlFiles.join('\n'))
             setTimeout(worker, (appConf.timeout * 1000))
         })
 }
