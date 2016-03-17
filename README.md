@@ -1,6 +1,9 @@
 [![npm version](https://badge.fury.io/js/entu-cms.svg)](https://badge.fury.io/js/entu-cms)
 [![Dependency Status](https://david-dm.org/argoroots/entu-cms.svg)](https://david-dm.org/argoroots/entu-cms)
 
+
+
+
 # Entu CMS
 
 - Simple file based CMS.
@@ -10,19 +13,19 @@
 - ...
 
 
-### Installation
+
+## Installation
 
     npm install -g entu-cms
 
 
 
-### Usage
+## Usage
 
     node entu-cms.js ./config.yaml
 
 
-
-### Build configuration
+### Configuration
 
 Sites build process is configurable by Yaml file and its path must be first argument for entu-cms.js. Required parameters are:
 
@@ -39,7 +42,6 @@ Sites build process is configurable by Yaml file and its path must be first argu
 - __jade.pretty__  
   Boolean to set if output HTML is pretty formatted or not.
 
-
 ##### Example build configuration file:
     locales:
       - en
@@ -53,7 +55,19 @@ Sites build process is configurable by Yaml file and its path must be first argu
 
 
 
-### Page configuration
+## Content
+
+### Page content - index.jade
+
+Page content is generated from __index.jade__ file. All other files are ignored, but You can use those files for Jade [include](http://jade-lang.com/reference/includes)/[extends](http://jade-lang.com/reference/inheritance). You can put locale identificator to filename (like index.en.jade) for locale speciffic content.
+
+
+### Page data - data.yaml
+
+To pass data to index.jade use __data.yaml__ file. You can put locale identificator to filename (like data.en.yaml) for locale speciffic content.
+
+
+### Page configuration - config.yaml
 
 Each folder can contain page configuration file __config.yaml__. Parameters are:
 
@@ -64,7 +78,6 @@ Each folder can contain page configuration file __config.yaml__. Parameters are:
 - __redirect__  
   Path or url to redirect (if user visits this page)
 
-
 ##### Example page configuration file:
 
     path: /testpage1
@@ -74,7 +87,8 @@ Each folder can contain page configuration file __config.yaml__. Parameters are:
     redirect: https://github.com
 
 
-### On build ...
+
+## On build ...
 
 ##### ... source folder like this ...
 
@@ -97,7 +111,6 @@ Each folder can contain page configuration file __config.yaml__. Parameters are:
         |       +- data.en.yaml
         |
         +- index.jade
-
 
 ##### ... will be converted to buld folder like this
 
