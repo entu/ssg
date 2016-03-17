@@ -112,7 +112,7 @@ Each folder can contain page configuration file __config.yaml__. Parameters are:
         |
         +- index.jade
 
-##### ... will be converted to buld folder like this
+##### ... will be converted to build folder like this
 
     - build
         |- en
