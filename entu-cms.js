@@ -11,8 +11,8 @@ var yaml = require('js-yaml')
 
 // Open config.yaml
 try {
-    appConfFile = process.argv[2] || path.join(__dirname, 'config.yaml')
-    appConf = yaml.safeLoad(fs.readFileSync(appConfFile))
+    var appConfFile = process.argv[2] || path.join(__dirname, 'config.yaml')
+    var appConf = yaml.safeLoad(fs.readFileSync(appConfFile))
 } catch (e) {
     console.error('Invalid configuration file: ' + appConfFile)
     console.error(e.message)
@@ -23,8 +23,8 @@ try {
 
 // Set config variables
 appConf.locales = appConf.locales || '.'
-appConf.source  = appConf.source  || path.join(__dirname, 'source')
-appConf.build   = appConf.build   || path.join(__dirname, 'build')
+appConf.source = appConf.source || path.join(__dirname, 'source')
+appConf.build = appConf.build || path.join(__dirname, 'build')
 appConf.timeout = appConf.timeout || 60
 
 if(appConf.source.substr(0, 1) === '.') {
@@ -75,9 +75,9 @@ var worker = function() {
             if(item.path.indexOf('/_') > -1) { return }
 
             for (var l in appConf.locales) {
-                try {
-                    if (!appConf.locales.hasOwnProperty(l)) { continue }
+                if (!appConf.locales.hasOwnProperty(l)) { continue }
 
+                try {
                     var jadeFile = getFilePath(item.path, 'index.jade', appConf.locales[l])
                     if (!jadeFile) { continue }
 
@@ -102,9 +102,7 @@ var worker = function() {
                     var htmlFile = path.join(htmlDir, 'index.html')
 
                     htmlFiles.push(htmlFile)
-                    fse.outputFile(htmlFile, html, function(err, a) {
-                        if(err) { console.log(err) }
-                    })
+                    fse.outputFileSync(htmlFile, html)
                 } catch (e) {
                     console.error(e.message)
                 }
