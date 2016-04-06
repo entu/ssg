@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+var express = require('express')
 var fs      = require('fs')
 var fse     = require('fs-extra')
 var jade    = require('jade')
@@ -131,3 +132,13 @@ for (var l in appConf.locales) {
 
 // Start scanning source folder and building
 worker()
+
+// Start server to listen port 4000
+express()
+    .use('/', express.static(appConf.build))
+    .use(appConf.assets_path, express.static(appConf.assets))
+    .listen(4000, function() {
+        console.log(appConf.assets)
+        console.log(appConf.assets_path)
+        console.log('Server started at port 4000')
+    })
