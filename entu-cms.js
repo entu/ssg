@@ -6,6 +6,7 @@ var fse     = require('fs-extra')
 var jade    = require('jade')
 var md      = require('markdown-it')()
 var path    = require('path')
+var stylus  = require('stylus')
 var yaml    = require('js-yaml')
 
 
@@ -40,6 +41,7 @@ var getFilePath = function(dirName, fileName, locale) {
 var worker = function() {
     console.log('Started to scan folder ' + appConf.source)
     htmlFiles = []
+    css = {}
     fse.walk(appConf.source)
         .on('data', function (item) {
             if (item.path.indexOf('/_') > -1) { return }
@@ -54,17 +56,26 @@ var worker = function() {
                     var configFile = getFilePath(item.path, 'config.yaml', appConf.locales[l])
                     var config = {}
                     if (configFile) {
-                        config = yaml.safeLoad(fs.readFileSync(configFile))
+                        config = yaml.safeLoad(fs.readFileSync(configFile, 'utf8'))
                     }
 
                     var dataFile = getFilePath(item.path, 'data.yaml', appConf.locales[l])
                     var data = {}
                     if (dataFile) {
-                        data = yaml.safeLoad(fs.readFileSync(dataFile))
+                        data.D = yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
+                    }
+
+                    var styleFile = getFilePath(item.path, 'style.styl', appConf.locales[l])
+                    if (styleFile) {
+                        var styl = stylus(fs.readFileSync(styleFile, 'utf8')).set('warn', false).set('compress', !appConf.stylus.pretty)
+                        if (!css[appConf.locales[l]]) { css[appConf.locales[l]] = [] }
+                        css[appConf.locales[l]].push(styl.render())
                     }
 
                     data.G = {}
+                    data.G.base = appConf.build_path
                     data.G.language = appConf.locales[l]
+                    data.G.path = path.dirname(jadeFile).replace(appConf.source, '')
                     data.G.data = appConf.data[appConf.locales[l]]
                     data.pretty = appConf.jade.pretty
                     data.basedir = appConf.jade.basedir
@@ -82,8 +93,15 @@ var worker = function() {
             }
         })
         .on('end', function () {
+            for (var l in appConf.locales) {
+                if (!appConf.locales.hasOwnProperty(l)) { continue }
+
+                fse.outputFileSync(path.join(appConf.build, appConf.locales[l], 'style.css'), css[appConf.locales[l]].join('\n'))
+            }
+
             setTimeout(worker, (appConf.timeout * 1000))
         })
+
 }
 
 
@@ -93,7 +111,7 @@ var appConf = {}
 var appConfFile = process.argv[2] || path.join(__dirname, 'config.yaml')
 
 try {
-    appConf = yaml.safeLoad(fs.readFileSync(appConfFile))
+    appConf = yaml.safeLoad(fs.readFileSync(appConfFile, 'utf8'))
 } catch (e) {
     console.error('Invalid configuration file: ' + appConfFile)
     console.error(e.message)
@@ -126,7 +144,7 @@ for (var l in appConf.locales) {
     var dataFile = getFilePath(path.dirname(appConfFile), 'data.yaml', appConf.locales[l])
 
     if (dataFile) {
-        appConf.data[appConf.locales[l]] = yaml.safeLoad(fs.readFileSync(dataFile))
+        appConf.data[appConf.locales[l]] = yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
     }
 }
 
@@ -135,10 +153,8 @@ worker()
 
 // Start server to listen port 4000
 express()
-    .use('/', express.static(appConf.build))
+    .use(appConf.build_path, express.static(appConf.build))
     .use(appConf.assets_path, express.static(appConf.assets))
     .listen(4000, function() {
-        console.log(appConf.assets)
-        console.log(appConf.assets_path)
-        console.log('Server started at port 4000')
+        console.log('Server started at http://localhost:4000')
     })

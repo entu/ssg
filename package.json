@@ -25,6 +25,7 @@
     "js-yaml": "3.*",
     "jstransformer-markdown-it": "0.*",
     "jstransformer-uglify-js": "1.*",
-    "markdown-it": "6.*"
+    "markdown-it": "6.*",
+    "stylus": "^0.54.2"
   }
 }
