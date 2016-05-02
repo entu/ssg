@@ -8,6 +8,7 @@
 
 - Simple file based CMS.
 - Generate static HTML files from [Jade](http://jade-lang.com) templates.
+- Generate site CSS from [Stylus](http://stylus-lang.com).
 - Pass data to templates with [Yaml](http://yaml.org) files.
 - Use locale identificator in filenames to generate locale specific content.
 - ...
