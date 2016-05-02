@@ -39,7 +39,6 @@ var getFilePath = function(dirName, fileName, locale) {
 
 // Scans source folder and generates HTMLs
 var worker = function() {
-    console.log('Started to scan folder ' + appConf.source)
     htmlFiles = []
     css = {}
     fse.walk(appConf.source)
@@ -101,6 +100,7 @@ var worker = function() {
 
             setTimeout(worker, (appConf.timeout * 1000))
         })
+    console.log('Build finished')
 
 }
 
@@ -108,7 +108,7 @@ var worker = function() {
 
 // Open config.yaml
 var appConf = {}
-var appConfFile = process.argv[2] || path.join(__dirname, 'config.yaml')
+var appConfFile = path.resolve(process.argv[2]) || path.join(__dirname, 'config.yaml')
 
 try {
     appConf = yaml.safeLoad(fs.readFileSync(appConfFile, 'utf8'))
@@ -124,6 +124,7 @@ appConf.source = appConf.source || path.join(__dirname, 'source')
 appConf.build = appConf.build || path.join(__dirname, 'build')
 appConf.assets = appConf.assets || path.join(__dirname, 'assets')
 appConf.assets_path = appConf.assets_path || '/assets'
+appConf.build_path = appConf.build_path || '/build'
 appConf.timeout = appConf.timeout || 60
 
 if (appConf.source.substr(0, 1) === '.') {
@@ -148,13 +149,26 @@ for (var l in appConf.locales) {
     }
 }
 
-// Start scanning source folder and building
-worker()
+
+//Printout configuration
+var c = {}
+c[appConfFile] = appConf
+console.log()
+console.log()
+console.log(yaml.safeDump(c))
+
 
 // Start server to listen port 4000
 express()
     .use(appConf.build_path, express.static(appConf.build))
     .use(appConf.assets_path, express.static(appConf.assets))
     .listen(4000, function() {
+        console.log()
+        console.log()
         console.log('Server started at http://localhost:4000')
+        console.log()
+        console.log()
+
+        // Start scanning source folder and building
+        worker()
     })
