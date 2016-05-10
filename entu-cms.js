@@ -11,8 +11,11 @@ var stylus   = require('stylus')
 var yaml     = require('js-yaml')
 
 
+var appConf = {}
+
+
 // Markdown-it wrapper to handle empty text
-var markdown = function(text) {
+var markdown = function (text) {
     if (text) {
         return md.render(text)
     } else {
@@ -22,7 +25,7 @@ var markdown = function(text) {
 
 
 // Returns file path with locale if exists
-var getFilePath = function(dirName, fileName, locale) {
+var getFilePath = function (dirName, fileName, locale) {
     var localeFile = fileName.split('.')
     localeFile.splice(localeFile.length - 1, 0, locale)
 
@@ -40,7 +43,7 @@ var getFilePath = function(dirName, fileName, locale) {
 
 
 // Generates HTMLs from template
-var makeHTML = function(fileEvent, filePath) {
+var makeHTML = function (fileEvent, filePath) {
     var folderName = path.dirname(filePath)
     var fileName = path.basename(filePath)
     var locales = []
@@ -90,7 +93,7 @@ var makeHTML = function(fileEvent, filePath) {
 
 
 // Generates CSS from stylus
-var makeCSS = function(fileEvent, filePath) {
+var makeCSS = function (fileEvent, filePath) {
     var folderName = path.dirname(filePath)
     var fileName = path.basename(filePath)
     var locales = []
@@ -136,7 +139,6 @@ var makeCSS = function(fileEvent, filePath) {
 
 
 // Open config.yaml
-var appConf = {}
 var appConfFile = path.resolve(process.argv[2]) || path.join(__dirname, 'config.yaml')
 
 try {
@@ -170,25 +172,30 @@ if (appConf.jade.basedir.substr(0, 1) === '.') {
     appConf.jade.basedir = path.join(path.dirname(appConfFile), appConf.jade.basedir)
 }
 
+
+// Printout configuration
+var c = {}
+c[appConfFile] = appConf
+console.log()
+console.log(yaml.safeDump(c))
+
+
+// Load global data
 appConf.data = {}
 for (var l in appConf.locales) {
+    if (!appConf.locales.hasOwnProperty(l)) { continue }
+
     var dataFile = getFilePath(path.dirname(appConfFile), 'data.yaml', appConf.locales[l])
 
     if (dataFile) {
         appConf.data[appConf.locales[l]] = yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
     }
+
 }
 
 
-// Printout configuration
-// var c = {}
-// c[appConfFile] = appConf
-// console.log()
-// console.log(yaml.safeDump(c))
-
-
 // Start server to listen port 4000
-http.createServer(function(request, response) {
+http.createServer(function (request, response) {
     var filePath = request.url.split('?')[0]
     if (filePath.substr(0, appConf.assets_path.length) === appConf.assets_path) {
         filePath = path.join(appConf.assets, filePath.substr(appConf.assets_path.length - 1))
@@ -224,7 +231,7 @@ http.createServer(function(request, response) {
             contentType = 'text/html'
     }
 
-    fs.readFile(filePath, function(error, content) {
+    fs.readFile(filePath, function (error, content) {
         if (error) {
             response.writeHead(404, { 'Content-Type': 'text/plain' })
             response.end('Error: ' + error.code + '\n')
@@ -236,7 +243,7 @@ http.createServer(function(request, response) {
             response.end(content, 'utf-8')
         }
     })
-}).listen(appConf.port, function() {
+}).listen(appConf.port, function () {
     console.log()
     console.log('Server started at http://localhost:' + appConf.port)
     console.log()
