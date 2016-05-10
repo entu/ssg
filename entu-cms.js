@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 var chokidar = require('chokidar')
-var express  = require('express')
 var fs       = require('fs')
 var fse      = require('fs-extra')
+var http     = require('http')
 var jade     = require('jade')
 var md       = require('markdown-it')()
 var path     = require('path')
@@ -62,8 +62,8 @@ var makeHTML = function(fileEvent, filePath) {
             // Get and set data for Jade template
             var data = {}
             data.G = {}
-            data.G.base = appConf.build_path
             data.G.language = locales[l]
+            data.G.base = appConf.base_path
             data.G.path = path.dirname(jadeFile).replace(appConf.source, '').substr(1)
             data.G.data = appConf.data[locales[l]]
             data.pretty = appConf.jade.pretty
@@ -149,12 +149,13 @@ try {
 
 
 // Set config variables
+appConf.port = appConf.port || 4000
 appConf.locales = appConf.locales || '.'
 appConf.source = appConf.source || path.join(__dirname, 'source')
 appConf.build = appConf.build || path.join(__dirname, 'build')
 appConf.assets = appConf.assets || path.join(__dirname, 'assets')
+appConf.base_path = appConf.base_path || '/'
 appConf.assets_path = appConf.assets_path || '/assets'
-appConf.build_path = appConf.build_path || '/build'
 
 if (appConf.source.substr(0, 1) === '.') {
     appConf.source = path.join(path.dirname(appConfFile), appConf.source)
@@ -187,14 +188,59 @@ for (var l in appConf.locales) {
 
 
 // Start server to listen port 4000
-express()
-    .use(appConf.build_path, express.static(appConf.build))
-    .use(appConf.assets_path, express.static(appConf.assets))
-    .listen(4000, function() {
-        console.log()
-        console.log('Server started at http://localhost:4000')
-        console.log()
+http.createServer(function(request, response) {
+    var filePath = request.url.split('?')[0]
+    if (filePath.substr(0, appConf.assets_path.length) === appConf.assets_path) {
+        filePath = path.join(appConf.assets, filePath.substr(appConf.assets_path.length - 1))
+    } else {
+        filePath = path.join(appConf.build, filePath)
+    }
+
+    if (filePath.indexOf('.') === -1) {
+        filePath = path.join(filePath, 'index.html')
+    }
+
+    var contentType = 'application/octet-stream'
+    switch(path.extname(filePath)) {
+        case '.js':
+            contentType = 'text/javascript'
+            break
+        case '.css':
+            contentType = 'text/css'
+            break
+        case '.json':
+            contentType = 'application/json'
+            break
+        case '.png':
+            contentType = 'image/png'
+            break
+        case '.jpg':
+            contentType = 'image/jpg'
+            break
+        case '.svg':
+            contentType = 'image/svg+xml'
+            break
+        default:
+            contentType = 'text/html'
+    }
+
+    fs.readFile(filePath, function(error, content) {
+        if (error) {
+            response.writeHead(404, { 'Content-Type': 'text/plain' })
+            response.end('Error: ' + error.code + '\n')
+            response.end()
+            console.error('404', request.url)
+            console.error(error.code, filePath)
+        } else {
+            response.writeHead(200, { 'Content-Type': contentType })
+            response.end(content, 'utf-8')
+        }
     })
+}).listen(appConf.port, function() {
+    console.log()
+    console.log('Server started at http://localhost:' + appConf.port)
+    console.log()
+})
 
 
 // Start to watch Jade files
