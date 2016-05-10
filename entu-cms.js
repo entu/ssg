@@ -82,9 +82,9 @@ var makeHTML = function (fileEvent, filePath) {
 
             fse.outputFileSync(htmlFile, html)
 
-            console.log(filePath.replace(appConf.source, ''), '>', htmlFile.replace(appConf.build, ''))
+            console.log(fileEvent.toUpperCase() + ':', filePath.replace(appConf.source, ''), '>', htmlFile.replace(appConf.build, ''))
         } catch (e) {
-            console.error(e.message)
+            console.error('ERROR:', filePath.replace(appConf.source, ''), '>', e.message)
         }
     }
 }
@@ -129,9 +129,9 @@ var makeCSS = function (fileEvent, filePath) {
 
             fse.outputFileSync(cssFile, css.join('\n'))
 
-            console.log(filePath.replace(appConf.source, ''), '>', cssFile.replace(appConf.build, ''))
+            console.log(fileEvent.toUpperCase() + ':', filePath.replace(appConf.source, ''), '>', cssFile.replace(appConf.build, ''))
         } catch (e) {
-            console.error(e.message)
+            console.error('ERROR:', filePath.replace(appConf.source, ''), '>', e.message)
         }
     }
 }
@@ -173,9 +173,7 @@ if (appConf.jade.basedir.substr(0, 1) === '.') {
 // Printout configuration
 var c = {}
 c[appConfFile] = appConf
-console.log()
 console.log(yaml.safeDump(c))
-console.log()
 
 
 // Load global data
@@ -232,19 +230,15 @@ http.createServer(function (request, response) {
     fs.readFile(filePath, function (error, content) {
         if (error) {
             response.writeHead(404, { 'Content-Type': 'text/plain' })
-            response.end('Error: ' + error.code + '\n')
-            response.end()
-            console.error('404', request.url)
-            console.error(error.code, filePath)
+            response.end('404\n')
+            console.error(error.code + ':', filePath.replace(appConf.build, ''))
         } else {
             response.writeHead(200, { 'Content-Type': contentType })
             response.end(content, 'utf-8')
         }
     })
 }).listen(appConf.port, function () {
-    console.log()
     console.log('Server started at http://localhost:' + appConf.port)
-    console.log()
 })
 
 
