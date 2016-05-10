@@ -11,16 +11,13 @@ var stylus   = require('stylus')
 var yaml     = require('js-yaml')
 
 
-var appConf = {}
-
-
 // Markdown-it wrapper to handle empty text
 var markdown = function (text) {
     if (text) {
         return md.render(text)
-    } else {
-        return ''
     }
+
+    return ''
 }
 
 
@@ -36,13 +33,14 @@ var getFilePath = function (dirName, fileName, locale) {
         return localeFilePath
     } else if (fs.existsSync(filePath)) {
         return filePath
-    } else {
-        return false
     }
+
+    return false
 }
 
 
 // Generates HTMLs from template
+var appConf = {}
 var makeHTML = function (fileEvent, filePath) {
     var folderName = path.dirname(filePath)
     var fileName = path.basename(filePath)
@@ -93,6 +91,7 @@ var makeHTML = function (fileEvent, filePath) {
 
 
 // Generates CSS from stylus
+var stylesList = {}
 var makeCSS = function (fileEvent, filePath) {
     var folderName = path.dirname(filePath)
     var fileName = path.basename(filePath)
@@ -178,6 +177,7 @@ var c = {}
 c[appConfFile] = appConf
 console.log()
 console.log(yaml.safeDump(c))
+console.log()
 
 
 // Load global data
@@ -259,5 +259,4 @@ chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*', ignoreIniti
 
 
 // Start to watch style files changes
-var stylesList = {}
 chokidar.watch(appConf.source + '/**/style*.styl', { ignored: '*/_*' }).on('all', makeCSS)
