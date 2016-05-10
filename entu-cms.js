@@ -61,20 +61,31 @@ var makeHTML = function (fileEvent, filePath) {
             if (!jadeFile) { continue }
 
             // Get and set data for Jade template
-            var data = {}
-            data.G = {}
-            data.G.language = locales[l]
-            data.G.base = appConf.base_path
-            data.G.path = path.dirname(jadeFile).replace(appConf.source, '').substr(1)
-            data.G.data = appConf.data[locales[l]]
-            data.pretty = appConf.jade.pretty
-            data.basedir = appConf.jade.basedir
-            data.md = markdown
+            var data = {
+                page: {},
+                D: {},
+                G: {}
+            }
 
             var dataFile = getFilePath(folderName, 'data.yaml', locales[l])
             if (dataFile) {
                 data.D = yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
             }
+            for (var i in data.D.page) {
+                if (!data.D.hasOwnProperty(i)) { continue }
+
+                data.page[i] = data.D.page[i]
+            }
+            delete data.D.page
+
+            data.page.language = data.page.language || locales[l]
+            data.page.base = data.page.base || appConf.basePath
+            data.page.path = data.page.path || path.dirname(jadeFile).replace(appConf.source, '').substr(1)
+            data.pretty = data.pretty || appConf.jade.pretty
+            data.basedir = data.basedir || appConf.jade.basedir
+
+            data.G = appConf.data[locales[l]]
+            data.G.md = markdown
 
             var html = jade.renderFile(jadeFile, data)
             var htmlDir = path.dirname(jadeFile.replace(appConf.source, path.join(appConf.build,  locales[l])))
@@ -153,8 +164,8 @@ appConf.locales = appConf.locales || '.'
 appConf.source = appConf.source || path.join(__dirname, 'source')
 appConf.build = appConf.build || path.join(__dirname, 'build')
 appConf.assets = appConf.assets || path.join(__dirname, 'assets')
-appConf.base_path = appConf.base_path || '/'
-appConf.assets_path = appConf.assets_path || '/assets'
+appConf.basePath = appConf.basePath || '/'
+appConf.assetsPath = appConf.assetsPath || '/assets'
 
 if (appConf.source.substr(0, 1) === '.') {
     appConf.source = path.join(path.dirname(appConfFile), appConf.source)
@@ -193,8 +204,8 @@ for (var l in appConf.locales) {
 // Start server to listen port 4000
 http.createServer(function (request, response) {
     var filePath = request.url.split('?')[0]
-    if (filePath.substr(0, appConf.assets_path.length) === appConf.assets_path) {
-        filePath = path.join(appConf.assets, filePath.substr(appConf.assets_path.length - 1))
+    if (filePath.substr(0, appConf.assetsPath.length) === appConf.assetsPath) {
+        filePath = path.join(appConf.assets, filePath.substr(appConf.assetsPath.length - 1))
     } else {
         filePath = path.join(appConf.build, filePath)
     }
