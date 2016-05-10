@@ -143,9 +143,7 @@ var appConfFile = path.resolve(process.argv[2]) || path.join(__dirname, 'config.
 try {
     appConf = yaml.safeLoad(fs.readFileSync(appConfFile, 'utf8'))
 } catch (e) {
-    console.error('Invalid configuration file: ' + appConfFile)
-    console.error(e.message)
-    process.exit(1)
+    throw new Error('Invalid configuration file: ' + appConfFile)
 }
 
 
