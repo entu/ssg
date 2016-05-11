@@ -25,6 +25,12 @@
 
     node entu-cms.js ./config.yaml
 
+This command will:
+1. generates HTML/CSS files
+2. starts server on localhost
+3. monitors source folder for changes and (re)generate necessary HTML/CSS.
+
+
 
 ### Configuration
 
