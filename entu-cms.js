@@ -6,6 +6,7 @@ var fse      = require('fs-extra')
 var http     = require('http')
 var jade     = require('jade')
 var md       = require('markdown-it')()
+var mime     = require('mime-types')
 var path     = require('path')
 var stylus   = require('stylus')
 var yaml     = require('js-yaml')
@@ -214,29 +215,7 @@ http.createServer(function (request, response) {
         filePath = path.join(filePath, 'index.html')
     }
 
-    var contentType = 'application/octet-stream'
-    switch(path.extname(filePath)) {
-        case '.js':
-            contentType = 'text/javascript'
-            break
-        case '.css':
-            contentType = 'text/css'
-            break
-        case '.json':
-            contentType = 'application/json'
-            break
-        case '.png':
-            contentType = 'image/png'
-            break
-        case '.jpg':
-            contentType = 'image/jpg'
-            break
-        case '.svg':
-            contentType = 'image/svg+xml'
-            break
-        default:
-            contentType = 'text/html'
-    }
+    var contentType = mime.lookup(path.extname(filePath)) || 'application/octet-stream'
 
     fs.readFile(filePath, function (error, content) {
         if (error) {
