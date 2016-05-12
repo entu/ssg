@@ -73,7 +73,7 @@ var makeHTML = function (fileEvent, filePath) {
                 data.D = yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
             }
             for (var i in data.D.page) {
-                if (!data.D.hasOwnProperty(i)) { continue }
+                if (!data.D.page.hasOwnProperty(i)) { continue }
 
                 data.page[i] = data.D.page[i]
             }
