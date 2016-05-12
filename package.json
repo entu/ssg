@@ -1,6 +1,6 @@
 {
   "name": "entu-cms",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "author": "Argo Roots <argo@roots.ee>",
   "description": "Simple (Jade) filebased CMS",
   "homepage": "https://github.com/argoroots/entu-cms",
@@ -19,14 +19,14 @@
     "node": "4.x"
   },
   "dependencies": {
-    "chokidar": "^1.4.3",
+    "chokidar": "^1.5.0",
     "fs-extra": "^0.30.0",
     "jade": "^1.11.0",
-    "js-yaml": "^3.6.0",
+    "js-yaml": "^3.6.1",
     "jstransformer-markdown-it": "^0.2.3",
     "jstransformer-uglify-js": "^1.1.1",
     "markdown-it": "^6.0.1",
     "mime-types": "^2.1.11",
-    "stylus": "^0.54.2"
+    "stylus": "^0.54.5"
   }
 }
