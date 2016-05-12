@@ -80,16 +80,38 @@ var makeHTML = function (fileEvent, filePath) {
             delete data.D.page
 
             data.page.language = data.page.language || locales[l]
+            data.page.otherLocales = data.page.otherLocales || {}
             data.page.base = data.page.base || appConf.basePath
             data.page.path = data.page.path || path.dirname(jadeFile).replace(appConf.source, '').substr(1)
             data.pretty = data.pretty || appConf.jade.pretty
             data.basedir = data.basedir || appConf.jade.basedir
 
+            for (var i in appConf.locales) {
+                if (!appConf.locales.hasOwnProperty(i)) { continue }
+                if (appConf.locales[i] === locales[l]) { continue }
+
+                var otherLocaleData = {
+                    page: {}
+                }
+
+                var otherLocaleDataFile = getFilePath(folderName, 'data.yaml', appConf.locales[i])
+                if (otherLocaleDataFile) {
+                    otherLocaleData = yaml.safeLoad(fs.readFileSync(otherLocaleDataFile, 'utf8'))
+                }
+
+                otherLocaleData.page = otherLocaleData.page || {}
+                otherLocaleData.page.language = otherLocaleData.page.language || appConf.locales[i]
+                otherLocaleData.page.base = otherLocaleData.page.base || appConf.basePath
+                otherLocaleData.page.path = otherLocaleData.page.path || path.dirname(jadeFile).replace(appConf.source, '').substr(1)
+
+                data.page.otherLocales[appConf.locales[i]] = otherLocaleData.page
+            }
+
             data.G = appConf.data[locales[l]]
             data.G.md = markdown
 
             var html = jade.renderFile(jadeFile, data)
-            var htmlDir = path.dirname(jadeFile.replace(appConf.source, path.join(appConf.build,  locales[l])))
+            var htmlDir = path.join(appConf.build, locales[l], data.page.path)
             var htmlFile = path.join(htmlDir, 'index.html')
 
             fse.outputFileSync(htmlFile, html)
@@ -161,7 +183,7 @@ try {
 
 // Set config variables
 appConf.port = appConf.port || 4000
-appConf.locales = appConf.locales || '.'
+appConf.locales = appConf.locales || []
 appConf.source = appConf.source || path.join(__dirname, 'source')
 appConf.build = appConf.build || path.join(__dirname, 'build')
 appConf.assets = appConf.assets || path.join(__dirname, 'assets')

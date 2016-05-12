@@ -103,9 +103,9 @@ Some page parameters will change how HTML is generated. Those are:
 - __page.redirect__  
   Path or url to redirect (if user visits this page).
 
-__NB!__ Parameters _page.path_, _page.aliases_, _page.redirect_ will not work yet.
+__NB!__ Parameters _page.aliases_, _page.redirect_ will not work yet.
 
-You can put locale identificator to filename (like data.en.yaml) for locale speciffic content.
+You can put locale identificator to filename (like data.en.yaml) for locale speciffic content. Other locales _page_ object is accessible via _page.otherLocales_ object.
 
 ##### Example page data.yaml:
     page:
