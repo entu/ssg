@@ -7,6 +7,7 @@ var http     = require('http')
 var jade     = require('jade')
 var md       = require('markdown-it')()
 var mime     = require('mime-types')
+var op       = require('object-path')
 var path     = require('path')
 var stylus   = require('stylus')
 var yaml     = require('js-yaml')
@@ -40,6 +41,23 @@ var getFilePath = function (dirName, fileName, locale) {
 }
 
 
+// Load Yaml file
+var getYamlFile = function (dirName, fileName, locale, defaultResult) {
+    try {
+        var dataFile = getFilePath(dirName, fileName, locale)
+
+        if (!dataFile) return defaultResult
+
+        dataObject = yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
+
+        return dataObject
+    } catch (e) {
+        console.log('ERROR:', dirName, fileName, locale, '>', e)
+        return defaultResult
+    }
+}
+
+
 // Generates HTMLs from template
 var appConf = {}
 var makeHTML = function (fileEvent, filePath) {
@@ -56,9 +74,11 @@ var makeHTML = function (fileEvent, filePath) {
     for (var l in locales) {
         if (!locales.hasOwnProperty(l)) { continue }
 
+        var locale = locales[l]
+
         try {
             // Get Jade template
-            var jadeFile = getFilePath(folderName, 'index.jade', locales[l])
+            var jadeFile = getFilePath(folderName, 'index.jade', locale)
             if (!jadeFile) { continue }
 
             // Get and set data for Jade template
@@ -68,50 +88,41 @@ var makeHTML = function (fileEvent, filePath) {
                 G: {}
             }
 
-            var dataFile = getFilePath(folderName, 'data.yaml', locales[l])
-            if (dataFile) {
-                data.D = yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
-            }
+            data.D = getYamlFile(folderName, 'data.yaml', locale, {})
+
             for (var i in data.D.page) {
                 if (!data.D.page.hasOwnProperty(i)) { continue }
 
-                data.page[i] = data.D.page[i]
+                op.set(data, ['page', i], op.get(data, ['D', 'page', i]))
             }
-            delete data.D.page
+            op.del(data, 'D.page')
 
-            data.page.language = data.page.language || locales[l]
-            data.page.otherLocales = data.page.otherLocales || {}
-            data.page.base = data.page.base || appConf.basePath
-            data.page.path = data.page.path || path.dirname(jadeFile).replace(appConf.source, '').substr(1)
-            data.pretty = data.pretty || appConf.jade.pretty
-            data.basedir = data.basedir || appConf.jade.basedir
+            op.ensureExists(data, 'page.language', locale)
+            op.ensureExists(data, 'page.otherLocales', {})
+            op.ensureExists(data, 'page.base', appConf.basePath)
+            op.ensureExists(data, 'page.path', path.dirname(jadeFile).replace(appConf.source, '').substr(1))
+            op.ensureExists(data, 'pretty', appConf.jade.retty)
+            op.ensureExists(data, 'basedir', appConf.jade.basedir)
 
             for (var i in appConf.locales) {
                 if (!appConf.locales.hasOwnProperty(i)) { continue }
-                if (appConf.locales[i] === locales[l]) { continue }
+                if (appConf.locales[i] === locale) { continue }
 
-                var otherLocaleData = {
-                    page: {}
-                }
+                var otherLocaleData = getYamlFile(folderName, 'data.yaml', appConf.locales[i], {})
 
-                var otherLocaleDataFile = getFilePath(folderName, 'data.yaml', appConf.locales[i])
-                if (otherLocaleDataFile) {
-                    otherLocaleData = yaml.safeLoad(fs.readFileSync(otherLocaleDataFile, 'utf8'))
-                }
+                op.ensureExists(otherLocaleData, 'page', {})
+                op.ensureExists(otherLocaleData, 'page.language', appConf.locales[i])
+                op.ensureExists(otherLocaleData, 'page.base', appConf.basePath)
+                op.ensureExists(otherLocaleData, 'page.path', path.dirname(jadeFile).replace(appConf.source, '').substr(1))
 
-                otherLocaleData.page = otherLocaleData.page || {}
-                otherLocaleData.page.language = otherLocaleData.page.language || appConf.locales[i]
-                otherLocaleData.page.base = otherLocaleData.page.base || appConf.basePath
-                otherLocaleData.page.path = otherLocaleData.page.path || path.dirname(jadeFile).replace(appConf.source, '').substr(1)
-
-                data.page.otherLocales[appConf.locales[i]] = otherLocaleData.page
+                op.set(data, ['page', 'otherLocales', appConf.locales[i]],  otherLocaleData.page)
             }
 
-            data.G = appConf.data[locales[l]]
+            data.G = appConf.data[locale]
             data.G.md = markdown
 
             var html = jade.renderFile(jadeFile, data)
-            var htmlDir = path.join(appConf.build, locales[l], data.page.path)
+            var htmlDir = path.join(appConf.build, locale, data.page.path)
             var htmlFile = path.join(htmlDir, 'index.html')
 
             fse.outputFileSync(htmlFile, html)
@@ -140,25 +151,27 @@ var makeCSS = function (fileEvent, filePath) {
     for (var l in locales) {
         if (!locales.hasOwnProperty(l)) { continue }
 
-        try {
-            if (!stylesList[locales[l]]) { stylesList[locales[l]] = {} }
+        var locale = locales[l]
 
-            var styleFile = getFilePath(folderName, 'style.styl', locales[l])
+        try {
+            if (!stylesList[locales[l]]) { stylesList[locale] = {} }
+
+            var styleFile = getFilePath(folderName, 'style.styl', locale)
             if (styleFile) {
                 var styl = stylus(fs.readFileSync(styleFile, 'utf8')).set('warn', false).set('compress', !appConf.stylus.pretty)
-                stylesList[locales[l]][folderName] = styl.render()
+                stylesList[locale][folderName] = styl.render()
             } else {
-                delete stylesList[locales[l]][folderName]
+                delete stylesList[locale][folderName]
             }
 
             var css = []
-            for (var s in stylesList[locales[l]]) {
-                if (!stylesList[locales[l]].hasOwnProperty(s)) { continue }
+            for (var s in stylesList[locale]) {
+                if (!stylesList[locale].hasOwnProperty(s)) { continue }
 
-                css.push(stylesList[locales[l]][s])
+                css.push(stylesList[locale][s])
             }
 
-            var cssDir = path.join(appConf.build, locales[l])
+            var cssDir = path.join(appConf.build, locale)
             var cssFile = path.join(cssDir, 'style.css')
 
             fse.outputFileSync(cssFile, css.join('\n'))
@@ -171,7 +184,7 @@ var makeCSS = function (fileEvent, filePath) {
 }
 
 
-// Open config.yaml
+// Open config.yaml and set config variables
 var appConfFile = path.resolve(process.argv[2]) || path.join(__dirname, 'config.yaml')
 
 try {
@@ -180,15 +193,16 @@ try {
     throw new Error('Invalid configuration file: ' + appConfFile)
 }
 
-
-// Set config variables
-appConf.port = appConf.port || 4000
-appConf.locales = appConf.locales || []
-appConf.source = appConf.source || path.join(__dirname, 'source')
-appConf.build = appConf.build || path.join(__dirname, 'build')
-appConf.assets = appConf.assets || path.join(__dirname, 'assets')
-appConf.basePath = appConf.basePath || '/'
-appConf.assetsPath = appConf.assetsPath || '/assets'
+op.ensureExists(appConf, 'locales', [])
+op.ensureExists(appConf, 'source', path.join(__dirname, 'source'))
+op.ensureExists(appConf, 'build', path.join(__dirname, 'build'))
+op.ensureExists(appConf, 'assets', path.join(__dirname, 'assets'))
+op.ensureExists(appConf, 'basePath', '/')
+op.ensureExists(appConf, 'assetsPath', '/assets')
+op.ensureExists(appConf, 'jade.basedir', path.join(__dirname, 'source'))
+op.ensureExists(appConf, 'jade.retty', false)
+op.ensureExists(appConf, 'stylus.pretty', false)
+op.ensureExists(appConf, 'port', 4000)
 
 if (appConf.source.substr(0, 1) === '.') {
     appConf.source = path.join(path.dirname(appConfFile), appConf.source)
@@ -211,16 +225,11 @@ console.log(yaml.safeDump(c))
 
 
 // Load global data
-appConf.data = {}
 for (var l in appConf.locales) {
     if (!appConf.locales.hasOwnProperty(l)) { continue }
 
-    var dataFile = getFilePath(path.dirname(appConfFile), 'data.yaml', appConf.locales[l])
-
-    if (dataFile) {
-        appConf.data[appConf.locales[l]] = yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
-    }
-
+    var locale = appConf.locales[l]
+    op.set(appConf, ['data', locale], getYamlFile(path.dirname(appConfFile), 'data.yaml', locale, {}))
 }
 
 

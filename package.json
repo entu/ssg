@@ -27,6 +27,7 @@
     "jstransformer-uglify-js": "^1.1.1",
     "markdown-it": "^6.0.1",
     "mime-types": "^2.1.11",
+    "object-path": "^0.9.2",
     "stylus": "^0.54.5"
   }
 }
