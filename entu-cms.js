@@ -60,6 +60,7 @@ var getYamlFile = function (dirName, fileName, locale, defaultResult) {
 
 // Generates HTMLs from template
 var appConf = {}
+var jadeDependencies = {}
 var makeHTML = function (fileEvent, filePath) {
     var folderName = path.dirname(filePath)
     var fileName = path.basename(filePath)
@@ -121,7 +122,21 @@ var makeHTML = function (fileEvent, filePath) {
             data.G = appConf.data[locale]
             data.G.md = markdown
 
-            var html = jade.renderFile(jadeFile, data)
+            var compiledJade = jade.compileFile(jadeFile, data)
+            var html = compiledJade(data)
+
+            for (var i in compiledJade.dependencies) {
+                if (!compiledJade.dependencies.hasOwnProperty(i)) { continue }
+
+                var key = op.get(compiledJade, ['dependencies', i]).replace(appConf.source, '').replace('.jade', '')
+
+                if (op.get(jadeDependencies, key, []).indexOf(jadeFile) > -1) { continue }
+
+                op.push(jadeDependencies, key, jadeFile)
+
+                dependenciesWatcher.add(op.get(compiledJade, ['dependencies', i]))
+            }
+
             var htmlDir = path.join(appConf.build, locale, data.page.path)
             var htmlFile = path.join(htmlDir, 'index.html')
 
@@ -265,6 +280,20 @@ http.createServer(function (request, response) {
 
 // Start to watch Jade files
 chokidar.watch(appConf.source + '/**/index*.jade', { ignored: '*/_*' }).on('all', makeHTML)
+
+
+// Start to watch Jade dependencies
+var dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', function (fileEvent, filePath) {
+    console.log('DEPENDENCY:', filePath.replace(appConf.source, ''))
+
+    var files = op.get(jadeDependencies, filePath.replace(appConf.source, '').replace('.jade', ''))
+
+    for (var i in files) {
+        if (!files.hasOwnProperty(i)) { continue }
+
+        makeHTML('dependency', files[i])
+    }
+})
 
 
 // Start to watch Yaml files
