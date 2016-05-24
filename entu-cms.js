@@ -101,7 +101,7 @@ var makeHTML = function (fileEvent, filePath) {
             op.ensureExists(data, 'page.otherLocales', {})
             op.ensureExists(data, 'page.base', appConf.basePath)
             op.ensureExists(data, 'page.path', path.dirname(jadeFile).replace(appConf.source, '').substr(1))
-            op.ensureExists(data, 'pretty', appConf.jade.retty)
+            op.ensureExists(data, 'pretty', appConf.jade.pretty)
             op.ensureExists(data, 'basedir', appConf.jade.basedir)
 
             for (var i in appConf.locales) {
@@ -200,7 +200,7 @@ op.ensureExists(appConf, 'assets', path.join(__dirname, 'assets'))
 op.ensureExists(appConf, 'basePath', '/')
 op.ensureExists(appConf, 'assetsPath', '/assets')
 op.ensureExists(appConf, 'jade.basedir', path.join(__dirname, 'source'))
-op.ensureExists(appConf, 'jade.retty', false)
+op.ensureExists(appConf, 'jade.pretty', false)
 op.ensureExists(appConf, 'stylus.pretty', false)
 op.ensureExists(appConf, 'port', 4000)
 
