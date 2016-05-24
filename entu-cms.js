@@ -16,7 +16,7 @@ var yaml     = require('js-yaml')
 // Markdown-it wrapper to handle empty text
 var markdown = function (text) {
     if (text) {
-        return md.render(text)
+        return md.render(text).replace(/\r?\n|\r/g, '')
     }
 
     return ''
