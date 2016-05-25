@@ -1,8 +1,9 @@
 {
   "name": "entu-cms",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "author": "Argo Roots <argo@roots.ee>",
   "description": "Simple (Jade) filebased CMS",
+  "keywords": ["cms", "static", "html", "jade", "markdown", "yaml"],
   "homepage": "https://github.com/argoroots/entu-cms",
   "license": "MIT",
   "repository": {
