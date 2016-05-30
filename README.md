@@ -153,7 +153,7 @@ You can put locale identificator to filename (like data.en.yaml) for locale spec
         |   |- index.html
         |   |- style.css
         |   |- testpage1
-        |   |   |- index.html
+        |   |   +- index.html
         |   |
         |   +- testpage2
         |       |- index.html
