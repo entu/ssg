@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Entu CMS</title>
+        <style media="screen">
+            body {
+                height: 100%;
+                padding: 40px 10px 0px 10px;
+                font-family: 'Helvetica Neue', Roboto, sans-serif;
+                font-weight: 200;
+                color: #182530;
+                -webkit-app-region: drag;
+            }
+            h1 {
+                margin: 0px;
+                padding: 0px;
+                font-size: 48px;
+                font-weight: 100;
+                line-height: 48px;
+                text-align: center;
+            }
+            h2 {
+                margin: 30px 0px 40px 0px;
+                padding: 0px;
+                font-size: 20px;
+                font-weight: 100;
+                line-height: 20px;
+                text-align: center;
+                text-overflow: ellipsis;
+            }
+            footer {
+                position: fixed;
+                left: 10px;
+                bottom: 10px;
+                right: 10px;
+                text-align: center;
+                font-size: 12px;
+                font-weight: 100;
+            }
+            .button {
+                display: block;
+                width: 300px;
+                margin: 0px auto 10px auto;
+                padding: 10px;
+                text-align: center;
+                text-decoration: none;
+                color: #9babb7;
+                border: 1px solid #9babb7;
+            }
+            .button:hover {
+                color: #182530;
+                border: 1px solid #182530;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Entu CMS</h1>
+
+        <h2 id="title"></h2>
+
+        <a class="button" href="javascript:shell.openExternal(serverUrl)">Preview webpage</a>
+        <a class="button" href="javascript:shell.showItemInFolder(appConf.source)">Source folder</a>
+        <a class="button" href="javascript:shell.showItemInFolder(appConf.build)">Build folder</a>
+
+        <footer id="footer"></footer>
+    </body>
+
+    <script>
+        const {app, dialog, shell} = require('electron').remote
+        const renderer = require('./renderer.js')
+        const async = require('async')
+
+        var confFile = ''
+        var appConf = {}
+        var serverUrl = ''
+
+        document.getElementById('footer').innerHTML = app.getVersion()
+
+        async.waterfall([
+            function(callback) {
+                files = dialog.showOpenDialog({
+                    properties: ['openFile'],
+                    filters: [
+                        {name: 'Yaml files', extensions: ['yaml']}
+                    ]
+                })
+                if(!files) { app.quit() }
+                callback(null, files[0])
+            },
+            function(file, callback) {
+                confFile = file
+                renderer.openConfFile(confFile, callback)
+            },
+            function(conf, callback) {
+                appConf = conf
+                document.getElementById('title').innerHTML = confFile.replace(app.getPath('home'), '~')
+                renderer.startServer(callback)
+            },
+            function(callback) {
+                serverUrl = `http://localhost:${appConf.port}/${appConf.locales[0]}`
+
+                let myNotification = new Notification('Entu CMS', {
+                    body: `Server started at ${serverUrl}`
+                })
+                myNotification.onclick = () => {
+                    shell.openExternal()
+                    console.log('Notification clicked')
+                }
+
+                renderer.watchFiles(callback)
+            }
+        ], function(err) {
+            if(err) {
+                dialog.showMessageBox({
+                    type: 'error',
+                    message: err.toString(),
+                    buttons: ['OK']
+                }, function() {
+                    app.quit()
+                })
+            }
+        })
+    </script>
+</html>

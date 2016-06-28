@@ -200,105 +200,106 @@ var makeCSS = function (fileEvent, filePath) {
 
 
 // Open config.yaml and set config variables
-var appConfFile = path.resolve(process.argv[2]) || path.join(__dirname, 'config.yaml')
+exports.openConfFile = function(appConfFile, callback) {
+    try {
+        appConf = yaml.safeLoad(fs.readFileSync(appConfFile, 'utf8'))
 
-try {
-    appConf = yaml.safeLoad(fs.readFileSync(appConfFile, 'utf8'))
-} catch (e) {
-    throw new Error('Invalid configuration file: ' + appConfFile)
-}
+        op.ensureExists(appConf, 'locales', [])
+        op.ensureExists(appConf, 'source', path.join(__dirname, 'source'))
+        op.ensureExists(appConf, 'build', path.join(__dirname, 'build'))
+        op.ensureExists(appConf, 'assets', path.join(__dirname, 'assets'))
+        op.ensureExists(appConf, 'basePath', '/')
+        op.ensureExists(appConf, 'assetsPath', '/assets')
+        op.ensureExists(appConf, 'jade.basedir', path.join(__dirname, 'source'))
+        op.ensureExists(appConf, 'jade.pretty', false)
+        op.ensureExists(appConf, 'stylus.pretty', false)
+        op.ensureExists(appConf, 'port', 4000)
 
-op.ensureExists(appConf, 'locales', [])
-op.ensureExists(appConf, 'source', path.join(__dirname, 'source'))
-op.ensureExists(appConf, 'build', path.join(__dirname, 'build'))
-op.ensureExists(appConf, 'assets', path.join(__dirname, 'assets'))
-op.ensureExists(appConf, 'basePath', '/')
-op.ensureExists(appConf, 'assetsPath', '/assets')
-op.ensureExists(appConf, 'jade.basedir', path.join(__dirname, 'source'))
-op.ensureExists(appConf, 'jade.pretty', false)
-op.ensureExists(appConf, 'stylus.pretty', false)
-op.ensureExists(appConf, 'port', 4000)
+        if (appConf.source.substr(0, 1) === '.') {
+            appConf.source = path.join(path.dirname(appConfFile), appConf.source)
+        }
+        if (appConf.build.substr(0, 1) === '.') {
+            appConf.build = path.join(path.dirname(appConfFile), appConf.build)
+        }
+        if (appConf.assets.substr(0, 1) === '.') {
+            appConf.assets = path.join(path.dirname(appConfFile), appConf.assets)
+        }
+        if (appConf.jade.basedir.substr(0, 1) === '.') {
+            appConf.jade.basedir = path.join(path.dirname(appConfFile), appConf.jade.basedir)
+        }
 
-if (appConf.source.substr(0, 1) === '.') {
-    appConf.source = path.join(path.dirname(appConfFile), appConf.source)
-}
-if (appConf.build.substr(0, 1) === '.') {
-    appConf.build = path.join(path.dirname(appConfFile), appConf.build)
-}
-if (appConf.assets.substr(0, 1) === '.') {
-    appConf.assets = path.join(path.dirname(appConfFile), appConf.assets)
-}
-if (appConf.jade.basedir.substr(0, 1) === '.') {
-    appConf.jade.basedir = path.join(path.dirname(appConfFile), appConf.jade.basedir)
-}
+        // Printout configuration
+        var c = {}
+        c[appConfFile] = appConf
+        console.log(yaml.safeDump(c))
 
+        // Load global data
+        for (var l in appConf.locales) {
+            if (!appConf.locales.hasOwnProperty(l)) { continue }
 
-// Printout configuration
-var c = {}
-c[appConfFile] = appConf
-console.log(yaml.safeDump(c))
+            var locale = appConf.locales[l]
+            op.set(appConf, ['data', locale], getYamlFile(path.dirname(appConfFile), 'data.yaml', locale, {}))
+        }
 
-
-// Load global data
-for (var l in appConf.locales) {
-    if (!appConf.locales.hasOwnProperty(l)) { continue }
-
-    var locale = appConf.locales[l]
-    op.set(appConf, ['data', locale], getYamlFile(path.dirname(appConfFile), 'data.yaml', locale, {}))
-}
-
-
-// Start server to listen port 4000
-http.createServer(function (request, response) {
-    var filePath = request.url.split('?')[0]
-    if (filePath.substr(0, appConf.assetsPath.length) === appConf.assetsPath) {
-        filePath = path.join(appConf.assets, filePath.substr(appConf.assetsPath.length - 1))
-    } else {
-        filePath = path.join(appConf.build, filePath)
+        callback(null, appConf)
+    } catch (e) {
+        callback(new Error('Invalid configuration file'))
     }
+}
 
-    if (filePath.indexOf('.') === -1) {
-        filePath = path.join(filePath, 'index.html')
-    }
 
-    var contentType = mime.lookup(path.extname(filePath)) || 'application/octet-stream'
-
-    fs.readFile(filePath, function (error, content) {
-        if (error) {
-            response.writeHead(404, { 'Content-Type': 'text/plain' })
-            response.end('404\n')
-            console.error(error.code + ':', filePath.replace(appConf.build, ''))
+exports.startServer = function(callback) {
+    http.createServer(function (request, response) {
+        var filePath = request.url.split('?')[0]
+        if (filePath.substr(0, appConf.assetsPath.length) === appConf.assetsPath) {
+            filePath = path.join(appConf.assets, filePath.substr(appConf.assetsPath.length - 1))
         } else {
-            response.writeHead(200, { 'Content-Type': contentType })
-            response.end(content, 'utf-8')
+            filePath = path.join(appConf.build, filePath)
+        }
+
+        if (filePath.indexOf('.') === -1) {
+            filePath = path.join(filePath, 'index.html')
+        }
+
+        var contentType = mime.lookup(path.extname(filePath)) || 'application/octet-stream'
+
+        fs.readFile(filePath, function (error, content) {
+            if (error) {
+                response.writeHead(404, { 'Content-Type': 'text/plain' })
+                response.end('404\n')
+                console.error(error.code + ':', filePath.replace(appConf.build, ''))
+            } else {
+                response.writeHead(200, { 'Content-Type': contentType })
+                response.end(content, 'utf-8')
+            }
+        })
+    }).listen(appConf.port, callback)
+}
+
+
+var dependenciesWatcher
+exports.watchFiles = function(callback) {
+    // Start to watch Jade files
+    chokidar.watch(appConf.source + '/**/index*.jade', { ignored: '*/_*' }).on('all', makeHTML)
+
+    // Start to watch Jade dependencies
+    dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', function (fileEvent, filePath) {
+        console.log('DEPENDENCY:', filePath.replace(appConf.source, ''))
+
+        var files = op.get(jadeDependencies, filePath.replace(appConf.source, '').replace('.jade', ''))
+
+        for (var i in files) {
+            if (!files.hasOwnProperty(i)) { continue }
+
+            makeHTML('dependency', files[i])
         }
     })
-}).listen(appConf.port, function () {
-    console.log('Server started at http://localhost:' + appConf.port)
-})
 
+    // Start to watch Yaml files
+    chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*', ignoreInitial: true }).on('all', makeHTML)
 
-// Start to watch Jade files
-chokidar.watch(appConf.source + '/**/index*.jade', { ignored: '*/_*' }).on('all', makeHTML)
+    // Start to watch style files changes
+    chokidar.watch(appConf.source + '/**/style*.styl', { ignored: '*/_*' }).on('all', makeCSS)
 
-
-// Start to watch Jade dependencies
-var dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', function (fileEvent, filePath) {
-    console.log('DEPENDENCY:', filePath.replace(appConf.source, ''))
-
-    var files = op.get(jadeDependencies, filePath.replace(appConf.source, '').replace('.jade', ''))
-
-    for (var i in files) {
-        if (!files.hasOwnProperty(i)) { continue }
-
-        makeHTML('dependency', files[i])
-    }
-})
-
-
-// Start to watch Yaml files
-chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*', ignoreInitial: true }).on('all', makeHTML)
-
-
-// Start to watch style files changes
-chokidar.watch(appConf.source + '/**/style*.styl', { ignored: '*/_*' }).on('all', makeCSS)
+    callback(null)
+}

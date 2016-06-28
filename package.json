@@ -3,7 +3,14 @@
   "version": "0.5.3",
   "author": "Argo Roots <argo@roots.ee>",
   "description": "Simple (Jade) filebased CMS",
-  "keywords": ["cms", "static", "html", "jade", "markdown", "yaml"],
+  "keywords": [
+    "cms",
+    "static",
+    "html",
+    "jade",
+    "markdown",
+    "yaml"
+  ],
   "homepage": "https://github.com/argoroots/entu-cms",
   "license": "MIT",
   "repository": {
@@ -13,8 +20,9 @@
   "bugs": {
     "url": "https://github.com/argoroots/entu-cms/issues"
   },
+  "main": "main.js",
   "scripts": {
-    "start": "node ./entu-cms.js"
+    "start": "electron main.js"
   },
   "engines": {
     "node": "4.x"
@@ -30,5 +38,8 @@
     "mime-types": "^2.1.11",
     "object-path": "^0.9.2",
     "stylus": "^0.54.5"
+  },
+  "devDependencies": {
+    "electron-prebuilt": "^1.2.3"
   }
 }
