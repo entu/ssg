@@ -213,7 +213,7 @@ exports.openConfFile = function(appConfFile, callback) {
         op.ensureExists(appConf, 'jade.basedir', path.join(__dirname, 'source'))
         op.ensureExists(appConf, 'jade.pretty', false)
         op.ensureExists(appConf, 'stylus.pretty', false)
-        op.ensureExists(appConf, 'port', 4000)
+        op.ensureExists(appConf, 'port', 0)
 
         if (appConf.source.substr(0, 1) === '.') {
             appConf.source = path.join(path.dirname(appConfFile), appConf.source)
@@ -249,7 +249,7 @@ exports.openConfFile = function(appConfFile, callback) {
 
 
 exports.startServer = function(callback) {
-    http.createServer(function (request, response) {
+    var server = http.createServer(function (request, response) {
         var filePath = request.url.split('?')[0]
         if (filePath.substr(0, appConf.assetsPath.length) === appConf.assetsPath) {
             filePath = path.join(appConf.assets, filePath.substr(appConf.assetsPath.length - 1))
@@ -273,7 +273,13 @@ exports.startServer = function(callback) {
                 response.end(content, 'utf-8')
             }
         })
-    }).listen(appConf.port, callback)
+    })
+    server.listen(appConf.port)
+    server.on('listening', function() {
+        appConf.port = server.address().port
+
+        callback(null)
+    })
 }
 
 
