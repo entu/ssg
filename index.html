@@ -104,8 +104,7 @@
                     body: `Server started at ${serverUrl}`
                 })
                 myNotification.onclick = () => {
-                    shell.openExternal()
-                    console.log('Notification clicked')
+                    shell.openExternal(serverUrl)
                 }
 
                 renderer.watchFiles(callback)

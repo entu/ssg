@@ -1,5 +1,6 @@
 {
   "name": "entu-cms",
+  "productName": "Entu CMS",
   "version": "0.6.0",
   "author": "Argo Roots <argo@roots.ee>",
   "description": "Simple (Jade) filebased CMS",
@@ -28,6 +29,7 @@
     "node": "4.x"
   },
   "dependencies": {
+    "async": "^2.0.0-rc.6",
     "chokidar": "^1.5.0",
     "fs-extra": "^0.30.0",
     "jade": "^1.11.0",
