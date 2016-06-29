@@ -1,0 +1,11 @@
+source: ./source
+build: ./
+assets: ./assets
+basePath: /
+assetsPath: /assets/
+jade:
+    basedir: ./source/_templates
+    pretty: false
+stylus:
+    pretty: false
+port: 4000
