@@ -1,10 +1,6 @@
-[![npm version](https://badge.fury.io/js/entu-cms.svg)](https://badge.fury.io/js/entu-cms)
-[![Dependency Status](https://david-dm.org/argoroots/entu-cms.svg)](https://david-dm.org/argoroots/entu-cms)
-[![Codacy Badge](https://api.codacy.com/project/badge/grade/66531026074a471897b076fb91a74601)](https://www.codacy.com/app/argoroots/entu-cms)
+![Screenshot](/assets/screenshot.png "Screenshot")
 
-
-
-![Screenshot](https://raw.githubusercontent.com/argoroots/entu-cms/gh-pages/screenshot.png "Screenshot")
+## Benefits
 
 - Simple file based CMS.
 - Generate static HTML files from [Jade](http://jade-lang.com) templates.
@@ -14,7 +10,6 @@
 - ...
 
 
-
 ## Installation and usage
 
 Download [latest build](https://github.com/argoroots/entu-cms/releases), unzip and run. Chose config.yaml file and it will:
@@ -22,7 +17,6 @@ Download [latest build](https://github.com/argoroots/entu-cms/releases), unzip a
 1. generate HTML/CSS files
 2. start server on localhost
 3. monitor source folder for changes and (re)generate necessary HTML/CSS.
-
 
 
 ### Configuration
@@ -50,22 +44,24 @@ Sites build process is configurable by Yaml file and its path must be first argu
 - __port__  
   What port to use for serving on localhost.
 
-##### Example build configuration file:
-    locales:
-      - en
-      - et
-    source: ./source
-    build: ./build
-    assets: ./assets
-    basePath: /
-    assetsPath: /assets/
-    jade:
-      basedir: ./source/_templates
-      pretty: false
-    stylus:
-      pretty: false
-    port: 4000
+### Example build configuration file:
 
+```
+locales:
+  - en
+  - et
+source: ./source
+build: ./build
+assets: ./assets
+basePath: /
+assetsPath: /assets/
+jade:
+  basedir: ./source/_templates
+  pretty: false
+stylus:
+  pretty: false
+port: 4000
+```
 
 
 ## Content
@@ -74,13 +70,11 @@ Sites build process is configurable by Yaml file and its path must be first argu
 
 Page content is generated from __index.jade__ file. All other files are ignored, but You can use those files for Jade [include](http://jade-lang.com/reference/includes)/[extends](http://jade-lang.com/reference/inheritance). You can put locale identificator to filename (like index.en.jade) for locale speciffic content.
 
-
 ### Page style - style.styl
 
 To generate page CSS use __style.styl__ file. You can put locale identificator to filename (like style.en.styl) for locale speciffic style.
 
 Global, location based, style.css is combined from all style.styl files and put to location root folder (like /en/style.css).
-
 
 ### Page data and configuration - data.yaml
 
@@ -100,64 +94,70 @@ __NB!__ Parameters _page.aliases_, _page.redirect_ will not work yet.
 
 You can put locale identificator to filename (like data.en.yaml) for locale speciffic content. Other locales _page_ object is accessible via _page.otherLocales_ object.
 
-##### Example page data.yaml:
-    page:
-      title: Test page
-      path: /testpage1
-      aliases:
-        - /test
-        - /test123
-      redirect: https://github.com
-    someOtherData:
-      - A
-      - B
+### Example page data.yaml:
 
+```
+page:
+  title: Test page
+  path: /testpage1
+  aliases:
+    - /test
+    - /test123
+  redirect: https://github.com
+someOtherData:
+  - A
+  - B
+```
 
 ## On build ...
 
-##### ... source folder like this ...
+### ... source folder like this ...
 
-    - source
-        |- _templates
-        |   |- layout.jade
-        |   +- mixins.jade
-        |
+```
+- source
+    |- _templates
+    |   |- layout.jade
+    |   +- mixins.jade
+    |
+    |- testpage1
+    |   |- data.en.yaml
+    |   |- data.et.yaml
+    |   |- index.jade
+    |   +- style.et.styl
+    |
+    |- testpage2
+    |   |- index.en.jade
+    |   |- index.et.jade
+    |   |- data.yaml
+    |   +- testpage2en
+    |       |- index.en.jade
+    |       +- data.en.yaml
+    |
+    |- index.jade
+    +- style.styl
+```
+
+### ... will be converted to build folder like this
+
+```
+- build
+    |- en
+    |   |- index.html
+    |   |- style.css
+    |   |- testpage1
+    |   |   +- index.html
+    |   |
+    |   +- testpage2
+    |       |- index.html
+    |       +- testpage2en
+    |           +- index.html
+    |
+    +- et
+        |- index.html
+        |- style.css
         |- testpage1
-        |   |- data.en.yaml
-        |   |- data.et.yaml
-        |   |- index.jade
-        |   +- style.et.styl
+        |   +- index.html
         |
-        |- testpage2
-        |   |- index.en.jade
-        |   |- index.et.jade
-        |   |- data.yaml
-        |   +- testpage2en
-        |       |- index.en.jade
-        |       +- data.en.yaml
-        |
-        |- index.jade
-        +- style.styl
-
-##### ... will be converted to build folder like this
-
-    - build
-        |- en
-        |   |- index.html
-        |   |- style.css
-        |   |- testpage1
-        |   |   +- index.html
-        |   |
-        |   +- testpage2
-        |       |- index.html
-        |       +- testpage2en
-        |           +- index.html
-        |
-        +- et
-            |- index.html
-            |- style.css
-            |- testpage1
-            |   +- index.html
-            |
-            +- testpage2
-                +- index.html
+        +- testpage2
+            +- index.html
+```
