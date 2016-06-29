@@ -78,7 +78,8 @@
     </body>
 
     <script>
-        const {app, dialog, shell} = require('electron').remote
+        const {remote} = require('electron')
+        const {app, dialog, shell} = remote
         const renderer = require('./renderer.js')
         const async = require('async')
 
@@ -134,5 +135,13 @@
                 })
             }
         })
+
+        document.addEventListener('keydown', function (e) {
+    		if (e.which === 123) {
+    			remote.getCurrentWindow().toggleDevTools()
+    		} else if (e.which === 116) {
+    			location.reload()
+    		}
+    	})
     </script>
 </html>
