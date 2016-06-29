@@ -204,7 +204,7 @@ exports.openConfFile = function(appConfFile, callback) {
     try {
         appConf = yaml.safeLoad(fs.readFileSync(appConfFile, 'utf8'))
 
-        op.ensureExists(appConf, 'locales', [])
+        op.ensureExists(appConf, 'locales', [''])
         op.ensureExists(appConf, 'source', path.join(__dirname, 'source'))
         op.ensureExists(appConf, 'build', path.join(__dirname, 'build'))
         op.ensureExists(appConf, 'assets', path.join(__dirname, 'assets'))
