@@ -3,7 +3,8 @@
 ## Benefits
 
 - Simple file based CMS.
-- Generate static HTML files from [Jade](http://jade-lang.com) templates.
+- Use Your favorite tools/editors.
+- Generate static HTML files from [Jade](http://jade-lang.com) templates or [Markdown](https://en.wikipedia.org/wiki/Markdown).
 - Generate site CSS from [Stylus](http://stylus-lang.com) files.
 - Pass data to templates with [Yaml](http://yaml.org) files.
 - Use locale identificator in filenames to generate locale specific content.
