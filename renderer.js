@@ -299,7 +299,7 @@ exports.watchFiles = function (callback) {
     chokidar.watch(appConf.source + '/**/index*.jade', { ignored: '*/_*' }).on('all', function (fileEvent, filePath) {
         makeHTML(filePath, function (err, file) {
             if(err) {
-                console.error(fileEvent.toUpperCase() + ' ERROR:', filePath, '>', e.toString())
+                console.error(fileEvent.toUpperCase() + ' ERROR:', filePath, '>', err.toString())
             } else {
                 console.log(fileEvent.toUpperCase() + ':', filePath, '>', file)
             }
@@ -317,7 +317,7 @@ exports.watchFiles = function (callback) {
 
             makeHTML(files[i], function (err, file) {
                 if(err) {
-                    console.error(fileEvent.toUpperCase() + ' ERROR:', files[i], '>', e.toString())
+                    console.error(fileEvent.toUpperCase() + ' ERROR:', files[i], '>', err.toString())
                 } else {
                     console.log(fileEvent.toUpperCase() + ':', files[i], '>', file)
                 }
@@ -329,7 +329,7 @@ exports.watchFiles = function (callback) {
     chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*', ignoreInitial: true }).on('all', function (fileEvent, filePath) {
         makeHTML(filePath, function (err, file) {
             if(err) {
-                console.error(fileEvent.toUpperCase() + ' ERROR:', filePath, '>', e.toString())
+                console.error(fileEvent.toUpperCase() + ' ERROR:', filePath, '>', err.toString())
             } else {
                 console.log(fileEvent.toUpperCase() + ':', filePath, '>', file)
             }
@@ -340,7 +340,7 @@ exports.watchFiles = function (callback) {
     chokidar.watch(appConf.source + '/**/style*.styl', { ignored: '*/_*' }).on('all', function (fileEvent, filePath) {
         makeCSS(filePath, function (err, file) {
             if(err) {
-                console.error(fileEvent.toUpperCase() + ' ERROR:', filePath, '>', e.toString())
+                console.error(fileEvent.toUpperCase() + ' ERROR:', filePath, '>', err.toString())
             } else {
                 console.log(fileEvent.toUpperCase() + ':', filePath, '>', file)
             }
