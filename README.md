@@ -4,7 +4,7 @@
 
 
 
-![Screenshot](https://www.dropbox.com/s/6vlr5lei08s7isw/Entu-CMS.png?dl=1 "Screenshot")
+![Screenshot](https://raw.githubusercontent.com/argoroots/entu-cms/gh-pages/screenshot.png "Screenshot")
 
 - Simple file based CMS.
 - Generate static HTML files from [Jade](http://jade-lang.com) templates.
