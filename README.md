@@ -17,7 +17,7 @@
 
 ## Installation
 
-    npm install entu-cms
+Download [latest build](https://github.com/argoroots/entu-cms/releases), unzip and run.
 
 
 
