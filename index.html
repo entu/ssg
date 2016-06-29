@@ -37,6 +37,10 @@ Jade basedir for simpler include/extend.</li>
 Boolean to set if output HTML is pretty formatted or not.</li>
 <li><strong>stylus.pretty</strong><br>
 Boolean to set if output CSS is pretty formatted or not.</li>
+<li><strong>markdown.breaks</strong><br>
+Convert '\n' in (markdown) paragraphs into &lt;br&gt;</li>
+<li><strong>markdown.html</strong><br>
+Enable HTML tags in (markdown) source</li>
 <li><strong>port</strong><br>
 What port to use for serving on localhost.</li>
 </ul>
@@ -54,6 +58,9 @@ jade:
   pretty: false
 stylus:
   pretty: false
+markdown:
+  breaks: true
+  html: false
 port: 4000
 </code></pre>
 <h2>Content</h2>

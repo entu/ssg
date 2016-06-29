@@ -42,6 +42,10 @@ Sites build process is configurable by Yaml file and its path must be first argu
   Boolean to set if output HTML is pretty formatted or not.
 - __stylus.pretty__  
   Boolean to set if output CSS is pretty formatted or not.
+- __markdown.breaks__  
+  Convert '\n' in (markdown) paragraphs into <br>
+- __markdown.html__  
+  Enable HTML tags in (markdown) source
 - __port__  
   What port to use for serving on localhost.
 
@@ -61,6 +65,9 @@ jade:
   pretty: false
 stylus:
   pretty: false
+markdown:
+  breaks: true
+  html: false
 port: 4000
 ```
 
