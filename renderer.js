@@ -61,23 +61,24 @@ var getYamlFile = function (dirName, fileName, locale, defaultResult) {
 // Generates HTMLs from template
 var appConf = {}
 var jadeDependencies = {}
-var makeHTML = function (fileEvent, filePath) {
-    var folderName = path.dirname(filePath)
-    var fileName = path.basename(filePath)
-    var locales = []
+var makeHTML = function (filePath, callback) {
+    try {
+        var folderName = path.dirname(filePath)
+        var fileName = path.basename(filePath)
+        var outputFiles = []
+        var locales = []
 
-    if (fileName.split('.').length > 2) {
-        locales = [fileName.split('.')[1]]
-    } else {
-        locales = appConf.locales
-    }
+        if (fileName.split('.').length > 2) {
+            locales = [fileName.split('.')[1]]
+        } else {
+            locales = appConf.locales
+        }
 
-    for (var l in locales) {
-        if (!locales.hasOwnProperty(l)) { continue }
+        for (var l in locales) {
+            if (!locales.hasOwnProperty(l)) { continue }
 
-        var locale = locales[l]
+            var locale = locales[l]
 
-        try {
             // Get Jade template
             var jadeFile = getFilePath(folderName, 'index.jade', locale)
             if (!jadeFile) { continue }
@@ -142,33 +143,36 @@ var makeHTML = function (fileEvent, filePath) {
 
             fse.outputFileSync(htmlFile, html)
 
-            console.log(fileEvent.toUpperCase() + ':', filePath.replace(appConf.source, ''), '>', htmlFile.replace(appConf.build, ''))
-        } catch (e) {
-            console.error('ERROR:', filePath.replace(appConf.source, ''), '>', e.message)
+            outputFiles.push(htmlFile)
         }
+
+        callback(null, outputFiles)
+    } catch (e) {
+        callback(e)
     }
 }
 
 
 // Generates CSS from stylus
 var stylesList = {}
-var makeCSS = function (fileEvent, filePath) {
-    var folderName = path.dirname(filePath)
-    var fileName = path.basename(filePath)
-    var locales = []
+var makeCSS = function (filePath, callback) {
+    try {
+        var folderName = path.dirname(filePath)
+        var fileName = path.basename(filePath)
+        var outputFiles = []
+        var locales = []
 
-    if (fileName.split('.').length > 2) {
-        locales = [fileName.split('.')[1]]
-    } else {
-        locales = appConf.locales
-    }
+        if (fileName.split('.').length > 2) {
+            locales = [fileName.split('.')[1]]
+        } else {
+            locales = appConf.locales
+        }
 
-    for (var l in locales) {
-        if (!locales.hasOwnProperty(l)) { continue }
+        for (var l in locales) {
+            if (!locales.hasOwnProperty(l)) { continue }
 
-        var locale = locales[l]
+            var locale = locales[l]
 
-        try {
             if (!stylesList[locales[l]]) { stylesList[locale] = {} }
 
             var styleFile = getFilePath(folderName, 'style.styl', locale)
@@ -191,16 +195,18 @@ var makeCSS = function (fileEvent, filePath) {
 
             fse.outputFileSync(cssFile, css.join('\n'))
 
-            console.log(fileEvent.toUpperCase() + ':', filePath.replace(appConf.source, ''), '>', cssFile.replace(appConf.build, ''))
-        } catch (e) {
-            console.error('ERROR:', filePath.replace(appConf.source, ''), '>', e.message)
+            outputFiles.push(cssFile)
         }
+
+        callback(null, outputFiles)
+    } catch (e) {
+        callback(e)
     }
 }
 
 
 // Open config.yaml and set config variables
-exports.openConfFile = function(appConfFile, callback) {
+exports.openConfFile = function (appConfFile, callback) {
     try {
         appConf = yaml.safeLoad(fs.readFileSync(appConfFile, 'utf8'))
 
@@ -243,50 +249,62 @@ exports.openConfFile = function(appConfFile, callback) {
 
         callback(null, appConf)
     } catch (e) {
-        callback(new Error('Invalid configuration file'))
+        callback(e)
     }
 }
 
 
-exports.startServer = function(callback) {
-    var server = http.createServer(function (request, response) {
-        var filePath = request.url.split('?')[0]
-        if (filePath.substr(0, appConf.assetsPath.length) === appConf.assetsPath) {
-            filePath = path.join(appConf.assets, filePath.substr(appConf.assetsPath.length - 1))
-        } else {
-            filePath = path.join(appConf.build, filePath)
-        }
-
-        if (filePath.indexOf('.') === -1) {
-            filePath = path.join(filePath, 'index.html')
-        }
-
-        var contentType = mime.lookup(path.extname(filePath)) || 'application/octet-stream'
-
-        fs.readFile(filePath, function (error, content) {
-            if (error) {
-                response.writeHead(404, { 'Content-Type': 'text/plain' })
-                response.end('404\n')
-                console.error(error.code + ':', filePath.replace(appConf.build, ''))
+exports.startServer = function (callback) {
+    try {
+        var server = http.createServer(function (request, response) {
+            var filePath = request.url.split('?')[0]
+            if (filePath.substr(0, appConf.assetsPath.length) === appConf.assetsPath) {
+                filePath = path.join(appConf.assets, filePath.substr(appConf.assetsPath.length - 1))
             } else {
-                response.writeHead(200, { 'Content-Type': contentType })
-                response.end(content, 'utf-8')
+                filePath = path.join(appConf.build, filePath)
             }
-        })
-    })
-    server.listen(appConf.port)
-    server.on('listening', function() {
-        appConf.port = server.address().port
 
-        callback(null)
-    })
+            if (filePath.indexOf('.') === -1) {
+                filePath = path.join(filePath, 'index.html')
+            }
+
+            var contentType = mime.lookup(path.extname(filePath)) || 'application/octet-stream'
+
+            fs.readFile(filePath, function (error, content) {
+                if (error) {
+                    response.writeHead(404, { 'Content-Type': 'text/plain' })
+                    response.end('404\n')
+                    console.error(error.code + ':', filePath.replace(appConf.build, ''))
+                } else {
+                    response.writeHead(200, { 'Content-Type': contentType })
+                    response.end(content, 'utf-8')
+                }
+            })
+        })
+        server.listen(appConf.port)
+        server.on('listening', function () {
+            appConf.port = server.address().port
+
+            callback(null)
+        })
+    } catch (e) {
+        callback(e)
+    }
 }
 
 
 var dependenciesWatcher
-exports.watchFiles = function(callback) {
+exports.watchFiles = function (callback) {
     // Start to watch Jade files
-    chokidar.watch(appConf.source + '/**/index*.jade', { ignored: '*/_*' }).on('all', makeHTML)
+    chokidar.watch(appConf.source + '/**/index*.jade', { ignored: '*/_*' }).on('all', function (fileEvent, filePath) {
+        makeHTML(filePath, function (err, file) {
+            if(err) {
+                console.error(fileEvent.toUpperCase() + ' ERROR:', filePath, '>', e.toString())
+            } else {
+                console.log(fileEvent.toUpperCase() + ':', filePath, '>', file)
+            }
+        })
+    })
 
     // Start to watch Jade dependencies
     dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', function (fileEvent, filePath) {
@@ -297,15 +315,37 @@ exports.watchFiles = function(callback) {
         for (var i in files) {
             if (!files.hasOwnProperty(i)) { continue }
 
-            makeHTML('dependency', files[i])
+            makeHTML(files[i], function (err, file) {
+                if(err) {
+                    console.error(fileEvent.toUpperCase() + ' ERROR:', files[i], '>', e.toString())
+                } else {
+                    console.log(fileEvent.toUpperCase() + ':', files[i], '>', file)
+                }
+            })
         }
     })
 
     // Start to watch Yaml files
-    chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*', ignoreInitial: true }).on('all', makeHTML)
+    chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*', ignoreInitial: true }).on('all', function (fileEvent, filePath) {
+        makeHTML(filePath, function (err, file) {
+            if(err) {
+                console.error(fileEvent.toUpperCase() + ' ERROR:', filePath, '>', e.toString())
+            } else {
+                console.log(fileEvent.toUpperCase() + ':', filePath, '>', file)
+            }
+        })
+    })
 
     // Start to watch style files changes
-    chokidar.watch(appConf.source + '/**/style*.styl', { ignored: '*/_*' }).on('all', makeCSS)
+    chokidar.watch(appConf.source + '/**/style*.styl', { ignored: '*/_*' }).on('all', function (fileEvent, filePath) {
+        makeCSS(filePath, function (err, file) {
+            if(err) {
+                console.error(fileEvent.toUpperCase() + ' ERROR:', filePath, '>', e.toString())
+            } else {
+                console.log(fileEvent.toUpperCase() + ':', filePath, '>', file)
+            }
+        })
+    })
 
     callback(null)
 }
