@@ -15,7 +15,7 @@
 
 
 
-## Installation
+## Installation and usage
 
 Download [latest build](https://github.com/argoroots/entu-cms/releases), unzip and run. Chose config.yaml file and it will:
 
