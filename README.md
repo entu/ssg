@@ -1,7 +1,7 @@
 # Entu CMS
 
 [![npm version](https://badge.fury.io/js/entu-cms.svg)](https://badge.fury.io/js/entu-cms) [![Dependency Status](https://david-dm.org/argoroots/entu-cms.svg)](https://david-dm.org/argoroots/entu-cms) [![Codacy Badge](https://api.codacy.com/project/badge/grade/66531026074a471897b076fb91a74601)](https://www.codacy.com/app/argoroots/entu-cms)
- 
+
 - Simple file based CMS.
 - Use Your favorite tools/editors.
 - Generate static HTML files from [Jade](http://jade-lang.com) templates or [Markdown](https://en.wikipedia.org/wiki/Markdown).
@@ -42,6 +42,10 @@ Sites build process is configurable by Yaml file and its path must be first argu
   Boolean to set if output HTML is pretty formatted or not.
 - __stylus.pretty__  
   Boolean to set if output CSS is pretty formatted or not.
+- __markdown.breaks__  
+  Convert '\n' in paragraphs into <br>
+- __markdown.html__  
+  Enable HTML tags in markdown source
 - __port__  
   What port to use for serving on localhost.
 

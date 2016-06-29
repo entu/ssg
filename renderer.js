@@ -5,22 +5,12 @@ var fs       = require('fs')
 var fse      = require('fs-extra')
 var http     = require('http')
 var jade     = require('jade')
-var md       = require('markdown-it')({ breaks: true, html: true })
+var md       = require('markdown-it')
 var mime     = require('mime-types')
 var op       = require('object-path')
 var path     = require('path')
 var stylus   = require('stylus')
 var yaml     = require('js-yaml')
-
-
-// Markdown-it wrapper to handle empty text
-var markdown = function (text) {
-    if (text) {
-        return md.render(text).replace(/\r?\n|\r/g, '')
-    }
-
-    return ''
-}
 
 
 // Returns file path with locale if exists
@@ -121,7 +111,13 @@ var makeHTML = function (filePath, callback) {
             }
 
             data.G = appConf.data[locale]
-            data.G.md = markdown
+            data.G.md = function (text) {
+                if (text) {
+                    return md({ breaks: appConf.markdown.breaks, html: appConf.markdown.html }).render(text).replace(/\r?\n|\r/g, '')
+                } else {
+                    return ''
+                }
+            }
 
             var compiledJade = jade.compileFile(jadeFile, data)
             var html = compiledJade(data)
@@ -216,6 +212,8 @@ exports.openConfFile = function (appConfFile, callback) {
         op.ensureExists(appConf, 'assets', path.join(__dirname, 'assets'))
         op.ensureExists(appConf, 'basePath', '/')
         op.ensureExists(appConf, 'assetsPath', '/assets')
+        op.ensureExists(appConf, 'markdown.breaks', true)
+        op.ensureExists(appConf, 'markdown.html', false)
         op.ensureExists(appConf, 'jade.basedir', path.join(__dirname, 'source'))
         op.ensureExists(appConf, 'jade.pretty', false)
         op.ensureExists(appConf, 'stylus.pretty', false)
