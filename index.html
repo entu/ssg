@@ -7,8 +7,9 @@
             body {
                 height: 100%;
                 padding: 40px 10px 0px 10px;
-                font-family: 'Helvetica Neue', Roboto, sans-serif;
+                font-family: 'Helvetica Neue', Verdana, ariel, sans-serif;
                 font-weight: 200;
+                letter-spacing: 0.4px;
                 color: #182530;
                 -webkit-app-region: drag;
             }
@@ -45,12 +46,22 @@
                 padding: 10px;
                 text-align: center;
                 text-decoration: none;
+                font-size: 16px;
+                line-height: 20px;
                 color: #9babb7;
                 border: 1px solid #9babb7;
             }
             .button:hover {
                 color: #182530;
                 border: 1px solid #182530;
+            }
+            .button span {
+                display: block;
+                text-align: center;
+                font-size: 12px;
+                font-weight: 100;
+                line-height: 16px;
+                color: #909090;
             }
         </style>
     </head>
@@ -59,9 +70,9 @@
 
         <h2 id="title"></h2>
 
-        <a class="button" href="javascript:shell.openExternal(serverUrl)">Preview webpage</a>
-        <a class="button" href="javascript:shell.showItemInFolder(appConf.source)">Source folder</a>
-        <a class="button" href="javascript:shell.showItemInFolder(appConf.build)">Build folder</a>
+        <a class="button" href="javascript:shell.openExternal(serverUrl)">Preview webpage<span id="preview"></span></a>
+        <a class="button" href="javascript:shell.showItemInFolder(appConf.source)">Open source folder<span id="source"></span></a>
+        <a class="button" href="javascript:shell.showItemInFolder(appConf.build)">Open build folder<span id="build"></span></a>
 
         <footer id="footer"></footer>
     </body>
@@ -95,10 +106,13 @@
             function(conf, callback) {
                 appConf = conf
                 document.getElementById('title').innerHTML = confFile.replace(app.getPath('home'), '~')
+                document.getElementById('source').innerHTML = appConf.source.replace(app.getPath('home'), '~')
+                document.getElementById('build').innerHTML = appConf.build.replace(app.getPath('home'), '~')
                 renderer.startServer(callback)
             },
             function(callback) {
                 serverUrl = `http://localhost:${appConf.port}/${appConf.locales[0]}`
+                document.getElementById('preview').innerHTML = serverUrl
 
                 let myNotification = new Notification('Entu CMS', {
                     body: `Server started at ${serverUrl}`
