@@ -17,18 +17,11 @@
 
 ## Installation
 
-Download [latest build](https://github.com/argoroots/entu-cms/releases), unzip and run.
+Download [latest build](https://github.com/argoroots/entu-cms/releases), unzip and run. Chose config.yaml file and it will:
 
-
-
-## Usage
-
-    node entu-cms.js ./config.yaml
-
-This command will:
-1. generates HTML/CSS files
-2. starts server on localhost
-3. monitors source folder for changes and (re)generate necessary HTML/CSS.
+1. generate HTML/CSS files
+2. start server on localhost
+3. monitor source folder for changes and (re)generate necessary HTML/CSS.
 
 
 
