@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
+
+<head>
     <meta charset="UTF-8">
     <title>Entu CMS by argoroots</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,80 +9,79 @@
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-  </head>
-  <body>
+</head>
+
+<body>
     <section class="page-header">
-      <h1 class="project-name">Entu CMS</h1>
-      <h2 class="project-tagline">Simple file based CMS</h2>
-      <a href="https://github.com/argoroots/entu-cms" class="btn">View on GitHub</a>
-      <a href="https://github.com/argoroots/entu-cms/releases/latest" class="btn">Download</a>
+        <h1 class="project-name">Entu CMS</h1>
+        <h2 class="project-tagline">Simple file based CMS</h2>
+        <a href="https://github.com/argoroots/entu-cms" class="btn">View on GitHub</a>
+        <a href="https://github.com/argoroots/entu-cms/releases/latest" class="btn">Download</a>
     </section>
 
     <section class="main-content">
-      <p><img src="https://www.dropbox.com/s/6vlr5lei08s7isw/Entu-CMS.png?dl=1" alt="Screenshot" title="Screenshot"></p>
+        <p><img src="https://www.dropbox.com/s/6vlr5lei08s7isw/Entu-CMS.png?dl=1" alt="Screenshot" title="Screenshot"></p>
 
-<ul>
-<li>Simple file based CMS.</li>
-<li>Generate static HTML files from <a href="http://jade-lang.com">Jade</a> templates.</li>
-<li>Generate site CSS from <a href="http://stylus-lang.com">Stylus</a> files.</li>
-<li>Pass data to templates with <a href="http://yaml.org">Yaml</a> files.</li>
-<li>Use locale identificator in filenames to generate locale specific content.</li>
-<li>...</li>
-</ul>
+        <ul>
+            <li>Simple file based CMS.</li>
+            <li>Generate static HTML files from <a href="http://jade-lang.com">Jade</a> templates.</li>
+            <li>Generate site CSS from <a href="http://stylus-lang.com">Stylus</a> files.</li>
+            <li>Pass data to templates with <a href="http://yaml.org">Yaml</a> files.</li>
+            <li>Use locale identificator in filenames to generate locale specific content.</li>
+            <li>...</li>
+        </ul>
 
-<h2>
-<a id="installation-and-usage" class="anchor" href="#installation-and-usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation and usage</h2>
+        <h2><a id="installation-and-usage" class="anchor" href="#installation-and-usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation and usage</h2>
 
-<p>Download <a href="https://github.com/argoroots/entu-cms/releases">latest build</a>, unzip and run. Chose config.yaml file and it will:</p>
+        <p>Download <a href="https://github.com/argoroots/entu-cms/releases/latest">latest build</a>, unzip and run. Chose config.yaml file and it will:</p>
 
-<ol>
-<li>generate HTML/CSS files</li>
-<li>start server on localhost</li>
-<li>monitor source folder for changes and (re)generate necessary HTML/CSS.</li>
-</ol>
+        <ol>
+            <li>generate HTML/CSS files</li>
+            <li>start server on localhost</li>
+            <li>monitor source folder for changes and (re)generate necessary HTML/CSS.</li>
+        </ol>
 
-<h3>
-<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configuration</h3>
+        <h3><a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Configuration</h3>
 
-<p>Sites build process is configurable by Yaml file and its path must be first argument for entu-cms.js. Required parameters are:</p>
+        <p>Sites build process is configurable by Yaml file and its path must be first argument for entu-cms.js. Required parameters are:</p>
 
-<ul>
-<li>
-<strong>locales</strong><br>
-List of locale folders to generate. You can put locale identificator to filename (like index.en.jade or data.et.yaml) for locale speciffic content.</li>
-<li>
-<strong>source</strong><br>
-Folder with source files (realtive to build config.yaml). Folders beginning with underscore are ignored.</li>
-<li>
-<strong>build</strong><br>
-Folder to put generated HTML (realtive to build config.yaml).</li>
-<li>
-<strong>assets</strong><br>
-Folder to put static files (JS, images, ...).</li>
-<li>
-<strong>basePath</strong><br>
-...</li>
-<li>
-<strong>assetsPath</strong><br>
-Serving page in localhost will map this url to folder specified in <em>assets</em> parameter.</li>
-<li>
-<strong>jade.basedir</strong><br>
-Jade basedir for simpler include/extend.</li>
-<li>
-<strong>jade.pretty</strong><br>
-Boolean to set if output HTML is pretty formatted or not.</li>
-<li>
-<strong>stylus.pretty</strong><br>
-Boolean to set if output CSS is pretty formatted or not.</li>
-<li>
-<strong>port</strong><br>
-What port to use for serving on localhost.</li>
-</ul>
+        <ul>
+            <li>
+                <strong>locales</strong>
+                <br> List of locale folders to generate. You can put locale identificator to filename (like index.en.jade or data.et.yaml) for locale speciffic content.</li>
+            <li>
+                <strong>source</strong>
+                <br> Folder with source files (realtive to build config.yaml). Folders beginning with underscore are ignored.</li>
+            <li>
+                <strong>build</strong>
+                <br> Folder to put generated HTML (realtive to build config.yaml).</li>
+            <li>
+                <strong>assets</strong>
+                <br> Folder to put static files (JS, images, ...).</li>
+            <li>
+                <strong>basePath</strong>
+                <br> ...
+            </li>
+            <li>
+                <strong>assetsPath</strong>
+                <br> Serving page in localhost will map this url to folder specified in <em>assets</em> parameter.</li>
+            <li>
+                <strong>jade.basedir</strong>
+                <br> Jade basedir for simpler include/extend.</li>
+            <li>
+                <strong>jade.pretty</strong>
+                <br> Boolean to set if output HTML is pretty formatted or not.</li>
+            <li>
+                <strong>stylus.pretty</strong>
+                <br> Boolean to set if output CSS is pretty formatted or not.</li>
+            <li>
+                <strong>port</strong>
+                <br> What port to use for serving on localhost.</li>
+        </ul>
 
-<h5>
-<a id="example-build-configuration-file" class="anchor" href="#example-build-configuration-file" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Example build configuration file:</h5>
+        <h5><a id="example-build-configuration-file" class="anchor" href="#example-build-configuration-file" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Example build configuration file:</h5>
 
-<pre><code>locales:
+        <pre><code>locales:
   - en
   - et
 source: ./source
@@ -97,50 +97,46 @@ stylus:
 port: 4000
 </code></pre>
 
-<h2>
-<a id="content" class="anchor" href="#content" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Content</h2>
+        <h2><a id="content" class="anchor" href="#content" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Content</h2>
 
-<h3>
-<a id="page-content---indexjade" class="anchor" href="#page-content---indexjade" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page content - index.jade</h3>
+        <h3><a id="page-content---indexjade" class="anchor" href="#page-content---indexjade" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page content - index.jade</h3>
 
-<p>Page content is generated from <strong>index.jade</strong> file. All other files are ignored, but You can use those files for Jade <a href="http://jade-lang.com/reference/includes">include</a>/<a href="http://jade-lang.com/reference/inheritance">extends</a>. You can put locale identificator to filename (like index.en.jade) for locale speciffic content.</p>
+        <p>Page content is generated from <strong>index.jade</strong> file. All other files are ignored, but You can use those files for Jade <a href="http://jade-lang.com/reference/includes">include</a>/<a href="http://jade-lang.com/reference/inheritance">extends</a>.
+            You can put locale identificator to filename (like index.en.jade) for locale speciffic content.</p>
 
-<h3>
-<a id="page-style---stylestyl" class="anchor" href="#page-style---stylestyl" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page style - style.styl</h3>
+        <h3><a id="page-style---stylestyl" class="anchor" href="#page-style---stylestyl" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page style - style.styl</h3>
 
-<p>To generate page CSS use <strong>style.styl</strong> file. You can put locale identificator to filename (like style.en.styl) for locale speciffic style.</p>
+        <p>To generate page CSS use <strong>style.styl</strong> file. You can put locale identificator to filename (like style.en.styl) for locale speciffic style.</p>
 
-<p>Global, location based, style.css is combined from all style.styl files and put to location root folder (like /en/style.css).</p>
+        <p>Global, location based, style.css is combined from all style.styl files and put to location root folder (like /en/style.css).</p>
 
-<h3>
-<a id="page-data-and-configuration---datayaml" class="anchor" href="#page-data-and-configuration---datayaml" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page data and configuration - data.yaml</h3>
+        <h3><a id="page-data-and-configuration---datayaml" class="anchor" href="#page-data-and-configuration---datayaml" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Page data and configuration - data.yaml</h3>
 
-<p>To pass data to index.jade use <strong>data.yaml</strong> file. This data is passed to index.jade in object named <em>D</em> (To get property <em>text</em> from data.yaml use <em>D.text</em> in index.jade).</p>
+        <p>To pass data to index.jade use <strong>data.yaml</strong> file. This data is passed to index.jade in object named <em>D</em> (To get property <em>text</em> from data.yaml use <em>D.text</em> in index.jade).</p>
 
-<p>This file can also contain page configuration info. All page parameters must be inside <em>page</em> property. This info is also passed to index.jade in <em>page</em> object.</p>
+        <p>This file can also contain page configuration info. All page parameters must be inside <em>page</em> property. This info is also passed to index.jade in <em>page</em> object.</p>
 
-<p>Some page parameters will change how HTML is generated. Those are:</p>
+        <p>Some page parameters will change how HTML is generated. Those are:</p>
 
-<ul>
-<li>
-<strong>page.path</strong><br>
-If set, it will override folder based path.</li>
-<li>
-<strong>page.aliases</strong><br>
-List of path aliases. Will make redirekt urls to original path.</li>
-<li>
-<strong>page.redirect</strong><br>
-Path or url to redirect (if user visits this page).</li>
-</ul>
+        <ul>
+            <li>
+                <strong>page.path</strong>
+                <br> If set, it will override folder based path.</li>
+            <li>
+                <strong>page.aliases</strong>
+                <br> List of path aliases. Will make redirekt urls to original path.</li>
+            <li>
+                <strong>page.redirect</strong>
+                <br> Path or url to redirect (if user visits this page).</li>
+        </ul>
 
-<p><strong>NB!</strong> Parameters <em>page.aliases</em>, <em>page.redirect</em> will not work yet.</p>
+        <p><strong>NB!</strong> Parameters <em>page.aliases</em>, <em>page.redirect</em> will not work yet.</p>
 
-<p>You can put locale identificator to filename (like data.en.yaml) for locale speciffic content. Other locales <em>page</em> object is accessible via <em>page.otherLocales</em> object.</p>
+        <p>You can put locale identificator to filename (like data.en.yaml) for locale speciffic content. Other locales <em>page</em> object is accessible via <em>page.otherLocales</em> object.</p>
 
-<h5>
-<a id="example-page-datayaml" class="anchor" href="#example-page-datayaml" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Example page data.yaml:</h5>
+        <h5><a id="example-page-datayaml" class="anchor" href="#example-page-datayaml" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Example page data.yaml:</h5>
 
-<pre><code>page:
+        <pre><code>page:
   title: Test page
   path: /testpage1
   aliases:
@@ -152,13 +148,11 @@ someOtherData:
   - B
 </code></pre>
 
-<h2>
-<a id="on-build-" class="anchor" href="#on-build-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>On build ...</h2>
+        <h2><a id="on-build-" class="anchor" href="#on-build-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>On build ...</h2>
 
-<h5>
-<a id="-source-folder-like-this-" class="anchor" href="#-source-folder-like-this-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>... source folder like this ...</h5>
+        <h5><a id="-source-folder-like-this-" class="anchor" href="#-source-folder-like-this-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>... source folder like this ...</h5>
 
-<pre><code>- source
+        <pre><code>- source
     |- _templates
     |   |- layout.jade
     |   +- mixins.jade
@@ -181,10 +175,9 @@ someOtherData:
     +- style.styl
 </code></pre>
 
-<h5>
-<a id="-will-be-converted-to-build-folder-like-this" class="anchor" href="#-will-be-converted-to-build-folder-like-this" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>... will be converted to build folder like this</h5>
+        <h5><a id="-will-be-converted-to-build-folder-like-this" class="anchor" href="#-will-be-converted-to-build-folder-like-this" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>... will be converted to build folder like this</h5>
 
-<pre><code>- build
+        <pre><code>- build
     |- en
     |   |- index.html
     |   |- style.css
@@ -205,13 +198,9 @@ someOtherData:
         +- testpage2
             +- index.html
 </code></pre>
-
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/argoroots/entu-cms">Entu CMS</a> is maintained by <a href="https://github.com/argoroots">argoroots</a>.</span>
-      </footer>
-
     </section>
 
-  
-  </body>
+
+</body>
+
 </html>
