@@ -10,7 +10,7 @@ var serverUrl = ''
 document.getElementById('tools-footer').innerHTML = app.getVersion()
 
 async.waterfall([
-    function(callback) {
+    function (callback) {
         files = dialog.showOpenDialog({
             properties: ['openFile'],
             filters: [
@@ -20,41 +20,55 @@ async.waterfall([
         if(!files) { app.quit() }
         callback(null, files[0])
     },
-    function(file, callback) {
+    function (file, callback) {
         confFile = file
         renderer.openConfFile(confFile, callback)
     },
-    function(conf, callback) {
-        appConf = conf
-        document.getElementById('title').innerHTML = confFile.replace(app.getPath('home'), '~')
-        document.getElementById('source').innerHTML = appConf.source.replace(app.getPath('home'), '~')
-        document.getElementById('build').innerHTML = appConf.build.replace(app.getPath('home'), '~')
-        renderer.startServer(callback)
-    },
-    function(callback) {
-        serverUrl = `http://localhost:${appConf.port}`
-        document.getElementById('preview').innerHTML = serverUrl
-
-        let myNotification = new Notification('Entu CMS', {
-            body: `Server started at ${serverUrl}`
-        })
-        myNotification.onclick = () => {
-            shell.openExternal(serverUrl)
-        }
-
-        callback(null)
-    }
-], function(err) {
+], function (err, conf) {
     if(err) {
         dialog.showMessageBox({
             type: 'error',
             message: err.toString(),
             buttons: ['OK']
-        }, function() {
+        }, function () {
             app.quit()
         })
     } else {
-        renderer.watchFiles(function(err, data) {
+        appConf = conf
+        document.getElementById('title').innerHTML = confFile.replace(app.getPath('home'), '~')
+        document.getElementById('source').innerHTML = appConf.source.replace(app.getPath('home'), '~')
+        document.getElementById('build').innerHTML = appConf.build.replace(app.getPath('home'), '~')
+
+        renderer.startServer(function (err) {
+            if (err) {
+                var log = document.getElementById('log-table')
+
+                console.log(err);
+
+                log.innerHTML = log.innerHTML + `
+                    <tr class="error">
+                        <td>${err.event}</td>
+                        <td colspan="3">
+                            <a href="javascript:shell.openExternal('${serverUrl+err.source}')">${err.source}</a><br>
+                            <pre>${err.error.toString().trim()}</pre>
+                        </td>
+                    </tr>
+                `
+            } else {
+                serverUrl = `http://localhost:${appConf.port}`
+                document.getElementById('preview').innerHTML = serverUrl
+
+                let myNotification = new Notification('Entu CMS', {
+                    body: `Server started at ${serverUrl}`
+                })
+                myNotification.onclick = () => {
+                    shell.openExternal(serverUrl)
+                }
+            }
+
+        })
+
+        renderer.watchFiles(function (err, data) {
             var log = document.getElementById('log-table')
             if (err) {
                 log.innerHTML = log.innerHTML + `
@@ -62,7 +76,7 @@ async.waterfall([
                         <td>${err.event}</td>
                         <td colspan="3">
                             <a href="javascript:shell.showItemInFolder('${appConf.source+err.source}')">${err.source}</a><br>
-                            <pre>${err.error.toString()}<pre>
+                            <pre>${err.error.toString().trim()}</pre>
                         </td>
                     </tr>
                 `
@@ -91,6 +105,6 @@ document.addEventListener('keydown', function (e) {
 	}
 })
 
-var clearLog = function() {
+var clearLog = function () {
     document.getElementById('log-table').innerHTML = ''
 }

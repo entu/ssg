@@ -252,6 +252,7 @@ exports.openConfFile = function (appConfFile, callback) {
 }
 
 
+// Start web server
 exports.startServer = function (callback) {
     try {
         var server = http.createServer(function (request, response) {
@@ -268,11 +269,15 @@ exports.startServer = function (callback) {
 
             var contentType = mime.lookup(path.extname(filePath)) || 'application/octet-stream'
 
-            fs.readFile(filePath, function (error, content) {
-                if (error) {
+            fs.readFile(filePath, function (err, content) {
+                if (err) {
                     response.writeHead(404, { 'Content-Type': 'text/plain' })
                     response.end('404\n')
-                    console.error(error.code + ':', filePath.replace(appConf.build, ''))
+                    callback({
+                        event: err.code,
+                        source: filePath.replace(appConf.build, '').replace(appConf.assets, appConf.assetsPath),
+                        error: err.message.replace(`${err.code}: `, '')
+                    })
                 } else {
                     response.writeHead(200, { 'Content-Type': contentType })
                     response.end(content, 'utf-8')
@@ -291,6 +296,7 @@ exports.startServer = function (callback) {
 }
 
 
+// Watch source files
 var dependenciesWatcher
 exports.watchFiles = function (callback) {
     // Start to watch Jade files
