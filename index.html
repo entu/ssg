@@ -6,7 +6,7 @@
         <style media="screen">
             body {
                 height: 100%;
-                padding: 40px 10px 0px 10px;
+                padding: 0px;
                 font-family: 'Helvetica Neue', Verdana, ariel, sans-serif;
                 font-weight: 200;
                 letter-spacing: 0.4px;
@@ -14,7 +14,7 @@
                 -webkit-app-region: drag;
             }
             h1 {
-                margin: 0px;
+                margin: 40px 0px 0px 0px;
                 padding: 0px;
                 font-size: 48px;
                 font-weight: 100;
@@ -32,12 +32,48 @@
             }
             footer {
                 position: fixed;
-                left: 10px;
+                left: 0px;
                 bottom: 10px;
-                right: 10px;
+                width: 400px;
                 text-align: center;
                 font-size: 12px;
                 font-weight: 100;
+                -webkit-app-region: drag;
+                -webkit-user-select: none;
+                user-select: none;
+                cursor: default;
+            }
+            #tools {
+                position: fixed;
+                top: 0px;
+                left: 0px;
+                bottom: 0px;
+                width: 400px;
+                background: #F4F4F4;
+                -webkit-app-region: drag;
+                -webkit-user-select: none;
+                user-select: none;
+                cursor: default;
+            }
+            #log {
+                position: fixed;
+                top: 0px;
+                right: 0px;
+                bottom: 0px;
+                left: 401px;
+                padding: 10px;
+                /*border-left: 1px solid #A4A9AD;*/
+                font-size: 12px;
+                line-height: 14px;
+                overflow: scroll;
+            }
+            #log p {
+                margin: 0px;
+                padding: 2px 0px;
+                white-space: nowrap;
+            }
+            #log .error {
+                color: red;
             }
             .button {
                 display: block;
@@ -48,8 +84,10 @@
                 text-decoration: none;
                 font-size: 16px;
                 line-height: 20px;
-                color: #9babb7;
-                border: 1px solid #9babb7;
+                color: #A4A9AD;
+                background: #ffffff;
+                border: 1px solid #A4A9AD;
+                z-index: 100;
             }
             .button:hover {
                 color: #182530;
@@ -66,13 +104,18 @@
         </style>
     </head>
     <body>
-        <h1>Entu CMS</h1>
+        <div id="tools">
+            <h1>Entu CMS</h1>
 
-        <h2 id="title"></h2>
+            <h2 id="title"></h2>
 
-        <a class="button" href="javascript:shell.openExternal(serverUrl)">Preview webpage<span id="preview"></span></a>
-        <a class="button" href="javascript:shell.showItemInFolder(appConf.source)">Open source folder<span id="source"></span></a>
-        <a class="button" href="javascript:shell.showItemInFolder(appConf.build)">Open build folder<span id="build"></span></a>
+            <a class="button" href="javascript:shell.openExternal(serverUrl)">Preview webpage<span id="preview"></span></a>
+            <a class="button" href="javascript:shell.showItemInFolder(appConf.source)">Open source folder<span id="source"></span></a>
+            <a class="button" href="javascript:shell.showItemInFolder(appConf.build)">Open build folder<span id="build"></span></a>
+        </div>
+        <div id="log">
+
+        </div>
 
         <footer id="footer"></footer>
     </body>
@@ -122,7 +165,7 @@
                     shell.openExternal(serverUrl)
                 }
 
-                renderer.watchFiles(callback)
+                callback(null)
             }
         ], function(err) {
             if(err) {
@@ -132,6 +175,22 @@
                     buttons: ['OK']
                 }, function() {
                     app.quit()
+                })
+            } else {
+                renderer.watchFiles(function(err, data) {
+                    var log = document.getElementById('log')
+                    if (err) {
+                        log.innerHTML = log.innerHTML + '<p class="error">' + err.event + ': ' + err.source + ' > ' + err.error.toString() + '</p>'
+                    } else {
+                        for (var i = 0; i < data.build.length; i++) {
+
+                            log.innerHTML = log.innerHTML + '<p class="log">' + data.event + ': ' + data.source + ' > ' + data.build[i] + '</p>'
+                        }
+                    }
+                    log.scrollTop = log.scrollHeight
+                    log.style.display = 'none'
+                    log.style.display = 'block'
+                    console.log(err)
                 })
             }
         })

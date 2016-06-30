@@ -139,7 +139,7 @@ var makeHTML = function (filePath, callback) {
 
             fse.outputFileSync(htmlFile, html)
 
-            outputFiles.push(htmlFile)
+            outputFiles.push(htmlFile.replace(appConf.build, ''))
         }
 
         callback(null, outputFiles)
@@ -191,7 +191,7 @@ var makeCSS = function (filePath, callback) {
 
             fse.outputFileSync(cssFile, css.join('\n'))
 
-            outputFiles.push(cssFile)
+            outputFiles.push(cssFile.replace(appConf.build, ''))
         }
 
         callback(null, outputFiles)
@@ -297,17 +297,23 @@ exports.watchFiles = function (callback) {
     chokidar.watch(appConf.source + '/**/index*.jade', { ignored: '*/_*' }).on('all', function (fileEvent, filePath) {
         makeHTML(filePath, function (err, file) {
             if(err) {
-                console.error(fileEvent.toUpperCase() + ' ERROR:', filePath, '>', err.toString())
+                callback({
+                    event: fileEvent.toUpperCase(),
+                    source: filePath.replace(appConf.source, ''),
+                    error: err
+                })
             } else {
-                console.log(fileEvent.toUpperCase() + ':', filePath, '>', file)
+                callback(null, {
+                    event: fileEvent.toUpperCase(),
+                    source: filePath.replace(appConf.source, ''),
+                    build: file
+                })
             }
         })
     })
 
     // Start to watch Jade dependencies
     dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', function (fileEvent, filePath) {
-        console.log('DEPENDENCY:', filePath.replace(appConf.source, ''))
-
         var files = op.get(jadeDependencies, filePath.replace(appConf.source, '').replace('.jade', ''))
 
         for (var i in files) {
@@ -315,9 +321,17 @@ exports.watchFiles = function (callback) {
 
             makeHTML(files[i], function (err, file) {
                 if(err) {
-                    console.error(fileEvent.toUpperCase() + ' ERROR:', files[i], '>', err.toString())
+                    callback({
+                        event: fileEvent.toUpperCase(),
+                        source: files[i],
+                        error: err
+                    })
                 } else {
-                    console.log(fileEvent.toUpperCase() + ':', files[i], '>', file)
+                    callback(null, {
+                        event: fileEvent.toUpperCase(),
+                        source: files[i],
+                        build: file
+                    })
                 }
             })
         }
@@ -327,9 +341,17 @@ exports.watchFiles = function (callback) {
     chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*', ignoreInitial: true }).on('all', function (fileEvent, filePath) {
         makeHTML(filePath, function (err, file) {
             if(err) {
-                console.error(fileEvent.toUpperCase() + ' ERROR:', filePath, '>', err.toString())
+                callback({
+                    event: fileEvent.toUpperCase(),
+                    source: filePath.replace(appConf.source, ''),
+                    error: err
+                })
             } else {
-                console.log(fileEvent.toUpperCase() + ':', filePath, '>', file)
+                callback(null, {
+                    event: fileEvent.toUpperCase(),
+                    source: filePath.replace(appConf.source, ''),
+                    build: file
+                })
             }
         })
     })
@@ -338,12 +360,18 @@ exports.watchFiles = function (callback) {
     chokidar.watch(appConf.source + '/**/style*.styl', { ignored: '*/_*' }).on('all', function (fileEvent, filePath) {
         makeCSS(filePath, function (err, file) {
             if(err) {
-                console.error(fileEvent.toUpperCase() + ' ERROR:', filePath, '>', err.toString())
+                callback({
+                    event: fileEvent.toUpperCase(),
+                    source: filePath.replace(appConf.source, ''),
+                    error: err
+                })
             } else {
-                console.log(fileEvent.toUpperCase() + ':', filePath, '>', file)
+                callback(null, {
+                    event: fileEvent.toUpperCase(),
+                    source: filePath.replace(appConf.source, ''),
+                    build: file
+                })
             }
         })
     })
-
-    callback(null)
 }

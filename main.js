@@ -11,10 +11,10 @@ let mainWindow
 function createWindow () {
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        width: 500,
-        height: 450,
-        resizable: false,
-        fullscreen: false,
+        width: 1024,
+        height: 430,
+        // resizable: false,
+        // fullscreen: false,
         titleBarStyle: 'hidden',
         title: 'Entu CMS'
     })
