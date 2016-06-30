@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Entu CMS</title>
+        <link href="style.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <div id="tools">
+            <h1>Entu CMS</h1>
+            <h2 id="title"></h2>
+            <a class="button" href="javascript:shell.openExternal(serverUrl)">Preview webpage<span id="preview"></span></a>
+            <a class="button" href="javascript:shell.showItemInFolder(appConf.source)">Open source folder<span id="source"></span></a>
+            <a class="button" href="javascript:shell.showItemInFolder(appConf.build)">Open build folder<span id="build"></span></a>
+        </div>
+        <div id="tools-footer"></div>
+        <div id="log">
+            <table cellspacing=0>
+                <tbody id="log-table">
+                </tbody>
+            </table>
+        </div>
+        <div id="log-footer">
+            <a href="javascript:clearLog()">clear log</a>
+        </div>
+    </body>
+    <script src="script.js" charset="utf-8"></script>
+</html>
