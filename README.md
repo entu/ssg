@@ -13,7 +13,7 @@
 
 ## Installation and usage
 
-Download [latest build](https://github.com/argoroots/entu-cms/releases), unzip and run. Chose config.yaml file and it will:
+Download [latest build](https://github.com/argoroots/entu-cms/releases/latest), unzip and run. Choose config.yaml file and it will:
 
 1. generate HTML/CSS files
 2. start server on localhost
