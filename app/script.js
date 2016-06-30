@@ -5,10 +5,20 @@ const async = require('async')
 
 var confFile = ''
 var appConf = {}
+var serverStarted = false
 var serverUrl = ''
 
 
 document.getElementById('tools-footer').innerHTML = app.getVersion()
+
+
+document.addEventListener('keydown', function (e) {
+	if (e.which === 123) {
+		remote.getCurrentWindow().toggleDevTools()
+	} else if (e.which === 116) {
+		location.reload()
+	}
+})
 
 
 async.waterfall([
@@ -37,31 +47,12 @@ async.waterfall([
         })
     } else {
         appConf = conf
+        serverUrl = `http://localhost:${appConf.port}`
+
+        document.getElementById('preview').innerHTML = serverUrl
         document.getElementById('title').innerHTML = confFile.replace(app.getPath('home'), '~')
         document.getElementById('source').innerHTML = appConf.source.replace(app.getPath('home'), '~')
         document.getElementById('build').innerHTML = appConf.build.replace(app.getPath('home'), '~')
-
-        renderer.startServer(function (err) {
-            if (err) {
-                addLogError(
-                    err.event,
-                    err.source,
-                    `javascript:shell.openExternal('${serverUrl+err.source}')`,
-                    err.error.toString().trim()
-                )
-            } else {
-                serverUrl = `http://localhost:${appConf.port}`
-                document.getElementById('preview').innerHTML = serverUrl
-
-                let myNotification = new Notification('Entu CMS', {
-                    body: `Server started at ${serverUrl}`
-                })
-                myNotification.onclick = () => {
-                    shell.openExternal(serverUrl)
-                }
-            }
-
-        })
 
         renderer.watchFiles(function (err, data) {
             if (err) {
@@ -78,7 +69,7 @@ async.waterfall([
                         data.source,
                         `javascript:shell.showItemInFolder('${appConf.source+data.source}')`,
                         data.build[i].replace('/index.html', ''),
-                        `javascript:shell.openExternal('${serverUrl+data.build[i].replace('index.html', '')}')`
+                        `javascript:openUrl('${serverUrl+data.build[i].replace('index.html', '')}')`
                     )
                 }
             }
@@ -87,13 +78,34 @@ async.waterfall([
 })
 
 
-document.addEventListener('keydown', function (e) {
-	if (e.which === 123) {
-		remote.getCurrentWindow().toggleDevTools()
-	} else if (e.which === 116) {
-		location.reload()
-	}
-})
+var openUrl = function (url) {
+    if (serverStarted) {
+        shell.openExternal(url)
+        return
+    }
+
+    renderer.startServer(function (err) {
+        if (err) {
+            addLogError(
+                err.event,
+                err.source,
+                `javascript:openUrl('${serverUrl+err.source}')`,
+                err.error.toString().trim()
+            )
+        } else {
+            serverStarted = true
+
+            let myNotification = new Notification('Entu CMS', {
+                body: `Server started at ${serverUrl}`
+            })
+            myNotification.onclick = () => {
+                shell.openExternal(serverUrl)
+            }
+
+            shell.openExternal(url)
+        }
+    })
+}
 
 
 var clearLog = function () {
