@@ -41,19 +41,12 @@ async.waterfall([
 
         renderer.startServer(function (err) {
             if (err) {
-                var log = document.getElementById('log-table')
-
-                console.log(err);
-
-                log.innerHTML = log.innerHTML + `
-                    <tr class="error">
-                        <td>${err.event}</td>
-                        <td colspan="3">
-                            <a href="javascript:shell.openExternal('${serverUrl+err.source}')">${err.source}</a><br>
-                            <pre>${err.error.toString().trim()}</pre>
-                        </td>
-                    </tr>
-                `
+                addLogError(
+                    err.event,
+                    err.source,
+                    `javascript:shell.openExternal('${serverUrl+err.source}')`,
+                    err.error.toString().trim()
+                )
             } else {
                 serverUrl = `http://localhost:${appConf.port}`
                 document.getElementById('preview').innerHTML = serverUrl
@@ -69,30 +62,24 @@ async.waterfall([
         })
 
         renderer.watchFiles(function (err, data) {
-            var log = document.getElementById('log-table')
             if (err) {
-                log.innerHTML = log.innerHTML + `
-                    <tr class="error">
-                        <td>${err.event}</td>
-                        <td colspan="3">
-                            <a href="javascript:shell.showItemInFolder('${appConf.source+err.source}')">${err.source}</a><br>
-                            <pre>${err.error.toString().trim()}</pre>
-                        </td>
-                    </tr>
-                `
+                addLogError(
+                    err.event,
+                    err.source,
+                    `javascript:shell.showItemInFolder('${appConf.source+err.source}')`,
+                    err.error.toString().trim()
+                )
             } else {
                 for (var i = 0; i < data.build.length; i++) {
-                    log.innerHTML = log.innerHTML + `
-                        <tr class="log">
-                            <td>${data.event}</td>
-                            <td><a href="javascript:shell.showItemInFolder('${appConf.source+data.source}')">${data.source}</a></td>
-                            <td><a href="javascript:shell.openExternal('${serverUrl+data.build[i].replace('index.html', '')}')">${data.build[i].replace('/index.html', '')}</a></td>
-                            <td width="100%"></td>
-                        </tr>
-                    `
+                    addLog(
+                        data.event,
+                        data.source,
+                        `javascript:shell.showItemInFolder('${appConf.source+data.source}')`,
+                        data.build[i].replace('/index.html', ''),
+                        `javascript:shell.openExternal('${serverUrl+data.build[i].replace('index.html', '')}')`
+                    )
                 }
             }
-            document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight
         })
     }
 })
@@ -107,4 +94,29 @@ document.addEventListener('keydown', function (e) {
 
 var clearLog = function () {
     document.getElementById('log-table').innerHTML = ''
+}
+
+var addLogError = function (event, source, sourceLink, error) {
+    document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
+        <tr class="error">
+            <td>${event}</td>
+            <td colspan="3">
+                <a href="${sourceLink}">${source}</a><br>
+                <pre>${error}</pre>
+            </td>
+        </tr>
+    `
+    document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight
+}
+
+var addLog = function (event, source, sourceLink, build, buildLink) {
+    document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
+        <tr class="log">
+            <td>${event}</td>
+            <td><a href="${sourceLink}">${source}</a></td>
+            <td><a href="${buildLink}">${build}</a></td>
+            <td width="100%"></td>
+        </tr>
+    `
+    document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight
 }
