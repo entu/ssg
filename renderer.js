@@ -323,13 +323,13 @@ exports.watchFiles = function (callback) {
                 if(err) {
                     callback({
                         event: fileEvent.toUpperCase(),
-                        source: files[i],
+                        source: files[i].replace(appConf.source, ''),
                         error: err
                     })
                 } else {
                     callback(null, {
                         event: fileEvent.toUpperCase(),
-                        source: files[i],
+                        source: files[i].replace(appConf.source, ''),
                         build: file
                     })
                 }
