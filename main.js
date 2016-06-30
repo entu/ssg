@@ -11,7 +11,7 @@ let mainWindow
 function createWindow () {
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        width: 1024,
+        width: 900,
         height: 430,
         // resizable: false,
         // fullscreen: false,
