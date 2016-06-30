@@ -7,7 +7,9 @@ var confFile = ''
 var appConf = {}
 var serverUrl = ''
 
+
 document.getElementById('tools-footer').innerHTML = app.getVersion()
+
 
 async.waterfall([
     function (callback) {
@@ -84,6 +86,7 @@ async.waterfall([
     }
 })
 
+
 document.addEventListener('keydown', function (e) {
 	if (e.which === 123) {
 		remote.getCurrentWindow().toggleDevTools()
@@ -92,9 +95,11 @@ document.addEventListener('keydown', function (e) {
 	}
 })
 
+
 var clearLog = function () {
     document.getElementById('log-table').innerHTML = ''
 }
+
 
 var addLogError = function (event, source, sourceLink, error) {
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
@@ -108,6 +113,7 @@ var addLogError = function (event, source, sourceLink, error) {
     `
     document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight
 }
+
 
 var addLog = function (event, source, sourceLink, build, buildLink) {
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `

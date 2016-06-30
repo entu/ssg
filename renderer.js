@@ -33,18 +33,13 @@ var getFilePath = function (dirName, fileName, locale) {
 
 // Load Yaml file
 var getYamlFile = function (dirName, fileName, locale, defaultResult) {
-    try {
-        var dataFile = getFilePath(dirName, fileName, locale)
+    var dataFile = getFilePath(dirName, fileName, locale)
 
-        if (!dataFile) return defaultResult
+    if (!dataFile) return defaultResult
 
-        dataObject = yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
+    dataObject = yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
 
-        return dataObject
-    } catch (e) {
-        console.log('ERROR:', dirName, fileName, locale, '>', e)
-        return defaultResult
-    }
+    return dataObject
 }
 
 
@@ -233,9 +228,9 @@ exports.openConfFile = function (appConfFile, callback) {
         }
 
         // Printout configuration
-        var c = {}
-        c[appConfFile] = appConf
-        console.log(yaml.safeDump(c))
+        // var c = {}
+        // c[appConfFile] = appConf
+        // console.log(yaml.safeDump(c))
 
         // Load global data
         for (var l in appConf.locales) {
