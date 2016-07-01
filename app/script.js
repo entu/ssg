@@ -139,7 +139,7 @@ var addLog = function (event, source, sourceLink, build, buildLink) {
         <tr class="log">
             <td>${event}</td>
             <td><a href="${sourceLink}">${source}</a></td>
-            <td><a href="${buildLink}">${build}</a></td>
+            <td><a href="${buildLink}">${build || '/'}</a></td>
             <td width="100%"></td>
         </tr>
     `
