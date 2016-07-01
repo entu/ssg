@@ -114,27 +114,42 @@ var makeHTML = function (filePath, callback) {
                 }
             }
 
-            var compiledJade = jade.compileFile(jadeFile, data)
-            var html = compiledJade(data)
+            var htmlDirs = op.get(data, 'page.aliases', [])
+            var defaultHtmlDir = path.join('/', locale, data.page.path)
+            htmlDirs.push(defaultHtmlDir)
 
-            for (var i in compiledJade.dependencies) {
-                if (!compiledJade.dependencies.hasOwnProperty(i)) { continue }
+            for (var h in htmlDirs) {
+                if (!htmlDirs.hasOwnProperty(h)) { continue }
 
-                var key = op.get(compiledJade, ['dependencies', i]).replace(appConf.source, '').replace('.jade', '')
+                if (htmlDirs[h] !== defaultHtmlDir) {
+                    op.set(data, 'page.redirect', defaultHtmlDir)
+                } else {
+                    op.del(data, 'page.redirect')
+                }
 
-                if (op.get(jadeDependencies, key, []).indexOf(jadeFile) > -1) { continue }
+                var compiledJade = jade.compileFile(jadeFile, data)
+                var html = compiledJade(data)
 
-                op.push(jadeDependencies, key, jadeFile)
+                for (var i in compiledJade.dependencies) {
+                    if (!compiledJade.dependencies.hasOwnProperty(i)) { continue }
 
-                dependenciesWatcher.add(op.get(compiledJade, ['dependencies', i]))
+                    var key = op.get(compiledJade, ['dependencies', i]).replace(appConf.source, '').replace('.jade', '')
+
+                    if (op.get(jadeDependencies, key, []).indexOf(jadeFile) > -1) { continue }
+
+                    op.push(jadeDependencies, key, jadeFile)
+
+                    dependenciesWatcher.add(op.get(compiledJade, ['dependencies', i]))
+                }
+
+
+                var htmlFile = path.join(appConf.build, htmlDirs[h], 'index.html')
+
+                fse.outputFileSync(htmlFile, html)
+
+                outputFiles.push(htmlFile.replace(appConf.build, ''))
             }
 
-            var htmlDir = path.join(appConf.build, locale, data.page.path)
-            var htmlFile = path.join(htmlDir, 'index.html')
-
-            fse.outputFileSync(htmlFile, html)
-
-            outputFiles.push(htmlFile.replace(appConf.build, ''))
         }
 
         callback(null, outputFiles)
