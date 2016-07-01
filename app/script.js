@@ -45,7 +45,9 @@ var startRendering = function () {
                 message: err.toString(),
                 buttons: ['OK']
             }, function () {
-                app.quit()
+                confFile = null
+                openConf()
+                return
             })
         } else {
             appConf = conf
