@@ -11,7 +11,7 @@ var serverUrl = ''
 document.getElementById('tools-footer-link').innerHTML = app.getVersion()
 
 
-document.addEventListener('keydown', (e) => {
+document.addEventListener('keydown', e => {
 	if (e.which === 123) {
 		remote.getCurrentWindow().toggleDevTools()
 	} else if (e.which === 116) {

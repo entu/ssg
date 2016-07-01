@@ -104,7 +104,7 @@ var makeHTML = (filePath, callback) => {
             }
 
             data.G = appConf.data[locale]
-            data.G.md = (text) => {
+            data.G.md = text => {
                 if (text) {
                     return md({ breaks: appConf.markdown.breaks, html: appConf.markdown.html }).render(text).replace(/\r?\n|\r/g, '')
                 } else {
@@ -265,7 +265,7 @@ exports.openConfFile = (appConfFile, callback) => {
 
 
 // Start web server
-exports.startServer = (callback) => {
+exports.startServer = callback => {
     try {
         var server = http.createServer((request, response) => {
             var filePath = request.url.split('?')[0]
@@ -310,7 +310,7 @@ exports.startServer = (callback) => {
 
 // Watch source files
 var dependenciesWatcher
-exports.watchFiles = (callback) => {
+exports.watchFiles = callback => {
     // Start to watch Jade files
     chokidar.watch(appConf.source + '/**/index*.jade', { ignored: '*/_*' }).on('all', (fileEvent, filePath) => {
         makeHTML(filePath, (err, file) => {
