@@ -95,10 +95,10 @@ a:hover {
     right: 0px;
     bottom: 30px;
     left: 325px;
-    padding: 0px 5px 0px 0px;
+    padding: 0px 5px 10px 0px;
     font-size: 12px;
     line-height: 14px;
-    overflow: scroll;
+    overflow: auto;
 }
 #log table {
     width: 100%;

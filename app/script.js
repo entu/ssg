@@ -125,8 +125,8 @@ var clearLog = function () {
 var addLogError = function (event, source, sourceLink, error) {
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
         <tr class="error">
-            <td>${event}</td>
-            <td colspan="3">
+            <td style="width:5%">${event}</td>
+            <td style="width:95%" colspan="2">
                 <a href="${sourceLink}">${source}</a><br>
                 <pre>${error}</pre>
             </td>
@@ -139,10 +139,9 @@ var addLogError = function (event, source, sourceLink, error) {
 var addLog = function (event, source, sourceLink, build, buildLink) {
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
         <tr class="log">
-            <td>${event}</td>
-            <td><a href="${sourceLink}">${source}</a></td>
-            <td><a href="${buildLink}">${build || '/'}</a></td>
-            <td width="100%"></td>
+            <td style="width:5%">${event}</td>
+            <td style="width:5%"><a href="${sourceLink}">${source}</a></td>
+            <td style="width:90%"><a href="${buildLink}">${build || '/'}</a></td>
         </tr>
     `
     document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight
