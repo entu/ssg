@@ -1,5 +1,5 @@
 body
-    height 100%
+    margin 0px
     padding 0px
     font-family -apple-system, 'Helvetica Neue', Verdana, ariel, sans-serif
     font-weight 200
@@ -32,14 +32,13 @@ a
         color #182530
         text-decoration underline
 
-
 #tools
     position fixed
     top 0px
     left 0px
     bottom 0px
     width 320px
-    background #F4F4F4
+    background #f4f4f4
     -webkit-app-region drag
     -webkit-user-select none
     user-select none
@@ -54,9 +53,9 @@ a
         text-decoration none
         font-size 14px
         line-height 20px
-        color #A4A9AD
+        color #a4a9ad
         background #ffffff
-        border 1px solid #A4A9AD
+        border 1px solid #a4a9ad
         z-index 100
 
         &:hover
@@ -70,32 +69,6 @@ a
             font-weight 100
             line-height 16px
             color #909090
-
-
-#tools-footer
-    position fixed
-    left 0px
-    bottom 0px
-    width 320px
-    padding 10px 0px
-    text-align center
-    font-size 12px
-    line-height 12px
-    font-weight 100
-    background #F4F4F4
-    -webkit-app-region drag
-    -webkit-user-select none
-    user-select none
-    cursor default
-
-    a
-        color #182530
-        text-decoration none
-
-        &:hover
-            color #182530
-            font-weight bold
-
 
 #log
     position fixed
@@ -114,7 +87,7 @@ a
         tr
 
             &:hover
-                background #F4F4F4
+                background #f4f4f4
 
             &.log
                 white-space nowrap
@@ -132,17 +105,15 @@ a
                     padding 5px 0px 0px 0px
 
 
+#tools-footer
 #log-footer
     position fixed
-    right 0px
     bottom 0px
-    left 320px
     padding 10px 0px
     text-align center
     font-size 12px
     line-height 12px
     font-weight 100
-    background #ffffff
     -webkit-app-region drag
     -webkit-user-select none
     user-select none
@@ -155,3 +126,13 @@ a
         &:hover
             color #182530
             font-weight bold
+
+#tools-footer
+    left 0px
+    width 320px
+    background #f4f4f4
+
+#log-footer
+    right 0px
+    left 320px
+    background #ffffff
