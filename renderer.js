@@ -37,9 +37,7 @@ var getYamlFile = (dirName, fileName, locale, defaultResult) => {
 
     if (!dataFile) return defaultResult
 
-    dataObject = yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
-
-    return dataObject
+    return yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
 }
 
 
