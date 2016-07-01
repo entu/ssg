@@ -3,7 +3,7 @@ const {app, dialog, shell} = remote
 const renderer = require('../renderer.js')
 const async = require('async')
 
-var confFile = ''
+var confFile = localStorage.getItem('confFile')
 var appConf = {}
 var serverStarted = false
 var serverUrl = ''
@@ -21,66 +21,75 @@ document.addEventListener('keydown', function (e) {
 })
 
 
-async.waterfall([
-    function (callback) {
-        files = dialog.showOpenDialog({
-            properties: ['openFile'],
-            filters: [
-                {name: 'Yaml files', extensions: ['yaml']}
-            ]
-        })
-        if(!files) { app.quit() }
-        callback(null, files[0])
-    },
-    function (file, callback) {
-        confFile = file
-        renderer.openConfFile(confFile, callback)
-    },
-], function (err, conf) {
-    if(err) {
-        dialog.showMessageBox({
-            type: 'error',
-            message: err.toString(),
-            buttons: ['OK']
-        }, function () {
-            app.quit()
-        })
-    } else {
-        appConf = conf
-        serverUrl = `http://localhost:${appConf.port}`
+var openConf = function () {
+    files = dialog.showOpenDialog({
+        properties: ['openFile'],
+        filters: [
+            {name: 'Yaml files', extensions: ['yaml']}
+        ]
+    })
+    if(!files && !confFile) { app.quit() }
+    if(!files) { return }
 
-        document.getElementById('preview').innerHTML = serverUrl
-        document.getElementById('title').innerHTML = confFile.replace(app.getPath('home'), '~')
-        document.getElementById('source').innerHTML = appConf.source.replace(app.getPath('home'), '~')
-        document.getElementById('build').innerHTML = appConf.build.replace(app.getPath('home'), '~')
+    confFile = files[0]
+    localStorage.setItem('confFile', confFile)
 
-        renderer.watchFiles(function (err, data) {
-            if (err) {
-                addLogError(
-                    err.event,
-                    err.source,
-                    `javascript:shell.showItemInFolder('${appConf.source+err.source}')`,
-                    err.error.toString().trim()
-                )
-            } else {
-                for (var i = 0; i < data.build.length; i++) {
-                    addLog(
-                        data.event,
-                        data.source,
-                        `javascript:shell.showItemInFolder('${appConf.source+data.source}')`,
-                        data.build[i].replace('/index.html', ''),
-                        `javascript:openUrl('${serverUrl+data.build[i].replace('index.html', '')}')`
+    location.reload()
+}
+
+
+var startRendering = function () {
+    // serverUrl = ''
+    // appConf = {}
+    // serverStarted = false
+
+    renderer.openConfFile(confFile, function (err, conf) {
+        if(err) {
+            dialog.showMessageBox({
+                type: 'error',
+                message: err.toString(),
+                buttons: ['OK']
+            }, function () {
+                app.quit()
+            })
+        } else {
+            appConf = conf
+            serverUrl = `http://localhost:${appConf.port}`
+
+            document.getElementById('title').innerHTML = confFile.replace(app.getPath('home'), '~')
+            document.getElementById('source').innerHTML = appConf.source.replace(app.getPath('home'), '~')
+            document.getElementById('build').innerHTML = appConf.build.replace(app.getPath('home'), '~')
+
+            clearLog()
+
+            renderer.watchFiles(function (err, data) {
+                if (err) {
+                    addLogError(
+                        err.event,
+                        err.source,
+                        `javascript:shell.showItemInFolder('${appConf.source+err.source}')`,
+                        err.error.toString().trim()
                     )
+                } else {
+                    for (var i = 0; i < data.build.length; i++) {
+                        addLog(
+                            data.event,
+                            data.source,
+                            `javascript:shell.showItemInFolder('${appConf.source+data.source}')`,
+                            data.build[i].replace('/index.html', ''),
+                            `javascript:openUrl('${serverUrl+data.build[i].replace('index.html', '')}')`
+                        )
+                    }
                 }
-            }
-        })
-    }
-})
+            })
+        }
+    })
+}
 
 
 var openUrl = function (url) {
     if (serverStarted) {
-        shell.openExternal(url)
+        shell.openExternal(url || serverUrl)
         return
     }
 
@@ -95,6 +104,9 @@ var openUrl = function (url) {
         } else {
             serverStarted = true
 
+            serverUrl = `http://localhost:${appConf.port}`
+            document.getElementById('preview').innerHTML = serverUrl
+
             let myNotification = new Notification('Entu CMS', {
                 body: `Server started at ${serverUrl}`
             })
@@ -102,7 +114,7 @@ var openUrl = function (url) {
                 shell.openExternal(serverUrl)
             }
 
-            shell.openExternal(url)
+            shell.openExternal(url || serverUrl)
         }
     })
 }
@@ -137,4 +149,11 @@ var addLog = function (event, source, sourceLink, build, buildLink) {
         </tr>
     `
     document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight
+}
+
+
+if (confFile) {
+    startRendering()
+} else {
+    openConf()
 }
