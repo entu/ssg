@@ -8,7 +8,7 @@ var serverStarted = false
 var serverUrl = ''
 
 
-document.getElementById('tools-footer').innerHTML = app.getVersion()
+document.getElementById('tools-footer-link').innerHTML = app.getVersion()
 
 
 document.addEventListener('keydown', function (e) {

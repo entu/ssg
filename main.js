@@ -1,4 +1,6 @@
 const electron = require('electron')
+const pug = require('electron-pug')({pretty: false})
+
 // Module to control application life.
 const app = electron.app
 // Module to create native browser window.
@@ -20,7 +22,7 @@ function createWindow () {
     })
 
     // and load the index.html of the app.
-    mainWindow.loadURL(`file://${__dirname}/app/index.html`)
+    mainWindow.loadURL(`file://${__dirname}/app/index.pug`)
 
     // Open the DevTools.
     // mainWindow.webContents.openDevTools()

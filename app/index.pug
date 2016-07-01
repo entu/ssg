@@ -1,0 +1,29 @@
+doctype html
+html
+    head
+        meta(charset='UTF-8')
+        title Entu CMS
+        script.
+            require('electron-stylus')(__dirname + '/style.styl')
+    body
+        #tools
+            h1 Entu CMS
+            h2
+                a#title(href='javascript:openConf()')
+            a.button(href='javascript:openUrl()')
+                | Preview webpage
+                span#preview `http://localhost
+            a.button(href='javascript:shell.showItemInFolder(appConf.source)')
+                | Open source folder
+                span#source
+            a.button(href='javascript:shell.showItemInFolder(appConf.build)')
+                | Open build folder
+                span#build
+        #tools-footer
+            a#tools-footer-link(href="javascript:shell.openExternal('http://cms.entu.eu')")
+        #log
+            table(cellspacing='0')
+                tbody#log-table
+        #log-footer
+            a(href='javascript:clearLog()') clear log
+    script(src='script.js', charset='utf-8')
