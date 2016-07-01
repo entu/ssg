@@ -14,7 +14,7 @@ var yaml     = require('js-yaml')
 
 
 // Returns file path with locale if exists
-var getFilePath = function (dirName, fileName, locale) {
+var getFilePath = (dirName, fileName, locale) => {
     var localeFile = fileName.split('.')
     localeFile.splice(localeFile.length - 1, 0, locale)
 
@@ -32,7 +32,7 @@ var getFilePath = function (dirName, fileName, locale) {
 
 
 // Load Yaml file
-var getYamlFile = function (dirName, fileName, locale, defaultResult) {
+var getYamlFile = (dirName, fileName, locale, defaultResult) => {
     var dataFile = getFilePath(dirName, fileName, locale)
 
     if (!dataFile) return defaultResult
@@ -46,7 +46,7 @@ var getYamlFile = function (dirName, fileName, locale, defaultResult) {
 // Generates HTMLs from template
 var appConf = {}
 var jadeDependencies = {}
-var makeHTML = function (filePath, callback) {
+var makeHTML = (filePath, callback) => {
     try {
         var folderName = path.dirname(filePath)
         var fileName = path.basename(filePath)
@@ -106,7 +106,7 @@ var makeHTML = function (filePath, callback) {
             }
 
             data.G = appConf.data[locale]
-            data.G.md = function (text) {
+            data.G.md = (text) => {
                 if (text) {
                     return md({ breaks: appConf.markdown.breaks, html: appConf.markdown.html }).render(text).replace(/\r?\n|\r/g, '')
                 } else {
@@ -165,7 +165,7 @@ var makeHTML = function (filePath, callback) {
 
 // Generates CSS from stylus
 var stylesList = {}
-var makeCSS = function (filePath, callback) {
+var makeCSS = (filePath, callback) => {
     try {
         var folderName = path.dirname(filePath)
         var fileName = path.basename(filePath)
@@ -216,7 +216,7 @@ var makeCSS = function (filePath, callback) {
 
 
 // Open config.yaml and set config variables
-exports.openConfFile = function (appConfFile, callback) {
+exports.openConfFile = (appConfFile, callback) => {
     try {
         appConf = yaml.safeLoad(fs.readFileSync(appConfFile, 'utf8'))
 
@@ -267,9 +267,9 @@ exports.openConfFile = function (appConfFile, callback) {
 
 
 // Start web server
-exports.startServer = function (callback) {
+exports.startServer = (callback) => {
     try {
-        var server = http.createServer(function (request, response) {
+        var server = http.createServer((request, response) => {
             var filePath = request.url.split('?')[0]
             if (filePath.substr(0, appConf.assetsPath.length) === appConf.assetsPath) {
                 filePath = path.join(appConf.assets, filePath.substr(appConf.assetsPath.length - 1))
@@ -283,7 +283,7 @@ exports.startServer = function (callback) {
 
             var contentType = mime.lookup(path.extname(filePath)) || 'application/octet-stream'
 
-            fs.readFile(filePath, function (err, content) {
+            fs.readFile(filePath, (err, content) => {
                 if (err) {
                     response.writeHead(404, { 'Content-Type': 'text/plain' })
                     response.end('404\n')
@@ -299,7 +299,7 @@ exports.startServer = function (callback) {
             })
         })
         server.listen(appConf.port)
-        server.on('listening', function () {
+        server.on('listening', () => {
             appConf.port = server.address().port
 
             callback(null)
@@ -312,10 +312,10 @@ exports.startServer = function (callback) {
 
 // Watch source files
 var dependenciesWatcher
-exports.watchFiles = function (callback) {
+exports.watchFiles = (callback) => {
     // Start to watch Jade files
-    chokidar.watch(appConf.source + '/**/index*.jade', { ignored: '*/_*' }).on('all', function (fileEvent, filePath) {
-        makeHTML(filePath, function (err, file) {
+    chokidar.watch(appConf.source + '/**/index*.jade', { ignored: '*/_*' }).on('all', (fileEvent, filePath) => {
+        makeHTML(filePath, (err, file) => {
             if(err) {
                 callback({
                     event: fileEvent.toUpperCase(),
@@ -333,13 +333,13 @@ exports.watchFiles = function (callback) {
     })
 
     // Start to watch Jade dependencies
-    dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', function (fileEvent, filePath) {
+    dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', (fileEvent, filePath) => {
         var files = op.get(jadeDependencies, filePath.replace(appConf.source, '').replace('.jade', ''))
 
         for (var i in files) {
             if (!files.hasOwnProperty(i)) { continue }
 
-            makeHTML(files[i], function (err, file) {
+            makeHTML(files[i], (err, file) => {
                 if(err) {
                     callback({
                         event: fileEvent.toUpperCase(),
@@ -358,8 +358,8 @@ exports.watchFiles = function (callback) {
     })
 
     // Start to watch Yaml files
-    chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*', ignoreInitial: true }).on('all', function (fileEvent, filePath) {
-        makeHTML(filePath, function (err, file) {
+    chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*', ignoreInitial: true }).on('all', (fileEvent, filePath) => {
+        makeHTML(filePath, (err, file) => {
             if(err) {
                 callback({
                     event: fileEvent.toUpperCase(),
@@ -377,8 +377,8 @@ exports.watchFiles = function (callback) {
     })
 
     // Start to watch style files changes
-    chokidar.watch(appConf.source + '/**/style*.styl', { ignored: '*/_*' }).on('all', function (fileEvent, filePath) {
-        makeCSS(filePath, function (err, file) {
+    chokidar.watch(appConf.source + '/**/style*.styl', { ignored: '*/_*' }).on('all', (fileEvent, filePath) => {
+        makeCSS(filePath, (err, file) => {
             if(err) {
                 callback({
                     event: fileEvent.toUpperCase(),

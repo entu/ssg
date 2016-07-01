@@ -11,7 +11,7 @@ var serverUrl = ''
 document.getElementById('tools-footer-link').innerHTML = app.getVersion()
 
 
-document.addEventListener('keydown', function (e) {
+document.addEventListener('keydown', (e) => {
 	if (e.which === 123) {
 		remote.getCurrentWindow().toggleDevTools()
 	} else if (e.which === 116) {
@@ -20,7 +20,7 @@ document.addEventListener('keydown', function (e) {
 })
 
 
-var openConf = function () {
+var openConf = () => {
     files = dialog.showOpenDialog({
         properties: ['openFile'],
         filters: [
@@ -37,14 +37,14 @@ var openConf = function () {
 }
 
 
-var startRendering = function () {
-    renderer.openConfFile(confFile, function (err, conf) {
+var startRendering = () => {
+    renderer.openConfFile(confFile, (err, conf) => {
         if(err) {
             dialog.showMessageBox({
                 type: 'error',
                 message: err.toString(),
                 buttons: ['OK']
-            }, function () {
+            }, () => {
                 confFile = null
                 openConf()
                 return
@@ -59,7 +59,7 @@ var startRendering = function () {
 
             clearLog()
 
-            renderer.watchFiles(function (err, data) {
+            renderer.watchFiles((err, data) => {
                 if (err) {
                     addLogError(
                         err.event,
@@ -84,13 +84,13 @@ var startRendering = function () {
 }
 
 
-var openUrl = function (url) {
+var openUrl = (url) => {
     if (serverStarted) {
         shell.openExternal(url || serverUrl)
         return
     }
 
-    renderer.startServer(function (err) {
+    renderer.startServer((err) => {
         if (err) {
             addLogError(
                 err.event,
@@ -117,12 +117,12 @@ var openUrl = function (url) {
 }
 
 
-var clearLog = function () {
+var clearLog = () => {
     document.getElementById('log-table').innerHTML = ''
 }
 
 
-var addLogError = function (event, source, sourceLink, error) {
+var addLogError = (event, source, sourceLink, error) => {
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
         <tr class="error">
             <td style="width:5%">${event}</td>
@@ -136,7 +136,7 @@ var addLogError = function (event, source, sourceLink, error) {
 }
 
 
-var addLog = function (event, source, sourceLink, build, buildLink) {
+var addLog = (event, source, sourceLink, build, buildLink) => {
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
         <tr class="log">
             <td style="width:5%">${event}</td>
