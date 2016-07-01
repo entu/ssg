@@ -1,7 +1,6 @@
 const {remote} = require('electron')
 const {app, dialog, shell} = remote
 const renderer = require('../renderer.js')
-const async = require('async')
 
 var confFile = localStorage.getItem('confFile')
 var appConf = {}
@@ -39,10 +38,6 @@ var openConf = function () {
 
 
 var startRendering = function () {
-    // serverUrl = ''
-    // appConf = {}
-    // serverStarted = false
-
     renderer.openConfFile(confFile, function (err, conf) {
         if(err) {
             dialog.showMessageBox({

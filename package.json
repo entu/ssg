@@ -26,7 +26,6 @@
     "start": "electron main.js"
   },
   "dependencies": {
-    "async": "^1.5.2",
     "chokidar": "^1.6.0",
     "fs-extra": "^0.30.0",
     "jade": "^1.11.0",
