@@ -114,6 +114,8 @@ var makeHTML = function (filePath, callback) {
                 }
             }
 
+            var redirect = op.get(data, 'page.redirect')
+
             var htmlDirs = op.get(data, 'page.aliases', [])
             var defaultHtmlDir = path.join('/', locale, data.page.path)
             htmlDirs.push(defaultHtmlDir)
@@ -121,7 +123,9 @@ var makeHTML = function (filePath, callback) {
             for (var h in htmlDirs) {
                 if (!htmlDirs.hasOwnProperty(h)) { continue }
 
-                if (htmlDirs[h] !== defaultHtmlDir) {
+                if (redirect) {
+                    op.set(data, 'page.redirect', redirect)
+                } else if (htmlDirs[h] !== defaultHtmlDir) {
                     op.set(data, 'page.redirect', defaultHtmlDir)
                 } else {
                     op.del(data, 'page.redirect')
