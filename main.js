@@ -1,5 +1,5 @@
 const electron = require('electron')
-const pug = require('electron-pug')({pretty: false})
+const pug = require('electron-pug')({ pretty: false })
 
 // Module to control application life.
 const app = electron.app

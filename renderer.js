@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 
 var chokidar = require('chokidar')
-var fs       = require('fs')
-var fse      = require('fs-extra')
-var http     = require('http')
-var jade     = require('jade')
-var md       = require('markdown-it')
-var mime     = require('mime-types')
-var op       = require('object-path')
-var path     = require('path')
-var stylus   = require('stylus')
-var yaml     = require('js-yaml')
+var fs = require('fs')
+var fse = require('fs-extra')
+var http = require('http')
+var jade = require('jade')
+var md = require('markdown-it')
+var mime = require('mime-types')
+var op = require('object-path')
+var path = require('path')
+var stylus = require('stylus')
+var yaml = require('js-yaml')
 
 
 // Returns file path with locale if exists
@@ -100,7 +100,7 @@ var makeHTML = (filePath, callback) => {
                 op.ensureExists(otherLocaleData, 'page.base', appConf.basePath)
                 op.ensureExists(otherLocaleData, 'page.path', path.dirname(jadeFile).replace(appConf.source, '').substr(1))
 
-                op.set(data, ['page', 'otherLocales', appConf.locales[i]],  otherLocaleData.page)
+                op.set(data, ['page', 'otherLocales', appConf.locales[i]], otherLocaleData.page)
             }
 
             data.G = appConf.data[locale]
@@ -314,7 +314,7 @@ exports.watchFiles = callback => {
     // Start to watch Jade files
     chokidar.watch(appConf.source + '/**/index*.jade', { ignored: '*/_*' }).on('all', (fileEvent, filePath) => {
         makeHTML(filePath, (err, file) => {
-            if(err) {
+            if (err) {
                 callback({
                     event: fileEvent.toUpperCase(),
                     source: filePath.replace(appConf.source, ''),
@@ -338,7 +338,7 @@ exports.watchFiles = callback => {
             if (!files.hasOwnProperty(i)) { continue }
 
             makeHTML(files[i], (err, file) => {
-                if(err) {
+                if (err) {
                     callback({
                         event: fileEvent.toUpperCase(),
                         source: files[i].replace(appConf.source, ''),
@@ -358,7 +358,7 @@ exports.watchFiles = callback => {
     // Start to watch Yaml files
     chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*', ignoreInitial: true }).on('all', (fileEvent, filePath) => {
         makeHTML(filePath, (err, file) => {
-            if(err) {
+            if (err) {
                 callback({
                     event: fileEvent.toUpperCase(),
                     source: filePath.replace(appConf.source, ''),
@@ -377,7 +377,7 @@ exports.watchFiles = callback => {
     // Start to watch style files changes
     chokidar.watch(appConf.source + '/**/style*.styl', { ignored: '*/_*' }).on('all', (fileEvent, filePath) => {
         makeCSS(filePath, (err, file) => {
-            if(err) {
+            if (err) {
                 callback({
                     event: fileEvent.toUpperCase(),
                     source: filePath.replace(appConf.source, ''),

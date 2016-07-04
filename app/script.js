@@ -12,11 +12,11 @@ document.getElementById('tools-footer-link').innerHTML = app.getVersion()
 
 
 document.addEventListener('keydown', e => {
-	if (e.which === 123) {
-		remote.getCurrentWindow().toggleDevTools()
-	} else if (e.which === 116) {
-		location.reload()
-	}
+    if (e.which === 123) {
+        remote.getCurrentWindow().toggleDevTools()
+    } else if (e.which === 116) {
+        location.reload()
+    }
 })
 
 
@@ -24,11 +24,11 @@ var openConf = () => {
     files = dialog.showOpenDialog({
         properties: ['openFile'],
         filters: [
-            {name: 'Yaml files', extensions: ['yaml']}
+            { name: 'Yaml files', extensions: ['yaml'] }
         ]
     })
-    if(!files && !confFile) { app.quit() }
-    if(!files) { return }
+    if (!files && !confFile) { app.quit() }
+    if (!files) { return }
 
     confFile = files[0]
     localStorage.setItem('confFile', confFile)
@@ -39,7 +39,7 @@ var openConf = () => {
 
 var startRendering = () => {
     renderer.openConfFile(confFile, (err, conf) => {
-        if(err) {
+        if (err) {
             dialog.showMessageBox({
                 type: 'error',
                 message: err.toString(),
@@ -64,7 +64,7 @@ var startRendering = () => {
                     addLogError(
                         err.event,
                         err.source,
-                        `javascript:shell.showItemInFolder('${appConf.source+err.source}')`,
+                        `javascript:shell.showItemInFolder('${appConf.source + err.source}')`,
                         err.error.toString().trim()
                     )
                 } else {
@@ -72,9 +72,9 @@ var startRendering = () => {
                         addLog(
                             data.event,
                             data.source,
-                            `javascript:shell.showItemInFolder('${appConf.source+data.source}')`,
+                            `javascript:shell.showItemInFolder('${appConf.source + data.source}')`,
                             data.build[i].replace('/index.html', ''),
-                            `javascript:openUrl('${serverUrl+data.build[i].replace('index.html', '')}')`
+                            `javascript:openUrl('${serverUrl + data.build[i].replace('index.html', '')}')`
                         )
                     }
                 }
@@ -95,7 +95,7 @@ var openUrl = (url) => {
             addLogError(
                 err.event,
                 err.source,
-                `javascript:openUrl('${serverUrl+err.source}')`,
+                `javascript:openUrl('${serverUrl + err.source}')`,
                 err.error.toString().trim()
             )
         } else {
