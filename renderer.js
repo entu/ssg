@@ -254,7 +254,7 @@ exports.openConfFile = (appConfFile, callback) => {
             if (!appConf.locales.hasOwnProperty(l)) { continue }
 
             var locale = appConf.locales[l]
-            op.set(appConf, ['data', locale], getYamlFile(path.dirname(appConfFile), 'data.yaml', locale, {}))
+            op.set(appConf, ['data', locale], getYamlFile(appConf.source, 'global.yaml', locale, {}))
         }
 
         callback(null, appConf)
