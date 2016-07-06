@@ -14,7 +14,7 @@ createWindow = () => {
     // Create the browser window.
     mainWindow = new BrowserWindow({
         width: 900,
-        height: 430,
+        height: 500,
         // resizable: false,
         // fullscreen: false,
         titleBarStyle: 'hidden',
