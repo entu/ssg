@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+'use strict'
+
 var chokidar = require('chokidar')
 var fs = require('fs')
 var fse = require('fs-extra')

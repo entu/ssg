@@ -1,3 +1,5 @@
+'use strict'
+
 const {remote} = require('electron')
 const {app, dialog, shell} = remote
 const renderer = require('../renderer.js')
@@ -21,7 +23,7 @@ document.addEventListener('keydown', e => {
 
 
 var openConf = () => {
-    files = dialog.showOpenDialog({
+    var files = dialog.showOpenDialog({
         properties: ['openFile'],
         filters: [
             { name: 'Yaml files', extensions: ['yaml'] }
