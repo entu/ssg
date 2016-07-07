@@ -161,7 +161,6 @@ if (process.platform === 'darwin') {
     })
 } else if (process.platform === 'win32') {
     const helpMenu = template[template.length - 1].submenu
-    addUpdateMenuItems(helpMenu, 0)
 }
 
 app.on('ready', () => {
