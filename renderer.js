@@ -140,7 +140,7 @@ var makeHTML = (filePath, callback) => {
                         caseSensitive: false,
                         collapseBooleanAttributes: true,
                         collapseWhitespace: true,
-                        decodeEntities: true,
+                        decodeEntities: false,
                         html5: true,
                         keepClosingSlash: false,
                         minifyCSS: true,
