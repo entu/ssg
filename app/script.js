@@ -75,8 +75,8 @@ var startRendering = () => {
                             data.event,
                             data.source,
                             `javascript:shell.showItemInFolder('${appConf.source + data.source}')`,
-                            data.build[i].replace('/index.html', ''),
-                            `javascript:openUrl('${serverUrl + data.build[i].replace('index.html', '')}')`
+                            data.build[i].replace(/\\/g, '/').replace('/index.html', ''),
+                            `javascript:openUrl('${serverUrl + data.build[i].replace(/\\/g, '/').replace('index.html', '')}')`
                         )
                     }
                 }
