@@ -9,6 +9,7 @@ var http = require('http')
 var jade = require('jade')
 var md = require('markdown-it')
 var mime = require('mime-types')
+var minify = require('html-minifier').minify
 var op = require('object-path')
 var path = require('path')
 var stylus = require('stylus')
@@ -88,7 +89,7 @@ var makeHTML = (filePath, callback) => {
             op.ensureExists(data, 'page.otherLocales', {})
             op.ensureExists(data, 'page.base', appConf.basePath)
             op.ensureExists(data, 'page.path', path.dirname(jadeFile).replace(appConf.source, '').substr(1))
-            op.ensureExists(data, 'pretty', appConf.jade.pretty)
+            op.ensureExists(data, 'pretty', true)
             op.ensureExists(data, 'basedir', appConf.jade.basedir)
 
             for (var i in appConf.locales) {
@@ -133,6 +134,23 @@ var makeHTML = (filePath, callback) => {
 
                 var compiledJade = jade.compileFile(jadeFile, data)
                 var html = compiledJade(data)
+
+                if (!appConf.jade.pretty) {
+                    html = minify(html, {
+                        caseSensitive: false,
+                        collapseBooleanAttributes: true,
+                        collapseWhitespace: true,
+                        decodeEntities: true,
+                        html5: true,
+                        keepClosingSlash: false,
+                        minifyCSS: true,
+                        minifyJS: true,
+                        preserveLineBreaks: false,
+                        quoteCharacter: '"',
+                        removeComments: true,
+                        removeEmptyAttributes: true
+                    })
+                }
 
                 for (var i in compiledJade.dependencies) {
                     if (!compiledJade.dependencies.hasOwnProperty(i)) { continue }
