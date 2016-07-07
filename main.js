@@ -1,10 +1,8 @@
 const electron = require('electron')
 const pug = require('electron-pug')({ pretty: false })
-
-// Module to control application life.
 const app = electron.app
-// Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow
+const Menu = electron.Menu
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -59,5 +57,116 @@ app.on('activate', () => {
     }
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+
+let template = [{
+    label: 'View',
+    submenu: [{
+        label: 'Reload',
+        accelerator: 'CmdOrCtrl+R',
+        click: function (item, focusedWindow) {
+            if (focusedWindow) {
+                // on reload, start fresh and close any old
+                // open secondary windows
+                if (focusedWindow.id === 1) {
+                    BrowserWindow.getAllWindows().forEach(function (win) {
+                        if (win.id > 1) {
+                            win.close()
+                        }
+                    })
+                }
+                focusedWindow.reload()
+            }
+        }
+    }, {
+        label: 'Toggle Full Screen',
+        accelerator: (() => {
+            if (process.platform === 'darwin') {
+                return 'Ctrl+Command+F'
+            } else {
+                return 'F11'
+            }
+        })(),
+        click: function (item, focusedWindow) {
+            if (focusedWindow) {
+                focusedWindow.setFullScreen(!focusedWindow.isFullScreen())
+            }
+        }
+    }, {
+        label: 'Toggle Developer Tools',
+        accelerator: (() => {
+            if (process.platform === 'darwin') {
+                return 'Alt+Command+I'
+            } else {
+                return 'Ctrl+Shift+I'
+            }
+        })(),
+        click: function (item, focusedWindow) {
+            if (focusedWindow) {
+                focusedWindow.toggleDevTools()
+            }
+        }
+    }]
+}, {
+    label: 'Window',
+    role: 'window',
+    submenu: [{
+        label: 'Minimize',
+        accelerator: 'CmdOrCtrl+M',
+        role: 'minimize'
+    }]
+}, {
+    label: 'Help',
+    role: 'help',
+    submenu: [{
+        label: 'Learn More',
+        click: () => {
+            electron.shell.openExternal('http://cms.entu.eu')
+        }
+    }]
+}]
+
+if (process.platform === 'darwin') {
+    const name = electron.app.getName()
+    template.unshift({
+        label: name,
+        submenu: [{
+            label: `About ${name}`,
+            role: 'about'
+        }, {
+            type: 'separator'
+        }, {
+            label: 'Services',
+            role: 'services',
+            submenu: []
+        }, {
+            type: 'separator'
+        }, {
+            label: `Hide ${name}`,
+            accelerator: 'Command+H',
+            role: 'hide'
+        }, {
+            label: 'Hide Others',
+            accelerator: 'Command+Alt+H',
+            role: 'hideothers'
+        }, {
+            label: 'Show All',
+            role: 'unhide'
+        }, {
+            type: 'separator'
+        }, {
+            label: 'Quit',
+            accelerator: 'Command+Q',
+            click: () => {
+                app.quit()
+            }
+        }]
+    })
+} else if (process.platform === 'win32') {
+    const helpMenu = template[template.length - 1].submenu
+    addUpdateMenuItems(helpMenu, 0)
+}
+
+app.on('ready', () => {
+    const menu = Menu.buildFromTemplate(template)
+    Menu.setApplicationMenu(menu)
+})
