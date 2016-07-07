@@ -1,8 +1,6 @@
 const electron = require('electron')
 const pug = require('electron-pug')({ pretty: false })
-const app = electron.app
-const BrowserWindow = electron.BrowserWindow
-const Menu = electron.Menu
+const {app, BrowserWindow, Menu} = electron
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -63,12 +61,12 @@ let template = [{
     submenu: [{
         label: 'Reload',
         accelerator: 'CmdOrCtrl+R',
-        click: function (item, focusedWindow) {
+        click: (item, focusedWindow) => {
             if (focusedWindow) {
                 // on reload, start fresh and close any old
                 // open secondary windows
                 if (focusedWindow.id === 1) {
-                    BrowserWindow.getAllWindows().forEach(function (win) {
+                    BrowserWindow.getAllWindows().forEach(win => {
                         if (win.id > 1) {
                             win.close()
                         }
@@ -86,7 +84,7 @@ let template = [{
                 return 'F11'
             }
         })(),
-        click: function (item, focusedWindow) {
+        click: (item, focusedWindow) => {
             if (focusedWindow) {
                 focusedWindow.setFullScreen(!focusedWindow.isFullScreen())
             }
@@ -100,7 +98,7 @@ let template = [{
                 return 'Ctrl+Shift+I'
             }
         })(),
-        click: function (item, focusedWindow) {
+        click: (item, focusedWindow) => {
             if (focusedWindow) {
                 focusedWindow.toggleDevTools()
             }
