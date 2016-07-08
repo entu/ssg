@@ -40,12 +40,12 @@ Sites build process is configurable by Yaml file and its path must be first argu
   Jade basedir for simpler include/extend.
 - __jade.pretty__  
   Boolean to set if output HTML is pretty formatted or not.
-- __stylus.pretty__  
-  Boolean to set if output CSS is pretty formatted or not.
 - __markdown.breaks__  
   Convert '\n' in (markdown) paragraphs into <br>
 - __markdown.html__  
   Enable HTML tags in (markdown) source
+- __stylus.pretty__  
+  Boolean to set if output CSS is pretty formatted or not.
 - __port__  
   What port to use for serving on localhost.
 
@@ -63,11 +63,11 @@ assetsPath: /assets/
 jade:
   basedir: ./source/_templates
   pretty: false
-stylus:
-  pretty: false
 markdown:
   breaks: true
   html: false
+stylus:
+  pretty: false
 port: 4000
 ```
 
