@@ -98,9 +98,7 @@ var openUrl = (url) => {
             serverUrl = `http://localhost:${appConf.port}`
             document.getElementById('preview').innerHTML = serverUrl
 
-            let myNotification = new Notification('Server started', {
-                body: serverUrl
-            })
+            let myNotification = new Notification('Server started', { body: serverUrl })
             myNotification.onclick = () => {
                 shell.openExternal(serverUrl)
             }
@@ -118,9 +116,8 @@ var clearLog = () => {
 
 var addLogError = (event, source, sourceLink, error) => {
     badge(source, true)
-    new Notification('Error in file', {
-        body: source
-    })
+    let myNotification = new Notification('Error in file', { body: source })
+
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
         <tr class="error">
             <td style="width:5%">${event}</td>
