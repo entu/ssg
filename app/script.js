@@ -8,6 +8,7 @@ var confFile = localStorage.getItem('confFile')
 var appConf = {}
 var serverStarted = false
 var serverUrl = ''
+var errors = {}
 
 
 document.getElementById('tools-footer-link').innerHTML = app.getVersion()
@@ -97,8 +98,8 @@ var openUrl = (url) => {
             serverUrl = `http://localhost:${appConf.port}`
             document.getElementById('preview').innerHTML = serverUrl
 
-            let myNotification = new Notification('Entu CMS', {
-                body: `Server started at ${serverUrl}`
+            let myNotification = new Notification('Server started', {
+                body: serverUrl
             })
             myNotification.onclick = () => {
                 shell.openExternal(serverUrl)
@@ -116,6 +117,10 @@ var clearLog = () => {
 
 
 var addLogError = (event, source, sourceLink, error) => {
+    badge(source, true)
+    new Notification('Error in file', {
+        body: source
+    })
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
         <tr class="error">
             <td style="width:5%">${event}</td>
@@ -130,6 +135,7 @@ var addLogError = (event, source, sourceLink, error) => {
 
 
 var addLog = (event, source, sourceLink, build, buildLink) => {
+    badge(source, false)
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
         <tr class="log">
             <td style="width:5%">${event}</td>
@@ -138,6 +144,16 @@ var addLog = (event, source, sourceLink, build, buildLink) => {
         </tr>
     `
     document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight
+}
+
+var badge = (source, add) => {
+    if (add) {
+        errors[source] = true
+    } else {
+        delete errors[source]
+    }
+
+    app.setBadgeCount(Object.keys(errors).length)
 }
 
 
