@@ -1,6 +1,7 @@
 # Entu CMS
 
 [![npm version](https://badge.fury.io/js/entu-cms.svg)](https://badge.fury.io/js/entu-cms) [![Dependency Status](https://david-dm.org/argoroots/entu-cms.svg)](https://david-dm.org/argoroots/entu-cms) [![Codacy Badge](https://api.codacy.com/project/badge/grade/66531026074a471897b076fb91a74601)](https://www.codacy.com/app/argoroots/entu-cms)
+## Benefits
 
 - Simple file based CMS.
 - Use Your favorite tools/editors.
@@ -13,7 +14,7 @@
 
 ## Installation and usage
 
-Download [latest build](https://github.com/argoroots/entu-cms/releases), unzip and run. Chose config.yaml file and it will:
+Download [latest build](https://github.com/argoroots/entu-cms/releases/latest), unzip and run. Choose config.yaml file and it will:
 
 1. generate HTML/CSS files
 2. start server on localhost
