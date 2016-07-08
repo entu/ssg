@@ -1,4 +1,4 @@
-![Screenshot](/assets/screenshot.png "Screenshot")
+![Screenshot](screenshot.png "Screenshot")
 
 ## Benefits
 

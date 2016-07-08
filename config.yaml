@@ -1,8 +1,8 @@
 source: ./source
 build: .
-assets: ./assets
+assets: ./
 basePath: /
-assetsPath: /assets/
+assetsPath: /
 jade:
     basedir: ./source/_templates
     pretty: false
