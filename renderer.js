@@ -87,7 +87,6 @@ var makeHTML = (filePath, callback) => {
 
             op.ensureExists(data, 'page.language', locale)
             op.ensureExists(data, 'page.otherLocales', {})
-            op.ensureExists(data, 'page.base', appConf.basePath)
             op.ensureExists(data, 'page.path', path.dirname(jadeFile).replace(appConf.source, '').substr(1))
             op.ensureExists(data, 'pretty', true)
             op.ensureExists(data, 'basedir', appConf.jade.basedir)
@@ -100,7 +99,6 @@ var makeHTML = (filePath, callback) => {
 
                 op.ensureExists(otherLocaleData, 'page', {})
                 op.ensureExists(otherLocaleData, 'page.language', appConf.locales[i])
-                op.ensureExists(otherLocaleData, 'page.base', appConf.basePath)
                 op.ensureExists(otherLocaleData, 'page.path', path.dirname(jadeFile).replace(appConf.source, '').substr(1))
 
                 op.set(data, ['page', 'otherLocales', appConf.locales[i]], otherLocaleData.page)
@@ -242,7 +240,6 @@ exports.openConfFile = (appConfFile, callback) => {
         op.ensureExists(appConf, 'source', path.join(__dirname, 'source'))
         op.ensureExists(appConf, 'build', path.join(__dirname, 'build'))
         op.ensureExists(appConf, 'assets', path.join(__dirname, 'assets'))
-        op.ensureExists(appConf, 'basePath', '/')
         op.ensureExists(appConf, 'assetsPath', '/assets')
         op.ensureExists(appConf, 'markdown.breaks', true)
         op.ensureExists(appConf, 'markdown.html', false)

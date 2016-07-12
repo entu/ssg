@@ -33,8 +33,6 @@ Sites build process is configurable by Yaml file and its path must be first argu
   Folder to put generated HTML (realtive to build config.yaml).
 - __assets__  
   Folder to put static files (JS, images, ...).
-- __basePath__  
-  ...
 - __assetsPath__  
   Serving page in localhost will map this url to folder specified in _assets_ parameter.
 - __jade.basedir__  
@@ -59,7 +57,6 @@ locales:
 source: ./source
 build: ./build
 assets: ./assets
-basePath: /
 assetsPath: /assets/
 jade:
   basedir: ./source/_templates
