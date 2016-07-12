@@ -85,6 +85,8 @@ var makeHTML = (filePath, callback) => {
             }
             op.del(data, 'D.page')
 
+            if(op.get(data, 'page.disabled', false) === true) { continue }
+
             op.ensureExists(data, 'page.language', locale)
             op.ensureExists(data, 'page.otherLocales', {})
             op.ensureExists(data, 'page.path', path.dirname(jadeFile).replace(appConf.source, '').substr(1))
@@ -94,8 +96,11 @@ var makeHTML = (filePath, callback) => {
             for (var i in appConf.locales) {
                 if (!appConf.locales.hasOwnProperty(i)) { continue }
                 if (appConf.locales[i] === locale) { continue }
+                if (!getFilePath(folderName, 'index.jade', appConf.locales[i])) { continue }
 
                 var otherLocaleData = getYamlFile(folderName, 'data.yaml', appConf.locales[i], {})
+
+                if(op.get(otherLocaleData, 'page.disabled', false) === true) { continue }
 
                 op.ensureExists(otherLocaleData, 'page', {})
                 op.ensureExists(otherLocaleData, 'page.language', appConf.locales[i])

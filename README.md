@@ -89,6 +89,8 @@ To pass data to index.jade use __data.yaml__ file. This data is passed to index.
 This file can also contain page configuration info. All page parameters must be inside _page_ property. This info is also passed to index.jade in _page_ object.
 
 Some page parameters will change how HTML is generated. Those are:
+- __page.disabled__  
+  If true, page will not be generated nor loaded to _page.otherLocales_ object.
 - __page.path__  
   If set, it will override folder based path.
 - __page.aliases__  
