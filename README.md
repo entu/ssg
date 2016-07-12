@@ -32,8 +32,6 @@ Sites build process is configurable by Yaml file and its path must be first argu
   Folder to put generated HTML (realtive to build config.yaml).
 - __assets__  
   Folder to put static files (JS, images, ...).
-- __basePath__  
-  ...
 - __assetsPath__  
   Serving page in localhost will map this url to folder specified in _assets_ parameter.
 - __jade.basedir__  
@@ -58,7 +56,6 @@ locales:
 source: ./source
 build: ./build
 assets: ./assets
-basePath: /
 assetsPath: /assets/
 jade:
   basedir: ./source/_templates
@@ -91,6 +88,8 @@ To pass data to index.jade use __data.yaml__ file. This data is passed to index.
 This file can also contain page configuration info. All page parameters must be inside _page_ property. This info is also passed to index.jade in _page_ object.
 
 Some page parameters will change how HTML is generated. Those are:
+- __page.disabled__  
+  If true, page will not be generated nor loaded to _page.otherLocales_ object.
 - __page.path__  
   If set, it will override folder based path.
 - __page.aliases__  
