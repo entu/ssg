@@ -55,6 +55,7 @@ var startRendering = () => {
 
             renderer.watchFiles((err, data) => {
                 if (err) {
+                    badge(err.source, true)
                     addLogError(
                         err.event,
                         err.source,
@@ -63,6 +64,7 @@ var startRendering = () => {
                     )
                 } else {
                     for (var i = 0; i < data.build.length; i++) {
+                        badge(data.source, false)
                         addLog(
                             data.event,
                             data.source,
@@ -115,7 +117,6 @@ var clearLog = () => {
 
 
 var addLogError = (event, source, sourceLink, error) => {
-    badge(source, true)
     let myNotification = new Notification('Error in file', { body: source })
 
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
@@ -132,7 +133,6 @@ var addLogError = (event, source, sourceLink, error) => {
 
 
 var addLog = (event, source, sourceLink, build, buildLink) => {
-    badge(source, false)
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
         <tr class="log">
             <td style="width:5%">${event}</td>

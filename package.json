@@ -30,7 +30,7 @@
     "electron-pug": "^1.5.1",
     "electron-stylus": "^0.1.1",
     "fs-extra": "^0.30.0",
-    "html-minifier": "^2.1.7",
+    "html-minifier": "^3.0.1",
     "jade": "^1.11.0",
     "js-yaml": "^3.6.1",
     "jstransformer-markdown-it": "^0.2.3",
