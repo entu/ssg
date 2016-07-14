@@ -86,6 +86,8 @@ Global, location based, style.css is combined from all style.styl files and put 
 
 To pass data to index.jade use __data.yaml__ file. This data is passed to index.jade in object named _D_ (To get property _text_ from data.yaml use _D.text_ in index.jade).
 
+You can put locale identificator to filename (like data.en.yaml) for locale speciffic content. Other locales _page_ object is accessible via _page.otherLocales_ object.
+
 This file can also contain page configuration info. All page parameters must be inside _page_ property. This info is also passed to index.jade in _page_ object.
 
 Some page parameters will change how HTML is generated. Those are:
@@ -97,8 +99,8 @@ Some page parameters will change how HTML is generated. Those are:
   List of path aliases. Will make redirekt urls to original path.
 - __page.redirect__  
   Path or url to redirect (if user visits this page).
-
-You can put locale identificator to filename (like data.en.yaml) for locale speciffic content. Other locales _page_ object is accessible via _page.otherLocales_ object.
+- __page.data.files__
+  List of files to load data from. This data is passed to index.jade in object named _F_. You can put locale identificator to filename (like my_custom_list.en.yaml)
 
 ### Example page data.yaml:
 

@@ -109,6 +109,26 @@ var makeHTML = (filePath, callback) => {
                 op.set(data, ['page', 'otherLocales', appConf.locales[i]], otherLocaleData.page)
             }
 
+            // Get custom data from Yaml files
+            for (let i in op.get(data, 'page.data.files', [])) {
+                if (!data.page.data.files.hasOwnProperty(i)) { continue }
+
+                op.set(data, ['F', data.page.data.files[i].replace('.' + locale + '.yaml', '').replace('.yaml', '')], getYamlFile(folderName, data.page.data.files[i], locale))
+
+                let customDataFile = getFilePath(folderName, data.page.data.files[i], locale)
+                let key = customDataFile.replace(appConf.source, '').replace('.yaml', '')
+
+                if (op.get(jadeDependencies, key, []).indexOf(customDataFile) > -1) { continue }
+
+                op.push(jadeDependencies, key, jadeFile)
+
+                console.log(jadeDependencies);
+                console.log(customDataFile);
+
+                dependenciesWatcher.add(customDataFile)
+
+            }
+
             data.G = appConf.data[locale]
             data.G.md = text => {
                 if (text) {
@@ -354,7 +374,7 @@ exports.watchFiles = callback => {
 
     // Start to watch Jade dependencies
     dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', (fileEvent, filePath) => {
-        var files = op.get(jadeDependencies, filePath.replace(appConf.source, '').replace('.jade', ''))
+        var files = op.get(jadeDependencies, filePath.replace(appConf.source, '').replace('.jade', '').replace('.yaml', ''))
 
         for (var i in files) {
             if (!files.hasOwnProperty(i)) { continue }
