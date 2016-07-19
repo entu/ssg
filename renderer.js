@@ -2,18 +2,18 @@
 
 'use strict'
 
-var chokidar = require('chokidar')
-var fs = require('fs')
-var fse = require('fs-extra')
-var http = require('http')
-var jade = require('jade')
-var md = require('markdown-it')
-var mime = require('mime-types')
-var minify = require('html-minifier').minify
-var op = require('object-path')
-var path = require('path')
-var stylus = require('stylus')
-var yaml = require('js-yaml')
+const chokidar = require('chokidar')
+const fs = require('fs')
+const fse = require('fs-extra')
+const http = require('http')
+const jade = require('jade')
+const md = require('markdown-it')
+const mime = require('mime-types')
+const {minify} = require('html-minifier')
+const op = require('object-path')
+const path = require('path')
+const stylus = require('stylus')
+const yaml = require('js-yaml')
 
 // Returns file path with locale if exists
 var getFilePath = (dirName, fileName, locale) => {
