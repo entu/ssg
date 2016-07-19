@@ -75,7 +75,7 @@ var makeHTML = (filePath, callback) => {
 
       data.D = getYamlFile(folderName, 'data.yaml', locale, {})
 
-      for (var i in data.D.page) {
+      for (let i in data.D.page) {
         if (!data.D.page.hasOwnProperty(i)) { continue }
 
         op.set(data, ['page', i], op.get(data, ['D', 'page', i]))
@@ -90,7 +90,7 @@ var makeHTML = (filePath, callback) => {
       op.ensureExists(data, 'pretty', true)
       op.ensureExists(data, 'basedir', appConf.jade.basedir)
 
-      for (var i in appConf.locales) {
+      for (let i in appConf.locales) {
         if (!appConf.locales.hasOwnProperty(i)) { continue }
         if (appConf.locales[i] === locale) { continue }
         if (!getFilePath(folderName, 'index.jade', appConf.locales[i])) { continue }
@@ -107,7 +107,7 @@ var makeHTML = (filePath, callback) => {
       }
 
       // Get custom data from Yaml files
-      for (var i in op.get(data, 'page.data.files', [])) {
+      for (let i in op.get(data, 'page.data.files', [])) {
         if (!data.page.data.files.hasOwnProperty(i)) { continue }
 
         op.set(data, ['F', data.page.data.files[i].replace('.' + locale + '.yaml', '').replace('.yaml', '')], getYamlFile(folderName, data.page.data.files[i], locale))
@@ -168,7 +168,7 @@ var makeHTML = (filePath, callback) => {
           })
         }
 
-        for (var i in compiledJade.dependencies) {
+        for (let i in compiledJade.dependencies) {
           if (!compiledJade.dependencies.hasOwnProperty(i)) { continue }
 
           var key = op.get(compiledJade, ['dependencies', i]).replace(appConf.source, '').replace('.jade', '')
@@ -225,10 +225,10 @@ var makeCSS = (filePath, callback) => {
       }
 
       var css = []
-      for (var s in stylesList[locale]) {
-        if (!stylesList[locale].hasOwnProperty(s)) { continue }
+      for (let i in stylesList[locale]) {
+        if (!stylesList[locale].hasOwnProperty(i)) { continue }
 
-        css.push(stylesList[locale][s])
+        css.push(stylesList[locale][i])
       }
 
       var cssDir = path.join(appConf.build, locale)
@@ -281,10 +281,10 @@ exports.openConfFile = (appConfFile, callback) => {
     // console.log(yaml.safeDump(c))
 
     // Load global data
-    for (var l in appConf.locales) {
-      if (!appConf.locales.hasOwnProperty(l)) { continue }
+    for (let i in appConf.locales) {
+      if (!appConf.locales.hasOwnProperty(i)) { continue }
 
-      var locale = appConf.locales[l]
+      var locale = appConf.locales[i]
       op.set(appConf, ['data', locale], getYamlFile(appConf.source, 'global.yaml', locale, {}))
     }
 
@@ -363,7 +363,7 @@ exports.watchFiles = callback => {
   dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', (fileEvent, filePath) => {
     var files = op.get(jadeDependencies, filePath.replace(appConf.source, '').replace('.jade', '').replace('.yaml', ''))
 
-    for (var i in files) {
+    for (let i in files) {
       if (!files.hasOwnProperty(i)) { continue }
 
       makeHTML(files[i], (err, file) => {
