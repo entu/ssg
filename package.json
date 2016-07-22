@@ -1,7 +1,7 @@
 {
   "name": "entu-cms",
   "productName": "Entu CMS",
-  "version": "0.6.12",
+  "version": "0.6.13",
   "author": "Argo Roots <argo@roots.ee>",
   "description": "Simple (Jade) filebased CMS",
   "keywords": [
