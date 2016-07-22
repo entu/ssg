@@ -1,6 +1,6 @@
 const electron = require('electron')
-const pug = require('electron-pug')({ pretty: false })
 const {app, BrowserWindow, Menu} = electron
+const pug = require('electron-pug')({ pretty: false })
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
