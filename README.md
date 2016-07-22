@@ -45,6 +45,8 @@ Sites build process is configurable by Yaml file and its path must be first argu
   Enable HTML tags in (markdown) source
 - __stylus.pretty__  
   Boolean to set if output CSS is pretty formatted or not.
+- __javascript.pretty__  
+  Boolean to set if output JavaScript is pretty formatted or not.
 - __port__  
   What port to use for serving on localhost.
 

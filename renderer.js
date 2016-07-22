@@ -14,6 +14,7 @@ const op = require('object-path')
 const path = require('path')
 const stylus = require('stylus')
 const yaml = require('js-yaml')
+const uglify = require('uglify-js')
 
 // Returns file path with locale if exists
 var getFilePath = (dirName, fileName, locale) => {
@@ -248,6 +249,68 @@ var makeCSS = (filePath, callback) => {
   }
 }
 
+// Generates JS from separate .js files
+var scriptsList = []
+var makeJS = (filePath, callback) => {
+  try {
+    var folderName = path.dirname(filePath)
+    var fileName = path.basename(filePath)
+    var fileNameWithoutLocale
+    var outputFiles = []
+    var locales = []
+
+    if (fileName.split('.').length > 2) {
+      locales = [fileName.split('.')[1]]
+      fileNameWithoutLocale = [fileName.split('.')[0], fileName.split('.')[2]].join('.')
+    } else {
+      locales = appConf.locales
+      fileNameWithoutLocale = fileName
+    }
+
+    for (var l in locales) {
+      if (!locales.hasOwnProperty(l)) { continue }
+
+      var locale = locales[l]
+
+      if (!scriptsList[locales[l]]) { scriptsList[locale] = {} }
+
+      var scriptFile = getFilePath(folderName, fileNameWithoutLocale, locale)
+      if (scriptFile) {
+        scriptsList[locale][scriptFile] = fs.readFileSync(scriptFile, 'utf8')
+      } else {
+        delete scriptsList[locale][scriptFile]
+      }
+
+      var js = []
+      for (let i in scriptsList[locale]) {
+        if (!scriptsList[locale].hasOwnProperty(i)) { continue }
+
+        js.push(scriptsList[locale][i])
+      }
+
+      var jsDir = path.join(appConf.build, locale)
+      var jsFile = path.join(jsDir, 'script.js')
+
+      if (appConf.javascript.pretty) {
+        fse.outputFileSync(jsFile, js.join('\n\n'))
+      } else {
+        let script = uglify.minify(js.join('\n\n'), {
+          fromString: true,
+          outSourceMap: true
+        })
+        fse.outputFileSync(jsFile, script.code)
+        fse.outputFileSync(jsFile + '.map', script.map)
+      }
+
+      outputFiles.push(jsFile.replace(appConf.build, ''))
+    }
+
+    callback(null, outputFiles)
+  } catch (e) {
+    callback(e)
+  }
+}
+
 // Open config.yaml and set config variables
 exports.openConfFile = (appConfFile, callback) => {
   try {
@@ -263,6 +326,7 @@ exports.openConfFile = (appConfFile, callback) => {
     op.ensureExists(appConf, 'jade.basedir', path.join(__dirname, 'source'))
     op.ensureExists(appConf, 'jade.pretty', false)
     op.ensureExists(appConf, 'stylus.pretty', false)
+    op.ensureExists(appConf, 'javascript.pretty', false)
     op.ensureExists(appConf, 'port', 0)
 
     if (appConf.source.substr(0, 1) === '.') {
@@ -409,6 +473,25 @@ exports.watchFiles = callback => {
   // Start to watch style files changes
   chokidar.watch(appConf.source + '/**/*.styl', { ignored: '*/_*.styl' }).on('all', (fileEvent, filePath) => {
     makeCSS(filePath, (err, file) => {
+      if (err) {
+        callback({
+          event: fileEvent.toUpperCase(),
+          source: filePath.replace(appConf.source, ''),
+          error: err
+        })
+      } else {
+        callback(null, {
+          event: fileEvent.toUpperCase(),
+          source: filePath.replace(appConf.source, ''),
+          build: file
+        })
+      }
+    })
+  })
+
+  // Start to watch javascript files changes
+  chokidar.watch(appConf.source + '/**/*.js', { ignored: '*/_*.js' }).on('all', (fileEvent, filePath) => {
+    makeJS(filePath, (err, file) => {
       if (err) {
         callback({
           event: fileEvent.toUpperCase(),
