@@ -194,19 +194,22 @@ var makeHTML = (filePath, callback) => {
   }
 }
 
-// Generates CSS from stylus
+// Generates CSS from separate .styl files
 var stylesList = {}
 var makeCSS = (filePath, callback) => {
   try {
     var folderName = path.dirname(filePath)
     var fileName = path.basename(filePath)
+    var fileNameWithoutLocale
     var outputFiles = []
     var locales = []
 
     if (fileName.split('.').length > 2) {
       locales = [fileName.split('.')[1]]
+      fileNameWithoutLocale = [fileName.split('.')[0], fileName.split('.')[2]].join('.')
     } else {
       locales = appConf.locales
+      fileNameWithoutLocale = fileName
     }
 
     for (var l in locales) {
@@ -216,12 +219,11 @@ var makeCSS = (filePath, callback) => {
 
       if (!stylesList[locales[l]]) { stylesList[locale] = {} }
 
-      var styleFile = getFilePath(folderName, 'style.styl', locale)
+      var styleFile = getFilePath(folderName, fileNameWithoutLocale, locale)
       if (styleFile) {
-        var styl = stylus(fs.readFileSync(styleFile, 'utf8')).set('warn', false).set('compress', !appConf.stylus.pretty)
-        stylesList[locale][folderName] = styl.render()
+        stylesList[locale][styleFile] = fs.readFileSync(styleFile, 'utf8')
       } else {
-        delete stylesList[locale][folderName]
+        delete stylesList[locale][styleFile]
       }
 
       var css = []
@@ -234,7 +236,8 @@ var makeCSS = (filePath, callback) => {
       var cssDir = path.join(appConf.build, locale)
       var cssFile = path.join(cssDir, 'style.css')
 
-      fse.outputFileSync(cssFile, css.join('\n'))
+      let styl = stylus(css.join('\n\n')).set('warn', false).set('compress', !appConf.stylus.pretty)
+      fse.outputFileSync(cssFile, styl.render())
 
       outputFiles.push(cssFile.replace(appConf.build, ''))
     }
@@ -404,7 +407,7 @@ exports.watchFiles = callback => {
   })
 
   // Start to watch style files changes
-  chokidar.watch(appConf.source + '/**/style*.styl', { ignored: '*/_*' }).on('all', (fileEvent, filePath) => {
+  chokidar.watch(appConf.source + '/**/*.styl', { ignored: '*/_*.styl' }).on('all', (fileEvent, filePath) => {
     makeCSS(filePath, (err, file) => {
       if (err) {
         callback({
