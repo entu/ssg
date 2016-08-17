@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 'use strict'
 
 const chokidar = require('chokidar')
@@ -45,7 +43,7 @@ var getYamlFile = (dirName, fileName, locale, defaultResult) => {
 // Generates HTMLs from template
 var appConf = {}
 var jadeDependencies = {}
-var makeHTML = (filePath, callback) => {
+var makeHTML = (filePath, watch, callback) => {
   try {
     var folderName = path.dirname(filePath)
     var fileName = path.basename(filePath)
@@ -120,7 +118,9 @@ var makeHTML = (filePath, callback) => {
 
         op.push(jadeDependencies, key, jadeFile)
 
-        dependenciesWatcher.add(customDataFile)
+        if (watch) {
+            dependenciesWatcher.add(customDataFile)
+        }
       }
 
       data.G = appConf.data[locale]
@@ -169,16 +169,18 @@ var makeHTML = (filePath, callback) => {
           })
         }
 
-        for (let i in compiledJade.dependencies) {
-          if (!compiledJade.dependencies.hasOwnProperty(i)) { continue }
+        if (watch) {
+            for (let i in compiledJade.dependencies) {
+              if (!compiledJade.dependencies.hasOwnProperty(i)) { continue }
 
-          var key = op.get(compiledJade, ['dependencies', i]).replace(appConf.source, '').replace('.jade', '')
+              var key = op.get(compiledJade, ['dependencies', i]).replace(appConf.source, '').replace('.jade', '')
 
-          if (op.get(jadeDependencies, key, []).indexOf(jadeFile) > -1) { continue }
+              if (op.get(jadeDependencies, key, []).indexOf(jadeFile) > -1) { continue }
 
-          op.push(jadeDependencies, key, jadeFile)
+              op.push(jadeDependencies, key, jadeFile)
 
-          dependenciesWatcher.add(op.get(compiledJade, ['dependencies', i]))
+              dependenciesWatcher.add(op.get(compiledJade, ['dependencies', i]))
+            }
         }
 
         var htmlFile = path.join(appConf.build, htmlDirs[h], 'index.html')
@@ -194,6 +196,7 @@ var makeHTML = (filePath, callback) => {
     callback(e)
   }
 }
+exports.makeHTML = makeHTML
 
 // Generates CSS from separate .styl files
 var stylesList = {}
@@ -248,6 +251,7 @@ var makeCSS = (filePath, callback) => {
     callback(e)
   }
 }
+exports.makeCSS = makeCSS
 
 // Generates JS from separate .js files
 var scriptsList = []
@@ -310,6 +314,7 @@ var makeJS = (filePath, callback) => {
     callback(e)
   }
 }
+exports.makeJS = makeJS
 
 // Open config.yaml and set config variables
 exports.openConfFile = (appConfFile, callback) => {
@@ -408,8 +413,8 @@ exports.startServer = callback => {
 var dependenciesWatcher
 exports.watchFiles = callback => {
   // Start to watch Jade files
-  chokidar.watch(appConf.source + '/**/index*.jade', { ignored: '*/_*.jade' }).on('all', (fileEvent, filePath) => {
-    makeHTML(filePath, (err, file) => {
+  chokidar.watch(appConf.source + '/**/index*.jade').on('all', (fileEvent, filePath) => {
+    makeHTML(filePath, true, (err, file) => {
       if (err) {
         callback({
           event: fileEvent.toUpperCase(),
@@ -433,7 +438,7 @@ exports.watchFiles = callback => {
     for (let i in files) {
       if (!files.hasOwnProperty(i)) { continue }
 
-      makeHTML(files[i], (err, file) => {
+      makeHTML(files[i], true, (err, file) => {
         if (err) {
           callback({
             event: fileEvent.toUpperCase(),
@@ -453,7 +458,7 @@ exports.watchFiles = callback => {
 
   // Start to watch Yaml files
   chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*.yaml', ignoreInitial: true }).on('all', (fileEvent, filePath) => {
-    makeHTML(filePath, (err, file) => {
+    makeHTML(filePath, true, (err, file) => {
       if (err) {
         callback({
           event: fileEvent.toUpperCase(),
