@@ -408,7 +408,7 @@ exports.startServer = callback => {
 var dependenciesWatcher
 exports.watchFiles = callback => {
   // Start to watch Jade files
-  chokidar.watch(appConf.source + '/**/index*.jade', { ignored: '*/_*' }).on('all', (fileEvent, filePath) => {
+  chokidar.watch(appConf.source + '/**/index*.jade', { ignored: '*/_*.jade' }).on('all', (fileEvent, filePath) => {
     makeHTML(filePath, (err, file) => {
       if (err) {
         callback({
@@ -426,7 +426,7 @@ exports.watchFiles = callback => {
     })
   })
 
-  // Start to watch Jade dependencies
+  // Start to watch all dependencies
   dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', (fileEvent, filePath) => {
     var files = op.get(jadeDependencies, filePath.replace(appConf.source, '').replace('.jade', '').replace('.yaml', ''))
 
@@ -452,7 +452,7 @@ exports.watchFiles = callback => {
   })
 
   // Start to watch Yaml files
-  chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*', ignoreInitial: true }).on('all', (fileEvent, filePath) => {
+  chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*.yaml', ignoreInitial: true }).on('all', (fileEvent, filePath) => {
     makeHTML(filePath, (err, file) => {
       if (err) {
         callback({
