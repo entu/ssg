@@ -330,16 +330,16 @@ exports.openConfFile = (appConfFile, callback) => {
     op.ensureExists(appConf, 'port', 0)
 
     if (appConf.source.substr(0, 1) === '.') {
-      appConf.source = path.join(path.dirname(appConfFile), appConf.source)
+      appConf.source = path.resolve(path.join(path.dirname(appConfFile), appConf.source))
     }
     if (appConf.build.substr(0, 1) === '.') {
-      appConf.build = path.join(path.dirname(appConfFile), appConf.build)
+      appConf.build = path.resolve(path.join(path.dirname(appConfFile), appConf.build))
     }
     if (appConf.assets.substr(0, 1) === '.') {
-      appConf.assets = path.join(path.dirname(appConfFile), appConf.assets)
+      appConf.assets = path.resolve(path.join(path.dirname(appConfFile), appConf.assets))
     }
     if (appConf.jade.basedir.substr(0, 1) === '.') {
-      appConf.jade.basedir = path.join(path.dirname(appConfFile), appConf.jade.basedir)
+      appConf.jade.basedir = path.resolve(path.join(path.dirname(appConfFile), appConf.jade.basedir))
     }
 
     // Printout configuration
