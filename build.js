@@ -35,7 +35,7 @@ renderer.openConfFile(process.argv[2], (err, conf) => {
                 if (fileName === 'index.jade' || fileName.search(/^index\..{2}\.jade$/) === 0) {
                     buildFiles.push(item.path)
                     renderer.makeHTML(item.path, false, (err, files) => {
-                        if (err) { console.error(err) }
+                        if (err) { console.error(err.message) }
                         // console.log(item.path)
                     })
                 }
@@ -44,7 +44,7 @@ renderer.openConfFile(process.argv[2], (err, conf) => {
                 if (fileName.indexOf('_') !== 0) {
                     buildFiles.push(item.path)
                     renderer.makeJS(item.path, (err, files) => {
-                        if (err) { console.error(err) }
+                        if (err) { console.error(err.message) }
                         // console.log(item.path)
                     })
                 }
@@ -53,7 +53,7 @@ renderer.openConfFile(process.argv[2], (err, conf) => {
                 if (fileName.indexOf('_') !== 0) {
                     buildFiles.push(item.path)
                     renderer.makeCSS(item.path, (err, files) => {
-                        if (err) { console.error(err) }
+                        if (err) { console.error(err.message) }
                         // console.log(item.path)
                     })
                 }
