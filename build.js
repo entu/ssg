@@ -64,4 +64,8 @@ renderer.openConfFile(process.argv[2], (err, conf) => {
     }).on('end', function () {
         // console.dir(buildFiles)
     })
+
+    fse.copy(appConf.assets, path.join(appConf.build, appConf.assets.replace(path.dirname(appConf.assets), '')), function (err) {
+        if (err) { console.error(err.message) }
+    })
 })
