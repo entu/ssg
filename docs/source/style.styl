@@ -1,0 +1,113 @@
+body
+    padding-top 30px
+    padding-bottom 30px
+    font-family 'Helvetica Neue', Roboto, sans-serif
+    font-size 16px
+    font-weight 300
+    line-height 22px
+    color #182530
+
+h1
+    margin-top 120px
+    margin-bottom 30px
+    font-size 48px
+    font-weight 100
+    text-align center
+
+h2
+    margin-top 120px
+    margin-bottom 30px
+    padding-top 40px
+    font-weight 600
+    text-align center
+
+h3
+    margin-top 40px
+    margin-bottom 10px
+    padding-top 40px
+    font-weight 600
+
+h4
+    margin-top 0px
+    margin-bottom 10px
+    padding-top 40px
+    font-weight 600
+
+pre
+    margin-top 10px
+    padding 10px
+    border none
+    border-radius 0px
+    font-size 12px
+    line-height 16px
+
+img
+    display block
+    margin 30px auto 0px auto
+    width 100%
+    max-width 900px
+    border 1px solid #B9B9B9
+    border-radius 6px
+
+nav[data-toggle=toc]
+    width inherit
+    padding-right 15px
+    padding-bottom 120px
+
+    .nav
+        width 100%
+
+        & > li > a
+            display block
+            padding 10px 0px 5px 0px
+            font-weight 300
+            color #708090
+
+            &:hover
+
+            &:focus
+                color #182530
+                text-decoration none
+                background-color transparent
+
+        & > .active > a
+
+        & > .active:hover > a
+
+        & > .active:focus > a
+            font-weight 600
+            color #182530
+            background-color transparent
+
+        & > .active > ul
+            font-weight 600
+            display block
+
+        .nav
+            display none
+            padding-bottom 10px
+
+        .nav > li > a
+            padding 5px 10px
+            font-size 13px
+            font-weight 300
+            line-height 14px
+
+            &:hover
+
+            &:focus
+                font-weight 300
+
+        .nav > .active > a
+
+        .nav > .active:hover > a
+
+        .nav > .active:focus > a
+            font-weight 600
+
+@media (max-width 992px)
+    nav.affix[data-toggle='toc']
+        position static
+
+    nav[data-toggle='toc'] .nav .nav
+        display block
