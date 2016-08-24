@@ -132,7 +132,7 @@ var makeHTML = (filePath, watch, callback) => {
         }
       }
 
-      var redirect = op.get(data, 'page.redirect')
+      var originalPath = op.get(data, 'page.originalPath')
 
       var htmlDirs = op.get(data, 'page.aliases', [])
       var defaultHtmlDir = path.join('/', locale, data.page.path)
@@ -141,12 +141,12 @@ var makeHTML = (filePath, watch, callback) => {
       for (var h in htmlDirs) {
         if (!htmlDirs.hasOwnProperty(h)) { continue }
 
-        if (redirect) {
-          op.set(data, 'page.redirect', redirect)
+        if (originalPath) {
+          op.set(data, 'page.originalPath', originalPath)
         } else if (htmlDirs[h] !== defaultHtmlDir) {
-          op.set(data, 'page.redirect', defaultHtmlDir)
+          op.set(data, 'page.originalPath', defaultHtmlDir)
         } else {
-          op.del(data, 'page.redirect')
+          op.del(data, 'page.originalPath')
         }
 
         var compiledJade = jade.compileFile(jadeFile, data)
