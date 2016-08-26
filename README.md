@@ -1,6 +1,6 @@
 # Entu CMS
 
-![Screenshot](http://cms.entu.eu/screenshot.png)
+![Screenshot](https://cms.entu.eu/screenshot.png)
 
 ## Benefits
 
