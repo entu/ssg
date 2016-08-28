@@ -47,7 +47,7 @@ var startRendering = () => {
             appConf = conf
             serverUrl = `http://localhost:${appConf.port}`
 
-            document.getElementById('title').innerHTML = confFile.replace(app.getPath('home'), '~')
+            document.getElementById('conf').innerHTML = confFile.replace(app.getPath('home'), '~')
             document.getElementById('source').innerHTML = appConf.source.replace(app.getPath('home'), '~')
             document.getElementById('build').innerHTML = appConf.build.replace(app.getPath('home'), '~')
 
