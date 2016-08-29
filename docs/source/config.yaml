@@ -1,10 +1,10 @@
-source: ./source
-build: .
+source: ./
+build: ../
 assets: ./
 basePath: /
 assetsPath: /
 jade:
-    basedir: ./source/_templates
+    basedir: ./_templates
     pretty: false
 stylus:
     pretty: false
