@@ -87,7 +87,7 @@ Global, location based, style.css is combined from all style.styl files and put 
 
 ### Page data and configuration - data.yaml
 
-To pass data to index.jade use __data.yaml__ file. This data is passed to index.jade in object named _D_ (To get property _text_ from data.yaml use _D.text_ in index.jade).
+To pass data to index.jade use front matter (Yaml formated data beginning of Jaml file between two \-\-\- lines) or __data.yaml__ file. This data is passed to index.jade in object named _D_ (To get property _text_ from data.yaml use _D.text_ in index.jade).
 
 You can put locale identificator to filename (like data.en.yaml) for locale speciffic content. Other locales _page_ object is accessible via _page.otherLocales_ object.
 

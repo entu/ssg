@@ -1,18 +1,19 @@
 'use strict'
 
+const {minify} = require('html-minifier')
 const chokidar = require('chokidar')
+const fm = require('front-matter')
 const fs = require('fs')
 const fse = require('fs-extra')
 const http = require('http')
 const jade = require('jade')
 const md = require('markdown-it')
 const mime = require('mime-types')
-const {minify} = require('html-minifier')
 const op = require('object-path')
 const path = require('path')
 const stylus = require('stylus')
-const yaml = require('js-yaml')
 const uglify = require('uglify-js')
+const yaml = require('js-yaml')
 
 // Returns file path with locale if exists
 var getFilePath = (dirName, fileName, locale) => {
@@ -65,14 +66,16 @@ var makeHTML = (filePath, watch, callback) => {
       var jadeFile = getFilePath(folderName, 'index.jade', locale)
       if (!jadeFile) { continue }
 
+      var jadeFileContent = fm(fs.readFileSync(jadeFile, 'utf8'))
+      var yamlFileContent = getYamlFile(folderName, 'data.yaml', locale, {})
+
       // Get and set data for Jade template
       var data = {
         page: {},
-        D: {},
+        D: Object.assign(yamlFileContent, jadeFileContent.attributes),
         G: {}
       }
 
-      data.D = getYamlFile(folderName, 'data.yaml', locale, {})
 
       for (let i in data.D.page) {
         if (!data.D.page.hasOwnProperty(i)) { continue }
@@ -86,15 +89,22 @@ var makeHTML = (filePath, watch, callback) => {
       op.ensureExists(data, 'page.language', locale)
       op.ensureExists(data, 'page.otherLocales', {})
       op.ensureExists(data, 'page.path', path.dirname(jadeFile).replace(appConf.source, '').substr(1))
+      op.ensureExists(data, 'filename', jadeFile)
       op.ensureExists(data, 'pretty', true)
       op.ensureExists(data, 'basedir', appConf.jade.basedir)
 
+      // Get other locales data
       for (let i in appConf.locales) {
         if (!appConf.locales.hasOwnProperty(i)) { continue }
         if (appConf.locales[i] === locale) { continue }
-        if (!getFilePath(folderName, 'index.jade', appConf.locales[i])) { continue }
 
-        var otherLocaleData = getYamlFile(folderName, 'data.yaml', appConf.locales[i], {})
+        var otherLocaleJadeFile = getFilePath(folderName, 'index.jade', appConf.locales[i])
+        if (!otherLocaleJadeFile) { continue }
+
+        var otherLocaleJadeFileContent = fm(fs.readFileSync(otherLocaleJadeFile, 'utf8'))
+        var otherLocaleYamlFileContent = getYamlFile(folderName, 'data.yaml', appConf.locales[i], {})
+
+        var otherLocaleData = Object.assign(otherLocaleYamlFileContent, otherLocaleJadeFileContent.attributes)
 
         if (op.get(otherLocaleData, 'page.disabled', false) === true) { continue }
 
@@ -149,7 +159,7 @@ var makeHTML = (filePath, watch, callback) => {
           op.del(data, 'page.originalPath')
         }
 
-        var compiledJade = jade.compileFile(jadeFile, data)
+        var compiledJade = jade.compile(jadeFileContent.body || '', data)
         var html = compiledJade(data)
 
         if (!appConf.jade.pretty) {
