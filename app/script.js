@@ -81,11 +81,12 @@ var startRendering = () => {
 
 
 var openUrl = (url) => {
-    if (serverStarted) {
-        shell.openExternal(url || serverUrl)
-        return
-    }
+    shell.openExternal(url || serverUrl)
+    return
+}
 
+
+var startServer = () => {
     renderer.startServer((err) => {
         if (err) {
             addLogError(
@@ -104,8 +105,6 @@ var openUrl = (url) => {
             myNotification.onclick = () => {
                 shell.openExternal(serverUrl)
             }
-
-            shell.openExternal(url || serverUrl)
         }
     })
 }
@@ -156,6 +155,7 @@ var badge = (source, add) => {
 
 if (confFile) {
     startRendering()
+    startServer()
 } else {
     openConf()
 }
