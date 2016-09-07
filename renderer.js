@@ -116,19 +116,29 @@ var makeHTML = (filePath, watch, callback) => {
       }
 
       // Get custom data from Yaml files
-      for (let i in op.get(data, 'page.data.files', [])) {
-        if (!data.page.data.files.hasOwnProperty(i)) { continue }
+      for (let i in op.get(data, 'page.data', {})) {
+        if (!data.page.data.hasOwnProperty(i)) { continue }
 
-        op.set(data, ['F', data.page.data.files[i].replace('.' + locale + '.yaml', '').replace('.yaml', '')], getYamlFile(folderName, data.page.data.files[i], locale))
+        let customDataFile = data.page.data[i]
 
-        let customDataFile = getFilePath(folderName, data.page.data.files[i], locale)
-        let key = customDataFile.replace(appConf.source, '').replace('.yaml', '')
+        if (customDataFile.substr(0, 1) === '.') {
+          customDataFile = path.resolve(path.join(appConf.source, customDataFile))
+        } else {
+          customDataFile = path.resolve(path.join(folderName, customDataFile))
+        }
+        let customDataFolderName = path.dirname(customDataFile)
+        let customDataFileName = path.basename(customDataFile)
+        let customData = getYamlFile(customDataFolderName, customDataFileName, locale)
 
-        if (op.get(jadeDependencies, key, []).indexOf(customDataFile) > -1) { continue }
-
-        op.push(jadeDependencies, key, jadeFile)
+        op.set(data, ['F', i], customData)
 
         if (watch) {
+            let key = customDataFile.replace(appConf.source, '').replace('.yaml', '')
+
+            if (op.get(jadeDependencies, key, []).indexOf(customDataFile) > -1) { continue }
+
+            op.push(jadeDependencies, key, jadeFile)
+
             dependenciesWatcher.add(customDataFile)
         }
       }
