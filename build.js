@@ -66,6 +66,6 @@ renderer.openConfFile(process.argv[2], (err, conf) => {
     })
 
     fse.copy(appConf.assets, path.join(appConf.build, appConf.assets.replace(path.dirname(appConf.assets), '')), function (err) {
-        if (err) { console.error(err.message) }
+        if (err) { console.error(err) }
     })
 })
