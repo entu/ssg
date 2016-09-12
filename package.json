@@ -43,6 +43,7 @@
     "uglify-js": "^2.7.3"
   },
   "devDependencies": {
-    "electron-prebuilt": "^1.2.8"
+    "electron-prebuilt": "^1.2.8",
+    "html2jade": "^0.8.4"
   }
 }
