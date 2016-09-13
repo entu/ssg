@@ -103,7 +103,7 @@ Some page parameters will change how HTML is generated. Those are:
 - __page.originalPath__  
   Original path (if this page is generated to differnt path using _page.aliases_ parameter). Use this to redirect or for canonocal link.
 - __page.data.files__
-  Files to load data from. This data is passed to index.jade in object named _F_. You can put locale identificator to filename (like my_custom_list.en.yaml)
+  Files to load data from. This data is passed to index.jade in object named _F_. You can put locale identificator to filename (like my_custom_list.en.yaml).
 
 ### Example page data.yaml:
 
@@ -114,8 +114,7 @@ page:
     - /test
     - /test123
   data:
-    files:
-      news: ./datafiles/news.yaml
+    news: ./datafiles/news.yaml
 someOtherData:
   - A
   - B
