@@ -70,6 +70,10 @@ markdown:
 stylus:
   pretty: false
 port: 4000
+dev:
+  buildAliases: true
+  sourcePaths:
+    - test/page1
 ```
 
 

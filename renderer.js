@@ -51,6 +51,18 @@ var makeHTML = (filePath, watch, callback) => {
     var outputFiles = []
     var locales = []
 
+    if (!appConf.dev.sourcePaths) { appConf.dev.sourcePaths = [] }
+    if (appConf.dev.sourcePaths.length > 0) {
+        var ignore = true
+        for (var i = 0; i < appConf.dev.sourcePaths.length; i++) {
+          if (folderName.includes(appConf.dev.sourcePaths[i])) {
+              ignore = false
+              break
+          }
+        }
+        if (ignore) { return callback(null, outputFiles) }
+    }
+
     if (fileName.split('.').length > 2) {
       locales = [fileName.split('.')[1]]
     } else {
@@ -154,7 +166,7 @@ var makeHTML = (filePath, watch, callback) => {
 
       var originalPath = op.get(data, 'page.originalPath')
 
-      var htmlDirs = op.get(data, 'page.aliases', [])
+      var htmlDirs = appConf.dev.buildAliases ? op.get(data, 'page.aliases', []) : []
       var defaultHtmlDir = path.join('/', locale, data.page.path)
       htmlDirs.push(defaultHtmlDir)
 
@@ -228,6 +240,18 @@ var makeCSS = (filePath, callback) => {
     var outputFiles = []
     var locales = []
 
+    if (!appConf.dev.sourcePaths) { appConf.dev.sourcePaths = [] }
+    if (appConf.dev.sourcePaths.length > 0) {
+        var ignore = true
+        for (var i = 0; i < appConf.dev.sourcePaths.length; i++) {
+          if (folderName.includes(appConf.dev.sourcePaths[i])) {
+              ignore = false
+              break
+          }
+        }
+        if (ignore) { return callback(null, outputFiles) }
+    }
+
     if (fileName.split('.').length > 2) {
       locales = [fileName.split('.')[1]]
       fileNameWithoutLocale = [fileName.split('.')[0], fileName.split('.')[2]].join('.')
@@ -282,6 +306,18 @@ var makeJS = (filePath, callback) => {
     var fileNameWithoutLocale
     var outputFiles = []
     var locales = []
+
+    if (!appConf.dev.sourcePaths) { appConf.dev.sourcePaths = [] }
+    if (appConf.dev.sourcePaths.length > 0) {
+        var ignore = true
+        for (var i = 0; i < appConf.dev.sourcePaths.length; i++) {
+          if (folderName.includes(appConf.dev.sourcePaths[i])) {
+              ignore = false
+              break
+          }
+        }
+        if (ignore) { return callback(null, outputFiles) }
+    }
 
     if (fileName.split('.').length > 2) {
       locales = [fileName.split('.')[1]]
@@ -352,6 +388,9 @@ exports.openConfFile = (appConfFile, callback) => {
     op.ensureExists(appConf, 'jade.pretty', false)
     op.ensureExists(appConf, 'stylus.pretty', false)
     op.ensureExists(appConf, 'javascript.pretty', false)
+    op.ensureExists(appConf, 'port', 0)
+    op.ensureExists(appConf, 'dev.buildAliases', true)
+    op.ensureExists(appConf, 'dev.sourcePaths', [])
     op.ensureExists(appConf, 'port', 0)
 
     if (appConf.source.substr(0, 1) === '.') {
