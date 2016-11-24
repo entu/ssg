@@ -63,14 +63,12 @@ var startRendering = () => {
                         err.error.toString().trim()
                     )
                 } else {
-                    for (var i = 0; i < data.build.length; i++) {
+                    if (data.build.length > 0) {
                         badge(data.source, false)
                         addLog(
                             data.event,
                             data.source,
-                            `javascript:shell.showItemInFolder('${appConf.source + data.source}')`,
-                            data.build[i].replace(/\\/g, '/').replace('/index.html', ''),
-                            `javascript:openUrl('${serverUrl + data.build[i].replace(/\\/g, '/').replace('index.html', '')}')`
+                            data.build
                         )
                     }
                 }
@@ -131,14 +129,21 @@ var addLogError = (event, source, sourceLink, error) => {
 }
 
 
-var addLog = (event, source, sourceLink, build, buildLink) => {
+var addLog = (event, source, build) => {
+    let links = []
+    for (var i = 0; i < build.length; i++) {
+        let buildUrl = build[i].path.replace(appConf.build, '').replace(/\\/g, '/').replace('/index.html', '')
+        links.push(`<a class="${build[i].alias ? 'alias' : ''}" href="javascript:openUrl('${serverUrl + buildUrl}')">${buildUrl || '/'}</a>`)
+    }
+    links.sort()
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
         <tr class="log">
             <td style="width:5%">${event}</td>
-            <td style="width:5%"><a href="${sourceLink}">${source}</a></td>
-            <td style="width:90%"><a href="${buildLink}">${build || '/'}</a></td>
+            <td style="width:5%"><a href="javascript:shell.showItemInFolder('${appConf.source + source}')">${source}</a></td>
+            <td style="width:90%">${links.join('<br>')}</td>
         </tr>
     `
+
     document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight
 }
 

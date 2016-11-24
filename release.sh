@@ -15,3 +15,5 @@ cd ../..
 cd releases/Entu\ CMS-linux-x64
 zip -q -r ../Entu-CMS-linux.zip ./ -x .DS_Store
 cd ../..
+
+open releases/

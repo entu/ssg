@@ -26,6 +26,7 @@
     "start": "electron main.js"
   },
   "dependencies": {
+    "async": "^2.1.2",
     "chokidar": "^1.6.0",
     "electron-pug": "^1.5.1",
     "electron-stylus": "^0.1.1",

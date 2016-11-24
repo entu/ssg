@@ -1,6 +1,7 @@
 'use strict'
 
 const {minify} = require('html-minifier')
+const async = require('async')
 const chokidar = require('chokidar')
 const fm = require('front-matter')
 const fs = require('fs')
@@ -14,6 +15,25 @@ const path = require('path')
 const stylus = require('stylus')
 const uglify = require('uglify-js')
 const yaml = require('js-yaml')
+
+const htmlMinifyConf = {
+    caseSensitive: false,
+    collapseBooleanAttributes: true,
+    collapseWhitespace: true,
+    decodeEntities: false,
+    html5: true,
+    keepClosingSlash: false,
+    minifyCSS: true,
+    minifyJS: true,
+    preserveLineBreaks: false,
+    quoteCharacter: '"',
+    removeComments: true,
+    removeEmptyAttributes: true
+}
+const jsMinifyConf = {
+    fromString: true,
+    outSourceMap: true
+}
 
 // Returns file path with locale if exists
 var getFilePath = (dirName, fileName, locale) => {
@@ -41,93 +61,71 @@ var getYamlFile = (dirName, fileName, locale, defaultResult) => {
     return yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
 }
 
+// Check if file is in dev.sourcePaths
+var isFileIgnored = (file) => {
+    if (!appConf.dev.sourcePaths) { appConf.dev.sourcePaths = [] }
+    if (appConf.dev.sourcePaths.length === 0) { return false }
+
+    var ignore = true
+    for (var i = 0; i < appConf.dev.sourcePaths.length; i++) {
+        if (file.includes(appConf.dev.sourcePaths[i])) {
+            ignore = false
+            break
+        }
+    }
+
+    return ignore
+}
+
+// Generate dependency file key
+var getDependentFileKey = file => {
+    return file.replace(appConf.source, '').replace(/\./g, '-')
+}
+
+
 // Generates HTMLs from template
 var appConf = {}
 var jadeDependencies = {}
-var makeHTML = (filePath, watch, callback) => {
+var makeHTML = (folderName, watch, callback) => {
     try {
-        var folderName = path.dirname(filePath)
-        var fileName = path.basename(filePath)
         var outputFiles = []
-        var locales = []
+        let locales = []
+        let pageData = {}
 
-        if (!appConf.dev.sourcePaths) { appConf.dev.sourcePaths = [] }
-        if (appConf.dev.sourcePaths.length > 0) {
-            var ignore = true
-            for (var i = 0; i < appConf.dev.sourcePaths.length; i++) {
-                if (folderName.includes(appConf.dev.sourcePaths[i])) {
-                        ignore = false
-                        break
-                }
-            }
-            if (ignore) { return callback(null, outputFiles) }
-        }
+        if (isFileIgnored(folderName)) { return callback(null, outputFiles) }
 
-        if (fileName.split('.').length > 2) {
-            locales = [fileName.split('.')[1]]
-        } else {
-            locales = appConf.locales
-        }
+        // loop thru locales and generate pages
+        for (let i = 0; i < appConf.locales.length; i++) {
+            let locale = appConf.locales[i]
 
-        for (var l in locales) {
-            if (!locales.hasOwnProperty(l)) { continue }
-
-            var locale = locales[l]
-
-            // Get Jade template
-            var jadeFile = getFilePath(folderName, 'index.jade', locale)
+            let jadeFile = getFilePath(folderName, 'index.jade', locale)
             if (!jadeFile) { continue }
 
-            var jadeFileContent = fm(fs.readFileSync(jadeFile, 'utf8'))
-            var yamlFileContent = getYamlFile(folderName, 'data.yaml', locale, {})
+            let jadeFileContent = fm(fs.readFileSync(jadeFile, 'utf8'))
+            let yamlFileContent = getYamlFile(folderName, 'data.yaml', locale, {})
 
-            // Get and set data for Jade template
-            var data = {
+            let data = {
                 page: {},
                 D: Object.assign(yamlFileContent, jadeFileContent.attributes),
-                G: {}
+                G: {},
+                F: {}
             }
-
-
-            for (let i in data.D.page) {
-                if (!data.D.page.hasOwnProperty(i)) { continue }
-
-                op.set(data, ['page', i], op.get(data, ['D', 'page', i]))
-            }
+            op.set(data, 'page', op.get(data, 'D.page'))
             op.del(data, 'D.page')
+
 
             if (op.get(data, 'page.disabled', false) === true) { continue }
 
+            op.ensureExists(data, 'page', {})
             op.ensureExists(data, 'page.language', locale)
-            op.ensureExists(data, 'page.otherLocales', {})
             op.ensureExists(data, 'page.path', path.dirname(jadeFile).replace(appConf.source, '').substr(1))
+            op.ensureExists(data, 'page.otherLocales', {})
+
             op.ensureExists(data, 'filename', jadeFile)
             op.ensureExists(data, 'pretty', true)
             op.ensureExists(data, 'basedir', appConf.jade.basedir)
 
-            // Get other locales data
-            for (let i in appConf.locales) {
-                if (!appConf.locales.hasOwnProperty(i)) { continue }
-                if (appConf.locales[i] === locale) { continue }
-
-                var otherLocaleJadeFile = getFilePath(folderName, 'index.jade', appConf.locales[i])
-                if (!otherLocaleJadeFile) { continue }
-
-                var otherLocaleJadeFileContent = fm(fs.readFileSync(otherLocaleJadeFile, 'utf8'))
-                var otherLocaleYamlFileContent = getYamlFile(folderName, 'data.yaml', appConf.locales[i], {})
-
-                var otherLocaleData = Object.assign(otherLocaleYamlFileContent, otherLocaleJadeFileContent.attributes)
-
-                if (op.get(otherLocaleData, 'page.disabled', false) === true) { continue }
-
-                op.ensureExists(otherLocaleData, 'page', {})
-                op.ensureExists(otherLocaleData, 'page.language', appConf.locales[i])
-                op.ensureExists(otherLocaleData, 'page.path', path.dirname(jadeFile).replace(appConf.source, '').substr(1))
-
-                op.set(data, ['page', 'otherLocales', appConf.locales[i]], otherLocaleData.page)
-            }
-
-            // Get custom data from Yaml files
+            // set custom data from Yaml files
             for (let i in op.get(data, 'page.data', {})) {
                 if (!data.page.data.hasOwnProperty(i)) { continue }
 
@@ -145,16 +143,14 @@ var makeHTML = (filePath, watch, callback) => {
                 op.set(data, ['F', i], customData)
 
                 if (watch) {
-                    let key = customDataFile.replace(appConf.source, '').replace('.yaml', '')
-
-                    if (op.get(jadeDependencies, key, []).indexOf(customDataFile) > -1) { continue }
-
-                    op.push(jadeDependencies, key, jadeFile)
-
-                    dependenciesWatcher.add(customDataFile)
+                    if (op.get(jadeDependencies, getDependentFileKey(customDataFile), []).indexOf(folderName) === -1) {
+                        op.push(jadeDependencies, getDependentFileKey(customDataFile), folderName)
+                        dependenciesWatcher.add(customDataFile)
+                    }
                 }
             }
 
+            // set global data
             data.G = appConf.data[locale]
             data.G.md = text => {
                 if (text) {
@@ -164,66 +160,74 @@ var makeHTML = (filePath, watch, callback) => {
                 }
             }
 
-            var originalPath = op.get(data, 'page.originalPath')
-
-            var htmlDirs = appConf.dev.buildAliases ? op.get(data, 'page.aliases', []) : []
-            var defaultHtmlDir = path.join('/', locale, data.page.path)
-            htmlDirs.push(defaultHtmlDir)
-
-            for (var h in htmlDirs) {
-                if (!htmlDirs.hasOwnProperty(h)) { continue }
-
-                if (originalPath) {
-                    op.set(data, 'page.originalPath', originalPath)
-                } else if (htmlDirs[h] !== defaultHtmlDir) {
-                    op.set(data, 'page.originalPath', defaultHtmlDir)
-                } else {
-                    op.del(data, 'page.originalPath')
-                }
-
-                var compiledJade = jade.compile(jadeFileContent.body || '', data)
-                var html = compiledJade(data)
-
-                if (!appConf.jade.pretty) {
-                    html = minify(html, {
-                        caseSensitive: false,
-                        collapseBooleanAttributes: true,
-                        collapseWhitespace: true,
-                        decodeEntities: false,
-                        html5: true,
-                        keepClosingSlash: false,
-                        minifyCSS: true,
-                        minifyJS: true,
-                        preserveLineBreaks: false,
-                        quoteCharacter: '"',
-                        removeComments: true,
-                        removeEmptyAttributes: true
-                    })
-                }
-
-                if (watch) {
-                    for (let i in compiledJade.dependencies) {
-                        if (!compiledJade.dependencies.hasOwnProperty(i)) { continue }
-
-                        var key = op.get(compiledJade, ['dependencies', i]).replace(appConf.source, '').replace('.jade', '')
-
-                        if (op.get(jadeDependencies, key, []).indexOf(jadeFile) > -1) { continue }
-
-                        op.push(jadeDependencies, key, jadeFile)
-
-                        dependenciesWatcher.add(op.get(compiledJade, ['dependencies', i]))
-                    }
-                }
-
-                var htmlFile = path.join(appConf.build, htmlDirs[h], 'index.html')
-
-                fse.outputFileSync(htmlFile, html)
-
-                outputFiles.push(htmlFile.replace(appConf.build, ''))
-            }
+            op.set(pageData, [locale, 'data'], data)
+            op.set(pageData, [locale, 'template'], jadeFileContent.body)
         }
 
-        callback(null, outputFiles)
+
+        async.eachOf(pageData, function (d, l, callback) {
+            // set other locales data
+            for (let i in pageData) {
+                if (!pageData.hasOwnProperty(i)) { continue }
+
+                if (i !== l) {
+                    op.set(pageData, [l, 'data', 'page', 'otherLocales', i], pageData[i].data.page)
+                }
+            }
+
+            let data = d.data
+            let template = d.template
+            let compiledJade = jade.compile(template || '', data)
+
+            let htmlDirs = appConf.dev.buildAliases ? op.get(data, 'page.aliases', []) : []
+            let defaultHtmlDir = path.join('/', l, data.page.path)
+            htmlDirs.push(defaultHtmlDir)
+
+            let html = compiledJade(data)
+            let htmlAlias = ''
+
+            if (watch) {
+                for (var i = 0; i < compiledJade.dependencies.length; i++) {
+                    if (op.get(jadeDependencies, getDependentFileKey(compiledJade.dependencies[i]), []).indexOf(folderName) === -1) {
+                        op.push(jadeDependencies, getDependentFileKey(compiledJade.dependencies[i]), folderName)
+                        dependenciesWatcher.add(compiledJade.dependencies[i])
+                    }
+                }
+            }
+
+            if (htmlDirs.length > 1) {
+                op.set(data, 'page.originalPath', defaultHtmlDir)
+                htmlAlias = compiledJade(data)
+            }
+
+            if (!appConf.jade.pretty) {
+                html = minify(html, htmlMinifyConf)
+                htmlAlias = minify(htmlAlias, htmlMinifyConf)
+            }
+
+            async.each(htmlDirs, function (dir, callback) {
+                let htmlFile = path.join(appConf.build, dir, 'index.html')
+
+                if (dir === defaultHtmlDir) {
+                    fse.outputFile(htmlFile, html, {}, function (err) {
+                        if (err) { return callback(err) }
+
+                        outputFiles.push({ path: htmlFile })
+                        callback(null)
+                    })
+                } else {
+                    fse.outputFile(htmlFile, htmlAlias, {}, function (err) {
+                        if (err) { return callback(err) }
+
+                        outputFiles.push({ path: htmlFile, alias: true })
+                        callback(null)
+                    })
+                }
+            }, callback)
+        }, function(err) {
+            if (err) { return callback(err) }
+            callback(null, outputFiles)
+        })
     } catch (e) {
         callback(e)
     }
@@ -240,17 +244,7 @@ var makeCSS = (filePath, callback) => {
         var outputFiles = []
         var locales = []
 
-        if (!appConf.dev.sourcePaths) { appConf.dev.sourcePaths = [] }
-        if (appConf.dev.sourcePaths.length > 0) {
-            var ignore = true
-            for (var i = 0; i < appConf.dev.sourcePaths.length; i++) {
-                if (folderName.includes(appConf.dev.sourcePaths[i])) {
-                    ignore = false
-                    break
-                }
-            }
-            if (ignore) { return callback(null, outputFiles) }
-        }
+        if (isFileIgnored(filePath)) { return callback(null, outputFiles) }
 
         if (fileName.split('.').length > 2) {
             locales = [fileName.split('.')[1]]
@@ -260,12 +254,8 @@ var makeCSS = (filePath, callback) => {
             fileNameWithoutLocale = fileName
         }
 
-        for (var l in locales) {
-            if (!locales.hasOwnProperty(l)) { continue }
-
-            var locale = locales[l]
-
-            if (!stylesList[locales[l]]) { stylesList[locale] = {} }
+        async.each(locales, function(locale, callback) {
+            if (!stylesList[locale]) { stylesList[locale] = {} }
 
             var styleFile = getFilePath(folderName, fileNameWithoutLocale, locale)
             if (styleFile) {
@@ -285,12 +275,18 @@ var makeCSS = (filePath, callback) => {
             var cssFile = path.join(cssDir, 'style.css')
 
             let styl = stylus(css.join('\n\n')).set('warn', false).set('compress', !appConf.stylus.pretty)
-            fse.outputFileSync(cssFile, styl.render())
+            fse.outputFile(cssFile, styl.render(), {}, function (err) {
+                if (err) { return callback(err) }
 
-            outputFiles.push(cssFile.replace(appConf.build, ''))
-        }
+                outputFiles.push({ path: cssFile })
+                callback(null)
+            })
 
-        callback(null, outputFiles)
+        }, function (err) {
+            if (err) { return callback(err) }
+
+            callback(null, outputFiles)
+        })
     } catch (e) {
         callback(e)
     }
@@ -301,23 +297,13 @@ exports.makeCSS = makeCSS
 var scriptsList = []
 var makeJS = (filePath, callback) => {
     try {
-        var folderName = path.dirname(filePath)
-        var fileName = path.basename(filePath)
-        var fileNameWithoutLocale
-        var outputFiles = []
-        var locales = []
+        let folderName = path.dirname(filePath)
+        let fileName = path.basename(filePath)
+        let fileNameWithoutLocale
+        let outputFiles = []
+        let locales = []
 
-        if (!appConf.dev.sourcePaths) { appConf.dev.sourcePaths = [] }
-        if (appConf.dev.sourcePaths.length > 0) {
-            var ignore = true
-            for (var i = 0; i < appConf.dev.sourcePaths.length; i++) {
-                if (folderName.includes(appConf.dev.sourcePaths[i])) {
-                    ignore = false
-                    break
-                }
-            }
-            if (ignore) { return callback(null, outputFiles) }
-        }
+        if (isFileIgnored(filePath)) { return callback(null, outputFiles) }
 
         if (fileName.split('.').length > 2) {
             locales = [fileName.split('.')[1]]
@@ -327,12 +313,8 @@ var makeJS = (filePath, callback) => {
             fileNameWithoutLocale = fileName
         }
 
-        for (var l in locales) {
-            if (!locales.hasOwnProperty(l)) { continue }
-
-            var locale = locales[l]
-
-            if (!scriptsList[locales[l]]) { scriptsList[locale] = {} }
+        async.each(locales, function(locale, callback) {
+            if (!scriptsList[locale]) { scriptsList[locale] = {} }
 
             var scriptFile = getFilePath(folderName, fileNameWithoutLocale, locale)
             if (scriptFile) {
@@ -348,24 +330,44 @@ var makeJS = (filePath, callback) => {
                 js.push(scriptsList[locale][i])
             }
 
-            var jsDir = path.join(appConf.build, locale)
-            var jsFile = path.join(jsDir, 'script.js')
+            let jsDir = path.join(appConf.build, locale)
+            let jsFile = path.join(jsDir, 'script.js')
 
             if (appConf.javascript.pretty) {
-                fse.outputFileSync(jsFile, js.join('\n\n'))
-            } else {
-                let script = uglify.minify(js.join('\n\n'), {
-                    fromString: true,
-                    outSourceMap: true
+                fse.outputFile(jsFile, js.join('\n\n'), {}, function (err) {
+                    if (err) { return callback(err) }
+
+                    outputFiles.push({ path: jsFile.replace(appConf.build, '') })
+                    callback(null)
                 })
-                fse.outputFileSync(jsFile, script.code)
-                fse.outputFileSync(jsFile + '.map', script.map)
+            } else {
+                let script = uglify.minify(js.join('\n\n'), jsMinifyConf)
+
+                async.parallel([
+                    function (callback) {
+                        fse.outputFile(jsFile, script.code, {}, function (err) {
+                            if (err) { return callback(err) }
+
+                            outputFiles.push({ path: jsFile })
+                            callback(null)
+                        })
+                    },
+                    function (callback) {
+                        fse.outputFile(jsFile + '.map', script.map, {}, function (err) {
+                            if (err) { return callback(err) }
+
+                            outputFiles.push({ path: jsFile + '.map', alias: true })
+                            callback(null)
+                        })
+                    }
+                ], callback)
             }
+        }, function(err) {
+            if (err) { return callback(err) }
 
-            outputFiles.push(jsFile.replace(appConf.build, ''))
-        }
+            callback(null, outputFiles)
+        })
 
-        callback(null, outputFiles)
     } catch (e) {
         callback(e)
     }
@@ -472,42 +474,23 @@ exports.startServer = callback => {
 var dependenciesWatcher
 exports.watchFiles = callback => {
     // Start to watch Jade files
+    let jadeFolders = []
     chokidar.watch(appConf.source + '/**/index*.jade').on('all', (fileEvent, filePath) => {
-        makeHTML(filePath, true, (err, file) => {
-            if (err) {
-                callback({
-                    event: fileEvent.toUpperCase(),
-                    source: filePath.replace(appConf.source, ''),
-                    error: err
-                })
-            } else {
-                callback(null, {
-                    event: fileEvent.toUpperCase(),
-                    source: filePath.replace(appConf.source, ''),
-                    build: file
-                })
+        if (fileEvent !== 'add' || jadeFolders.indexOf(path.dirname(filePath)) === -1) {
+            if (jadeFolders.indexOf(path.dirname(filePath)) === -1) {
+                jadeFolders.push(path.dirname(filePath))
             }
-        })
-    })
-
-    // Start to watch all dependencies
-    dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', (fileEvent, filePath) => {
-        var files = op.get(jadeDependencies, filePath.replace(appConf.source, '').replace('.jade', '').replace('.yaml', ''))
-
-        for (let i in files) {
-            if (!files.hasOwnProperty(i)) { continue }
-
-            makeHTML(files[i], true, (err, file) => {
+            makeHTML(path.dirname(filePath), true, (err, file) => {
                 if (err) {
                     callback({
                         event: fileEvent.toUpperCase(),
-                        source: files[i].replace(appConf.source, ''),
+                        source: filePath.replace(appConf.source, ''),
                         error: err
                     })
                 } else {
                     callback(null, {
                         event: fileEvent.toUpperCase(),
-                        source: files[i].replace(appConf.source, ''),
+                        source: filePath.replace(appConf.source, ''),
                         build: file
                     })
                 }
@@ -517,7 +500,7 @@ exports.watchFiles = callback => {
 
     // Start to watch Yaml files
     chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*.yaml', ignoreInitial: true }).on('all', (fileEvent, filePath) => {
-        makeHTML(filePath, true, (err, file) => {
+        makeHTML(path.dirname(filePath), true, (err, file) => {
             if (err) {
                 callback({
                     event: fileEvent.toUpperCase(),
@@ -570,5 +553,29 @@ exports.watchFiles = callback => {
                 })
             }
         })
+    })
+
+    // Start to watch all dependencies
+    dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', (fileEvent, filePath) => {
+        var files = op.get(jadeDependencies, getDependentFileKey(filePath))
+        for (let i in files) {
+            if (!files.hasOwnProperty(i)) { continue }
+
+            makeHTML(path.dirname(files[i]), true, (err, file) => {
+                if (err) {
+                    callback({
+                        event: fileEvent.toUpperCase(),
+                        source: files[i].replace(appConf.source, ''),
+                        error: err
+                    })
+                } else {
+                    callback(null, {
+                        event: fileEvent.toUpperCase(),
+                        source: files[i].replace(appConf.source, ''),
+                        build: file
+                    })
+                }
+            })
+        }
     })
 }
