@@ -41,7 +41,7 @@ var theEnd = () => {
             if (!fs.lstatSync(item.path).isFile() ) { return }
 
             if (f.indexOf(item.path) === -1) {
-                console.log('DELETE: ' + item.path)
+                // console.log('DELETE: ' + item.path)
             }
         })
     } else {
