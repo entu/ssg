@@ -33,23 +33,29 @@ Sites build process is configurable by Yaml file and its path must be first argu
 - __build__  
   Folder to put generated HTML (realtive to build config.yaml).
 - __assets__  
-  Folder to put static files (JS, images, ...).
-- __assetsPath__  
-  Serving page in localhost will map this url to folder specified in _assets_ parameter.
+  Folder with static assets (JS, images, ...).
+- __protectedFromCleanup__  
+  List of paths what is not deleted if _build.sh_ is ran with _cleanup_ parameter. Relative to _build_ path.
 - __jade.basedir__  
   Jade basedir for simpler include/extend.
 - __jade.pretty__  
   Boolean to set if output HTML is pretty formatted or not.
 - __markdown.breaks__  
-  Convert '\n' in (markdown) paragraphs into <br>
+  Convert '\n' in (markdown) paragraphs into <br>.
 - __markdown.html__  
-  Enable HTML tags in (markdown) source
+  Enable HTML tags in (markdown) source.
 - __stylus.pretty__  
   Boolean to set if output CSS is pretty formatted or not.
 - __javascript.pretty__  
   Boolean to set if output JavaScript is pretty formatted or not.
-- __port__  
+- __server.port__  
   What port to use for serving on localhost.
+- __server.assets__  
+  Serving page in localhost will map this url to folder specified in _assets_ parameter.
+- __dev.aliases__  
+  Build pages aliases.
+- __dev.paths__  
+  List of (source) paths to build. Relative to _source_ path.
 
 ### Example build configuration file:
 
@@ -60,7 +66,9 @@ locales:
 source: ./source
 build: ./build
 assets: ./assets
-assetsPath: /assets/
+protectedFromCleanup:
+..- assets
+..- index.html
 jade:
   basedir: ./source/_templates
   pretty: false
@@ -69,11 +77,14 @@ markdown:
   html: false
 stylus:
   pretty: false
-port: 4000
+server:
+  port: 4000
+  assets: /assets/
 dev:
-  buildAliases: true
-  sourcePaths:
+  aliases: true
+  paths:
     - test/page1
+    - test/page2
 ```
 
 

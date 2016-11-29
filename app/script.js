@@ -45,7 +45,7 @@ var startRendering = () => {
             })
         } else {
             appConf = conf
-            serverUrl = `http://localhost:${appConf.port}`
+            serverUrl = `http://localhost:${appConf.server.port}`
 
             document.getElementById('conf').innerHTML = confFile.replace(app.getPath('home'), '~')
             document.getElementById('source').innerHTML = appConf.source.replace(app.getPath('home'), '~')
@@ -96,7 +96,7 @@ var startServer = () => {
         } else {
             serverStarted = true
 
-            serverUrl = `http://localhost:${appConf.port}`
+            serverUrl = `http://localhost:${appConf.server.port}`
             document.getElementById('preview').innerHTML = serverUrl
 
             let myNotification = new Notification('Server started', { body: serverUrl })

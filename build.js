@@ -2,6 +2,7 @@
 
 'use strict'
 
+const async = require('async')
 const fs = require('fs')
 const fse = require('fs-extra')
 const op = require('object-path')
@@ -25,33 +26,67 @@ if (process.argv.length <= 2) {
 var theEnd = () => {
     let endDate = new Date()
     let duration = (endDate.getTime() - startDate.getTime()) / 1000
-    let f = []
+    let files = []
+    let filesForDelete = []
+    let filesDeleted = 0
 
     for (let i = 0; i < buildFiles.length; i++) {
-        if (f.indexOf(buildFiles[i]) === -1) {
-            f.push(buildFiles[i])
+        if (files.indexOf(buildFiles[i].path.replace(/\\/g, '/')) === -1) {
+            files.push(buildFiles[i].path.replace(/\\/g, '/'))
         }
     }
 
-    console.log(f.length + ' files created - ' + duration.toFixed(2) + 's - ' + (f.length / duration).toFixed(2) + 'fps')
+    console.log(files.length + ' files created - ' + duration.toFixed(2) + 's - ' + (files.length / duration).toFixed(2) + 'fps')
 
-    buildErrors = buildErrors + sourceFiles.length
-    if (buildErrors === 0) {
-        fse.walk(appConf.build).on('data', item => {
-            if (!fs.lstatSync(item.path).isFile() ) { return }
+    if (process.argv[3] === 'cleanup') {
+        buildErrors = buildErrors + sourceFiles.length
+        if (buildErrors === 0) {
 
-            if (f.indexOf(item.path) === -1) {
-                // console.log('DELETE: ' + item.path)
-            }
-        })
-    } else {
-        console.log('No files deleted because ' + buildErrors + (buildErrors > 1 ? ' errors' : ' error'));
+            fse.walk(appConf.build).on('data', item => {
+                if (files.indexOf(item.path.replace(/\\/g, '/')) === -1 && item.path.replace(/\\/g, '/') !== appConf.build.replace(/\\/g, '/')) {
+                    filesForDelete.push(item.path)
+                }
+            }).on('end', function () {
+                filesForDelete.reverse()
+                for (var i = 0; i < filesForDelete.length; i++) {
+                    let file = filesForDelete[i]
+                    let protect = false
+
+                    for (let i = 0; i < appConf.protectedFromCleanup.length; i++) {
+                        if (appConf.protectedFromCleanup[i] && file.startsWith(path.join(appConf.build, appConf.protectedFromCleanup[i]))) {
+                            protect = true
+                            break
+                        }
+                    }
+
+                    if (!protect) {
+                        try {
+                            if (fs.lstatSync(file).isFile()) {
+                                fs.unlinkSync(file)
+                                filesDeleted++
+                                console.log('DELETED: ' + file)
+                            } else if (fs.lstatSync(file).isDirectory() && fs.readdirSync(file).length === 0) {
+                                fs.rmdirSync(file)
+                                filesDeleted++
+                                console.log('DELETED: ' + file)
+                            }
+                        } catch (e) {
+                            console.log(e)
+                        }
+                    }
+
+                }
+                console.log(filesDeleted + (filesDeleted > 1 ? ' files deleted' : ' file deleted'))
+            })
+        } else {
+            console.log('No files deleted because ' + buildErrors + (buildErrors === 0 || buildErrors > 1 ? ' errors' : ' error'))
+        }
     }
 }
 
 var fileBuildEnd = (err, files) => {
     if (err) {
-        console.log(err)
+        console.error(err)
     } else {
         buildErrors--
         if (files && files.length) { buildFiles = buildFiles.concat(files) }

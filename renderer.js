@@ -61,14 +61,14 @@ var getYamlFile = (dirName, fileName, locale, defaultResult) => {
     return yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
 }
 
-// Check if file is in dev.sourcePaths
+// Check if file is in dev.paths
 var isFileIgnored = (file) => {
-    if (!appConf.dev.sourcePaths) { appConf.dev.sourcePaths = [] }
-    if (appConf.dev.sourcePaths.length === 0) { return false }
+    if (!appConf.dev.paths) { appConf.dev.paths = [] }
+    if (appConf.dev.paths.length === 0) { return false }
 
     var ignore = true
-    for (var i = 0; i < appConf.dev.sourcePaths.length; i++) {
-        if (file.includes(appConf.dev.sourcePaths[i])) {
+    for (var i = 0; i < appConf.dev.paths.length; i++) {
+        if (appConf.dev.paths[i] && file.startsWith(path.join(appConf.source, appConf.dev.paths[i]))) {
             ignore = false
             break
         }
@@ -179,7 +179,7 @@ var makeHTML = (folderName, watch, callback) => {
             let template = d.template
             let compiledJade = jade.compile(template || '', data)
 
-            let htmlDirs = appConf.dev.buildAliases ? op.get(data, 'page.aliases', []) : []
+            let htmlDirs = appConf.dev.aliases ? op.get(data, 'page.aliases', []) : []
             let defaultHtmlDir = path.join('/', l, data.page.path)
             htmlDirs.push(defaultHtmlDir)
 
@@ -383,17 +383,17 @@ exports.openConfFile = (appConfFile, callback) => {
         op.ensureExists(appConf, 'source', path.join(__dirname, 'source'))
         op.ensureExists(appConf, 'build', path.join(__dirname, 'build'))
         op.ensureExists(appConf, 'assets', path.join(__dirname, 'assets'))
-        op.ensureExists(appConf, 'assetsPath', '/assets')
         op.ensureExists(appConf, 'markdown.breaks', true)
         op.ensureExists(appConf, 'markdown.html', false)
         op.ensureExists(appConf, 'jade.basedir', path.join(__dirname, 'source'))
         op.ensureExists(appConf, 'jade.pretty', false)
         op.ensureExists(appConf, 'stylus.pretty', false)
         op.ensureExists(appConf, 'javascript.pretty', false)
-        op.ensureExists(appConf, 'port', 0)
-        op.ensureExists(appConf, 'dev.buildAliases', true)
-        op.ensureExists(appConf, 'dev.sourcePaths', [])
-        op.ensureExists(appConf, 'port', 0)
+        op.ensureExists(appConf, 'server.assets', '/assets')
+        op.ensureExists(appConf, 'server.port', 0)
+        op.ensureExists(appConf, 'dev.aliases', true)
+        op.ensureExists(appConf, 'dev.paths', [])
+        op.ensureExists(appConf, 'protectedFromCleanup', [])
 
         if (appConf.source.substr(0, 1) === '.') {
             appConf.source = path.resolve(path.join(path.dirname(appConfFile), appConf.source))
@@ -432,8 +432,8 @@ exports.startServer = callback => {
     try {
         var server = http.createServer((request, response) => {
             var filePath = request.url.split('?')[0]
-            if (filePath.substr(0, appConf.assetsPath.length) === appConf.assetsPath) {
-                filePath = path.join(appConf.assets, filePath.substr(appConf.assetsPath.length - 1))
+            if (filePath.substr(0, appConf.server.assets.length) === appConf.server.assets) {
+                filePath = path.join(appConf.assets, filePath.substr(appConf.server.assets.length - 1))
             } else {
                 filePath = path.join(appConf.build, filePath)
             }
@@ -450,7 +450,7 @@ exports.startServer = callback => {
                     response.end('404\n')
                     callback({
                         event: err.code,
-                        source: filePath.replace(appConf.build, '').replace(appConf.assets, appConf.assetsPath),
+                        source: filePath.replace(appConf.build, '').replace(appConf.assets, appConf.server.assets),
                         error: err.message.replace(`${err.code}: `, '')
                     })
                 } else {
@@ -459,9 +459,9 @@ exports.startServer = callback => {
                 }
             })
         })
-        server.listen(appConf.port)
+        server.listen(appConf.server.port)
         server.on('listening', () => {
-            appConf.port = server.address().port
+            appConf.server.port = server.address().port
 
             callback(null)
         })

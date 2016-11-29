@@ -32,7 +32,7 @@
     "electron-stylus": "^0.1.1",
     "front-matter": "^2.1.0",
     "fs-extra": "^1.0.0",
-    "html-minifier": "^3.1.1",
+    "html-minifier": "^3.2.3",
     "jade": "^1.11.0",
     "js-yaml": "^3.6.1",
     "jstransformer-markdown-it": "^2.0.0",
@@ -44,7 +44,7 @@
     "uglify-js": "^2.7.3"
   },
   "devDependencies": {
-    "electron-prebuilt": "^1.4.5",
+    "electron-prebuilt": "^1.4.10",
     "html2jade": "^0.8.6"
   }
 }
