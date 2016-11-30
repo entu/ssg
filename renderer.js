@@ -35,6 +35,7 @@ const jsMinifyConf = {
     outSourceMap: true
 }
 
+
 // Returns file path with locale if exists
 var getFilePath = (dirName, fileName, locale) => {
     var localeFile = fileName.split('.')
@@ -561,17 +562,17 @@ exports.watchFiles = callback => {
         for (let i in files) {
             if (!files.hasOwnProperty(i)) { continue }
 
-            makeHTML(path.dirname(files[i]), true, (err, file) => {
+            makeHTML(files[i], true, (err, file) => {
                 if (err) {
                     callback({
                         event: fileEvent.toUpperCase(),
-                        source: files[i].replace(appConf.source, ''),
+                        source: filePath.replace(appConf.source, ''),
                         error: err
                     })
                 } else {
                     callback(null, {
                         event: fileEvent.toUpperCase(),
-                        source: files[i].replace(appConf.source, ''),
+                        source: filePath.replace(appConf.source, ''),
                         build: file
                     })
                 }
