@@ -63,6 +63,9 @@ var errored = false
 if (!TEMPLATE) {
   console.error('Missing mandatory TEMPLATE')
   errored = true
+} else if (!fs.existsSync(TEMPLATE)) {
+  console.error('Missing ' + TEMPLATE)
+  errored = true
 }
 
 if (!ENTU_OPTIONS.entuUrl) {
