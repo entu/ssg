@@ -18,6 +18,13 @@ const PARENT_EID = process.env.PARENT_EID
 const E_DEF = process.env.E_DEF
 
 
+const DATA_LIST = process.env.DATA_LIST
+    ? ( path.isAbsolute(process.env.DATA_LIST)
+            ? process.env.DATA_LIST
+            : path.join(process.cwd(), process.env.DATA_LIST)
+        )
+    : false
+
 const TEMPLATE = process.env.TEMPLATE
     ? ( path.isAbsolute(process.env.TEMPLATE)
             ? process.env.TEMPLATE
@@ -33,16 +40,6 @@ const OUT_DIR = process.env.OUT_DIR
     : false
 
 
-// const emptyOutDir = function() {
-//     let files = fs.readdirSync(OUT_DIR)
-//     for (let i = 0; i < files.length; i++) {
-//         let filePath = path.join(OUT_DIR, files[i])
-//         if (fs.statSync(filePath).isDirectory()){
-//             fs.remove(filePath)
-//         }
-//     }
-// }
-
 const saveEntity = function(opEntity) {
     let out_dir = path.join(OUT_DIR, opEntity.get(['properties','path',0,'value']))
 
@@ -57,8 +54,9 @@ const saveEntity = function(opEntity) {
 
 
 const saveEntities = function(opEntities) {
-    console.log(opEntities);
+    let entities = []
     opEntities.entities.forEach(function(opEntity) {
+        entities.push(opEntity.get())
         if (!opEntity.get(['properties','path',0])) {
             console.log('skipping ' + opEntity.get(['id']) + ' | ' + opEntity.get(['displayname']))
             return
@@ -66,18 +64,29 @@ const saveEntities = function(opEntities) {
         saveEntity(opEntity)
         return
     })
+    if (DATA_LIST) {
+        let data_y = yaml.safeDump(entities, { indent: 4, lineWidth: 999999999 })
+        fs.outputFileSync(DATA_LIST, data_y)
+    }
 }
 
 
 var errored = false
 
 if (!TEMPLATE) {
-    console.error('Missing mandatory TEMPLATE')
-    errored = true
+    console.warn('Missing TEMPLATE')
 } else if (!fs.existsSync(TEMPLATE)) {
     console.error('Missing ' + TEMPLATE)
     errored = true
 }
+if (!DATA_LIST) {
+    console.warn('Missing DATA_LIST')
+}
+if (!TEMPLATE && !DATA_LIST) {
+    console.error('TEMPLATE or DATA_LIST is required')
+    errored = true
+}
+
 
 if (!ENTU_OPTIONS.entuUrl) {
     console.error('Missing mandatory ENTU_URL')
