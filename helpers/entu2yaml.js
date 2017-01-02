@@ -41,7 +41,7 @@ const OUT_DIR = process.env.OUT_DIR
 
 
 const saveEntity = function(opEntity) {
-    let out_dir = path.join(OUT_DIR, opEntity.get(['properties','path',0,'value']))
+    let out_dir = path.join(OUT_DIR, opEntity.get(['properties','path','values',0,'value']))
 
     fs.copySync(TEMPLATE, path.join(out_dir, 'index.jade'))
     // fs.createReadStream(TEMPLATE).pipe(fs.createWriteStream(path.join(out_dir, 'index.jade')))
@@ -55,9 +55,9 @@ const saveEntity = function(opEntity) {
 
 const saveEntities = function(opEntities) {
     let entities = []
-    opEntities.entities.forEach(function(opEntity) {
+    opEntities.forEach(function(opEntity) {
         entities.push(opEntity.get())
-        if (!opEntity.get(['properties','path',0])) {
+        if (!opEntity.get(['properties','path','values',0])) {
             console.log('skipping ' + opEntity.get(['id']) + ' | ' + opEntity.get(['displayname']))
             return
         }
@@ -106,7 +106,7 @@ if (PARENT_EID) {
     console.log('get childs')
     entulib.getChilds(PARENT_EID, E_DEF, ENTU_OPTIONS)
     .then(function(opEntities) {
-        saveEntities(opEntities)
+        saveEntities(opEntities.entities)
     })
     .catch(function(reason) {
         console.log('Caching childs of ' + PARENT_EID + ' failed: ', reason)
@@ -116,7 +116,7 @@ if (PARENT_EID) {
     console.log('get entities')
     entulib.getEntities(E_DEF, null, null, ENTU_OPTIONS)
     .then(function(opEntities) {
-        saveEntities(opEntities)
+        saveEntities(opEntities.entities)
     })
     .catch(function(reason) {
         console.log('Caching ' + E_DEF + ' entities failed: ', reason)
