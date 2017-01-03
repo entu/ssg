@@ -275,13 +275,45 @@ var makeCSS = (filePath, callback) => {
             var cssDir = path.join(appConf.build, locale)
             var cssFile = path.join(cssDir, 'style.css')
 
-            let styl = stylus(css.join('\n\n')).set('warn', false).set('compress', !appConf.stylus.pretty)
-            fse.outputFile(cssFile, styl.render(), {}, function (err) {
-                if (err) { return callback(err) }
+            if (appConf.stylus.pretty) {
+                stylus(css.join('\n\n')).set('warn', false).render(function (err, css) {
+                    if (err) { return callback(err) }
 
-                outputFiles.push({ path: cssFile })
-                callback(null)
-            })
+                    fse.outputFile(jsFile, css, {}, function (err) {
+                        if (err) { return callback(err) }
+
+                        outputFiles.push({ path: cssFile })
+                        callback(null)
+                    })
+                })
+            } else {
+                let styl = stylus(css.join('\n\n')).set('warn', false).set('compress', true).set('sourcemap', {})
+
+                styl.render(function (err, css) {
+                    async.parallel([
+                        function (callback) {
+                            fse.outputFile(cssFile, css, {}, function (err) {
+                                if (err) { return callback(err) }
+
+                                outputFiles.push({ path: cssFile })
+                                callback(null)
+                            })
+                        },
+                        function (callback) {
+                            fse.outputFile(cssFile + '.map', JSON.stringify(styl.sourcemap), {}, function (err) {
+                                if (err) { return callback(err) }
+
+                                outputFiles.push({ path: cssFile + '.map', alias: true })
+                                callback(null)
+                            })
+                        }
+                    ], callback)
+                })
+
+            }
+
+
+
 
         }, function (err) {
             if (err) { return callback(err) }
