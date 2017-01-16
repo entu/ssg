@@ -67,8 +67,8 @@ source: ./source
 build: ./build
 assets: ./assets
 protectedFromCleanup:
-..- assets
-..- index.html
+  - assets
+  - index.html
 jade:
   basedir: ./source/_templates
   pretty: false
