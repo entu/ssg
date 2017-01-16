@@ -1,5 +1,5 @@
 source: ./
-build: ../build
+build: ./
 assets: ./
 
 jade:
