@@ -18,18 +18,29 @@ const PARENT_EID = process.env.PARENT_EID
 const E_DEF = process.env.E_DEF
 
 
-const DATA_LIST = process.env.DATA_LIST
-    ? ( path.isAbsolute(process.env.DATA_LIST)
-            ? process.env.DATA_LIST
-            : path.join(process.cwd(), process.env.DATA_LIST)
-        )
+const ITEM_DIR = process.env.ITEM_DIR
+    ? ( path.isAbsolute(process.env.ITEM_DIR)
+            ? process.env.ITEM_DIR
+            : path.join(process.cwd(), process.env.ITEM_DIR)
+      )
     : false
 
-const TEMPLATE = process.env.TEMPLATE
-    ? ( path.isAbsolute(process.env.TEMPLATE)
-            ? process.env.TEMPLATE
-            : path.join(process.cwd(), process.env.TEMPLATE)
-        )
+const ITEM_YAML = process.env.ITEM_YAML ? process.env.ITEM_YAML : 'data.yaml'
+
+// const ITEM_YAML = process.env.ITEM_YAML
+//     ? ( process.env.ITEM_YAML.split(',').map(function(filepath) {
+//             return path.isAbsolute(filepath)
+//                 ? filepath
+//                 : path.join(process.cwd(), filepath)
+//         })
+//       )
+//     : false
+//
+const LIST_YAML = process.env.LIST_YAML
+    ? ( path.isAbsolute(process.env.LIST_YAML)
+            ? process.env.LIST_YAML
+            : path.join(process.cwd(), process.env.LIST_YAML)
+      )
     : false
 
 const OUT_DIR = process.env.OUT_DIR
@@ -43,10 +54,18 @@ const OUT_DIR = process.env.OUT_DIR
 const saveEntity = function(opEntity) {
     let out_dir = path.join(OUT_DIR, opEntity.get(['properties','path','values',0,'value']))
 
-    fs.copySync(TEMPLATE, path.join(out_dir, 'index.jade'))
-    // fs.createReadStream(TEMPLATE).pipe(fs.createWriteStream(path.join(out_dir, 'index.jade')))
+    if (ITEM_DIR) {
+        fs.walk(ITEM_DIR)
+            .on('data', function (item) {
+                if (item.stats.isDirectory()) {
+                    return
+                }
+                console.log(JSON.stringify(item.path) + ' -> ' + path.join(out_dir, path.basename(item.path)))
+                fs.copy(item.path, path.join(out_dir, path.basename(item.path)))
+            })
+    }
 
-    let out_file = path.join(out_dir, 'data.yaml')
+    let out_file = path.join(out_dir, ITEM_YAML)
     console.log('save ' + opEntity.get(['id']) + ' | ' + opEntity.get(['displayname']) + out_file)
     let data_y = yaml.safeDump(opEntity.get(), { indent: 4, lineWidth: 999999999 })
     fs.outputFileSync(out_file, data_y)
@@ -64,26 +83,19 @@ const saveEntities = function(opEntities) {
         saveEntity(opEntity)
         return
     })
-    if (DATA_LIST) {
+    if (LIST_YAML) {
         let data_y = yaml.safeDump(entities, { indent: 4, lineWidth: 999999999 })
-        fs.outputFileSync(DATA_LIST, data_y)
+        fs.outputFileSync(LIST_YAML, data_y)
     }
 }
 
 
+console.log('v.1.1.2');
 var errored = false
 
-if (!TEMPLATE) {
-    console.warn('Missing TEMPLATE')
-} else if (!fs.existsSync(TEMPLATE)) {
-    console.error('Missing ' + TEMPLATE)
-    errored = true
-}
-if (!DATA_LIST) {
-    console.warn('Missing DATA_LIST')
-}
-if (!TEMPLATE && !DATA_LIST) {
-    console.error('TEMPLATE or DATA_LIST is required')
+
+if (!ITEM_DIR && !LIST_YAML) {
+    console.error('ITEM_DIR or LIST_YAML is required')
     errored = true
 }
 
