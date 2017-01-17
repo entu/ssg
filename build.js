@@ -5,6 +5,7 @@
 const async = require('async')
 const fs = require('fs')
 const fse = require('fs-extra')
+const klaw = require('klaw')
 const op = require('object-path')
 const path = require('path')
 
@@ -42,7 +43,7 @@ var theEnd = () => {
         buildErrors = buildErrors + sourceFiles.length
         if (buildErrors === 0) {
 
-            fse.walk(appConf.build).on('data', item => {
+            klaw(appConf.build).on('data', item => {
                 if (files.indexOf(item.path.replace(/\\/g, '/')) === -1 && item.path.replace(/\\/g, '/') !== appConf.build.replace(/\\/g, '/')) {
                     filesForDelete.push(item.path)
                 }
@@ -101,7 +102,7 @@ renderer.openConfFile(process.argv[2], (err, conf) => {
 
     appConf = conf
 
-    fse.walk(appConf.source).on('data', item => {
+    klaw(appConf.source).on('data', item => {
         if (!fs.lstatSync(item.path).isFile() ) { return }
 
         let fileName = path.basename(item.path)

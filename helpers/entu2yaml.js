@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-const fs = require('fs-extra')
-const path = require('path')
 const entulib = require('entulib')
+const fs = require('fs-extra')
+const klaw = require('klaw')
+const path = require('path')
 const yaml = require('js-yaml')
 
 // Entities fetched from Entu must have 'path' property or they will get discarded.
@@ -55,7 +56,7 @@ const saveEntity = function(opEntity) {
     let out_dir = path.join(OUT_DIR, opEntity.get(['properties','path','values',0,'value']))
 
     if (ITEM_DIR) {
-        fs.walk(ITEM_DIR)
+        klaw(ITEM_DIR)
             .on('data', function (item) {
                 if (item.stats.isDirectory()) {
                     return
