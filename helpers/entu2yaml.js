@@ -61,8 +61,13 @@ const saveEntity = function(opEntity) {
                 if (item.stats.isDirectory()) {
                     return
                 }
-                console.log(JSON.stringify(item.path) + ' -> ' + path.join(out_dir, path.basename(item.path)))
                 fs.copy(item.path, path.join(out_dir, path.basename(item.path)))
+            })
+            .on('end', function (err) {
+                if (err) {
+                    console.log('whoa, ERR:',err)
+                    throw err
+                }
             })
     }
 
@@ -78,7 +83,7 @@ const saveEntities = function(opEntities) {
     opEntities.forEach(function(opEntity) {
         entities.push(opEntity.get())
         if (!opEntity.get(['properties','path','values',0])) {
-            console.log('skipping ' + opEntity.get(['id']) + ' | ' + opEntity.get(['displayname']))
+            // console.log('skipping ' + opEntity.get(['id']) + ' | ' + opEntity.get(['displayname']))
             return
         }
         saveEntity(opEntity)
@@ -91,7 +96,6 @@ const saveEntities = function(opEntities) {
 }
 
 
-console.log('v.1.1.2');
 var errored = false
 
 
