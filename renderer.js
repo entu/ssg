@@ -279,7 +279,7 @@ var makeCSS = (filePath, callback) => {
                 stylus(css.join('\n\n')).set('warn', false).render(function (err, css) {
                     if (err) { return callback(err) }
 
-                    fse.outputFile(jsFile, css, {}, function (err) {
+                    fse.outputFile(cssFile, css, {}, function (err) {
                         if (err) { return callback(err) }
 
                         outputFiles.push({ path: cssFile })
