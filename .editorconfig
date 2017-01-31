@@ -1,0 +1,9 @@
+# EditorConfig is awesome: http://EditorConfig.org
+
+root=true
+
+[*.{jade,pug,yaml,md,js,styl,css,txt,html}]
+charset = utf-8
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
