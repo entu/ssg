@@ -7,24 +7,37 @@ html
             require('electron-stylus')(__dirname + '/style.styl')
     body
         #tools
-            h1 Entu CMS
-            a.button(href='javascript:openConf()')
-                | Open configuration
-                span#conf
-            a.button(href='javascript:shell.showItemInFolder(appConf.source)')
-                | Open source folder
-                span#source
-            a.button(href='javascript:shell.showItemInFolder(appConf.build)')
-                | Open build folder
-                span#build
-            a.button(href='javascript:openUrl()')
-                | Preview webpage
-                span#preview click to start server and open webpage
-        #tools-footer
-            a#tools-footer-link(href="javascript:shell.openExternal('http://cms.entu.eu')")
+            h1 Entu SSG
+                a#version(href="javascript:shell.openExternal('http://cms.entu.eu')")
+
+            h2 Git
+
+            h3 Remote
+            a#remote.button(href='javascript:void(0)')
+
+            h3 Folder
+            a#repo.button(href='javascript:void(0)')
+
+            h3 Branch
+            select#branch.button(onchange='javascript:setBranch()')
+
+            h2 Build
+
+            h3 Configuration
+            a#conf.button(href='javascript:openConfFile()')
+
+            h3 Source folder
+            a#source.button(href='javascript:shell.showItemInFolder(appConf.source)')
+
+            h3 Build folder
+            a#build.button(href='javascript:shell.showItemInFolder(appConf.build)')
+
+            h3 Preview
+            a#preview.button(href='javascript:openUrl()')
         #log
             table(cellspacing='0')
                 tbody#log-table
         #log-footer
             a(href='javascript:clearLog()') clear log
-    script(src='script.js', charset='utf-8')
+
+        script(src='script.js', charset='utf-8')

@@ -42,6 +42,7 @@
     "markdown-it": "^8.1.0",
     "mime-types": "^2.1.12",
     "object-path": "^0.11.2",
+    "simple-git": "^1.65.0",
     "stylus": "^0.54.5",
     "uglify-js": "^2.7.3"
   },

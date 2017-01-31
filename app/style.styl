@@ -7,14 +7,6 @@ body
     color #182530
     -webkit-app-region drag
 
-h1
-    margin 50px 0px 40px 0px
-    padding 0px
-    font-size 40px
-    font-weight 100
-    line-height 40px
-    text-align center
-
 a
     color inherit
     text-decoration none
@@ -24,52 +16,90 @@ a
         text-decoration underline
 
 #tools
-    position fixed
-    top 0px
-    left 0px
-    bottom 0px
-    width 320px
+    float left
+    display none
+    height 100%
+    min-width 200px
+    padding 0px
+    text-decoration none
+    font-size 14px
+    line-height 20px
+    color #182530
     background #f4f4f4
+    border-right solid 1px #A4A9AD
     -webkit-app-region drag
     -webkit-user-select none
     user-select none
     cursor default
-    overflow hidden
+    overflow-x hidden
+    overflow-y auto
+
+    h1
+        margin 60px 0px 40px 0px
+        padding 0px
+        font-size 40px
+        font-weight 100
+        line-height 40px
+        text-align center
+
+        a
+            display block
+            padding-top 5px
+            font-size 12px
+            line-height 12px
+            font-weight 200
+            color #777B7E
+            text-decoration none
+
+            &:hover
+                color #182530
+                text-decoration none
+
+    h2
+        margin 60px 15px 0px 15px
+        padding 0px 5px 2px 5px
+        font-size 12px
+        font-weight 400
+        line-height 14px
+        color #A4A9AD
+        text-transform uppercase
+        border-bottom solid 1px #C5C8CB
+
+    h3
+        margin 20px 20px 0px 20px
+        padding 0px
+        font-size 14px
+        font-weight 200
+        line-height 14px
+        color #777B7E
+        text-transform lowercase
+
+        &:first-child
+            margin-top 0px
 
     a.button
         display block
-        width 250px
-        min-height 40px
-        margin 0px auto 10px auto
-        padding 10px
-        text-align center
+        margin 5px 0px 0px 0px
+        padding 3px 20px
         text-decoration none
         font-size 14px
         line-height 20px
-        color #a4a9ad
-        background #ffffff
-        border 1px solid #a4a9ad
+        font-weight 400
+        color #182530
         z-index 100
 
         &:hover
-            color #182530
-            border 1px solid #182530
+            color #000000
+            background #E6E8E9
 
-        span
-            display block
-            text-align center
-            font-size 11px
-            font-weight 100
-            line-height 16px
-            color #909090
+    select
+        margin 5px 20px 0px 20px
+        -webkit-app-region no-drag
+        -webkit-user-select none
+
 
 #log
-    position fixed
-    top 5px
-    right 0px
-    bottom 30px
-    left 325px
-    padding 0px 5px 10px 0px
+    padding 0px
     font-size 12px
     line-height 20px
     overflow auto
@@ -101,11 +131,10 @@ a
                     padding 5px 0px 0px 0px
 
 
-#tools-footer
 #log-footer
     position fixed
     bottom 0px
-    padding 10px 0px
+    padding 10px
     text-align center
     font-size 12px
     line-height 12px
@@ -123,12 +152,7 @@ a
             color #182530
             font-weight bold
 
-#tools-footer
-    left 0px
-    width 320px
-    background #f4f4f4
-
 #log-footer
     right 0px
-    left 320px
+    left 361px
     background #ffffff

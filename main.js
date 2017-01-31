@@ -10,7 +10,7 @@ let createWindow = () => {
     // Create the browser window.
     mainWindow = new BrowserWindow({
         width: 900,
-        height: 500,
+        height: 470,
         // resizable: false,
         // fullscreen: false,
         titleBarStyle: 'hidden',

@@ -2,19 +2,89 @@
 
 const {remote} = require('electron')
 const {app, dialog, shell} = remote
+const async = require('async')
 const renderer = require('../renderer.js')
+const path = require('path')
+const git = require('simple-git')
+
 
 var confFile = localStorage.getItem('confFile')
+var gitRepo = ''
+var gitRemote = ''
+var gitBranch = ''
 var appConf = {}
 var serverStarted = false
 var serverUrl = ''
 var errors = {}
 
 
-document.getElementById('tools-footer-link').innerHTML = app.getVersion()
+document.getElementById('version').innerHTML = app.getVersion()
+document.getElementById('tools').style.height = window.innerHeight + 'px'
+document.getElementById('log').style.height = window.innerHeight + 'px'
+
+
+window.addEventListener('resize', function(e){
+    document.getElementById('tools').style.height = window.innerHeight + 'px'
+    document.getElementById('log').style.height = window.innerHeight + 'px'
+})
 
 
 var openConf = () => {
+    async.waterfall([
+        callback => {
+            renderer.openConfFile(confFile, callback)
+        },
+        (conf, callback) => {
+            appConf = conf
+            git(path.dirname(confFile)).revparse(['--show-toplevel'], callback)
+        },
+        (repo, callback) => {
+            gitRepo = repo.trim()
+            git(gitRepo).raw(['config', '--get', 'remote.origin.url'], callback)
+        },
+        (remote, callback) => {
+            gitRemote = remote.trim()
+            git(gitRepo).branchLocal(callback)
+        },
+        (branches, callback) => {
+            gitBranch = branches.current
+
+            let select = []
+            for (let i = 0; i < branches.all.length; i++) {
+                select.push(`<option value="${branches.all[i]}" ${(branches.all[i] === branches.current ? 'selected' : '')}>${branches.all[i]}</option>`)
+            }
+            document.getElementById('branch').innerHTML = select.join('')
+
+            callback(null)
+        }
+    ], err => {
+        if (err) {
+            dialog.showMessageBox({
+                type: 'error',
+                message: err.toString(),
+                buttons: ['OK']
+            }, () => {
+                confFile = null
+                openConfFile()
+            })
+        } else {
+            serverUrl = `http://localhost:${appConf.server.port}`
+
+            document.getElementById('remote').innerHTML = gitRemote
+            document.getElementById('repo').innerHTML = gitRepo.replace(app.getPath('home'), '~')
+            document.getElementById('conf').innerHTML = confFile.replace(gitRepo, '.')
+            document.getElementById('source').innerHTML = appConf.source.replace(gitRepo, '.')
+            document.getElementById('build').innerHTML = appConf.build.replace(gitRepo, '.')
+            document.getElementById('preview').innerHTML = serverUrl
+            document.getElementById('tools').style.display = 'block'
+
+            // startRendering()
+        }
+    })
+}
+
+
+var openConfFile = () => {
     var files = dialog.showOpenDialog({
         properties: ['openFile'],
         filters: [
@@ -27,7 +97,17 @@ var openConf = () => {
     confFile = files[0]
     localStorage.setItem('confFile', confFile)
 
-    location.reload()
+    openConf()
+}
+
+
+var setBranch = () => {
+    let e = document.getElementById('branch')
+    gitBranch = e.options[e.selectedIndex].value
+
+    git(gitRepo).checkout(gitBranch).fetch().status(function (err, data) {
+        if (err) { console.error(err) }
+    })
 }
 
 
@@ -40,16 +120,12 @@ var startRendering = () => {
                 buttons: ['OK']
             }, () => {
                 confFile = null
-                openConf()
+                openConfFile()
                 return
             })
         } else {
             appConf = conf
             serverUrl = `http://localhost:${appConf.server.port}`
-
-            document.getElementById('conf').innerHTML = confFile.replace(app.getPath('home'), '~')
-            document.getElementById('source').innerHTML = appConf.source.replace(app.getPath('home'), '~')
-            document.getElementById('build').innerHTML = appConf.build.replace(app.getPath('home'), '~')
 
             clearLog()
 
@@ -147,6 +223,7 @@ var addLog = (event, source, build) => {
     document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight
 }
 
+
 var badge = (source, add) => {
     if (add) {
         errors[source] = true
@@ -159,8 +236,7 @@ var badge = (source, add) => {
 
 
 if (confFile) {
-    startRendering()
-    startServer()
-} else {
     openConf()
+} else {
+    openConfFile()
 }
