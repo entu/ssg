@@ -26,35 +26,35 @@ Download [latest build](https://github.com/argoroots/entu-cms/releases/latest), 
 
 Sites build process is configurable by Yaml file and its path must be first argument for entu-cms.js. Required parameters are:
 
-- __locales__  
+- __locales__
   List of locale folders to generate. You can put locale identificator to filename (like index.en.jade or data.et.yaml) for locale speciffic content.
-- __source__  
+- __source__
   Folder with source files (realtive to build config.yaml). Folders beginning with underscore are ignored.
-- __build__  
+- __build__
   Folder to put generated HTML (realtive to build config.yaml).
-- __assets__  
+- __assets__
   Folder with static assets (JS, images, ...).
-- __protectedFromCleanup__  
+- __protectedFromCleanup__
   List of paths what is not deleted if _build.sh_ is ran with _cleanup_ parameter. Relative to _build_ path.
-- __jade.basedir__  
+- __jade.basedir__
   Jade basedir for simpler include/extend.
-- __jade.pretty__  
+- __jade.pretty__
   Boolean to set if output HTML is pretty formatted or not.
-- __markdown.breaks__  
+- __markdown.breaks__
   Convert '\n' in (markdown) paragraphs into <br>.
-- __markdown.html__  
+- __markdown.html__
   Enable HTML tags in (markdown) source.
-- __stylus.pretty__  
+- __stylus.pretty__
   Boolean to set if output CSS is pretty formatted or not.
-- __javascript.pretty__  
+- __javascript.pretty__
   Boolean to set if output JavaScript is pretty formatted or not.
-- __server.port__  
+- __server.port__
   What port to use for serving on localhost.
-- __server.assets__  
+- __server.assets__
   Serving page in localhost will map this url to folder specified in _assets_ parameter.
-- __dev.aliases__  
+- __dev.aliases__
   Build pages aliases.
-- __dev.paths__  
+- __dev.paths__
   List of (source) paths to build. Relative to _source_ path.
 
 ### Example build configuration file:
@@ -102,23 +102,23 @@ Global, location based, style.css is combined from all style.styl files and put 
 
 ### Page data and configuration - data.yaml
 
-To pass data to index.jade use front matter (Yaml formated data beginning of Jaml file between two \-\-\- lines) or __data.yaml__ file. This data is passed to index.jade in object named _D_ (To get property _text_ from data.yaml use _D.text_ in index.jade).
+To pass data to index.jade use front matter (Yaml formated data beginning of Jaml file between two \-\-\- lines) or __data.yaml__ file. This data is passed to index.jade in object named _self.D_ (To get property _text_ from data.yaml use _self.D.text_ in index.jade).
 
-You can put locale identificator to filename (like data.en.yaml) for locale speciffic content. Other locales _page_ object is accessible via _page.otherLocales_ object.
+You can put locale identificator to filename (like data.en.yaml) for locale speciffic content. Other locales _self.page_ object is accessible via _self.page.otherLocales_ object.
 
-This file can also contain page configuration info. All page parameters must be inside _page_ property. This info is also passed to index.jade in _page_ object.
+This file can also contain page configuration info. All page parameters must be inside _self.page_ property. This info is also passed to index.jade in _self.page_ object.
 
 Some page parameters will change how HTML is generated. Those are:
-- __page.disabled__  
-  If true, page will not be generated nor loaded to _page.otherLocales_ object.
-- __page.path__  
+- _self.page.disabled__
+  If true, page will not be generated nor loaded to _self.page.otherLocales_ object.
+- _self.page.path__
   If set, it will override folder based path.
-- __page.aliases__  
+- _self.page.aliases__
   List of path aliases. Will make redirekt urls to original path.
-- __page.originalPath__  
-  Original path (if this page is generated to differnt path using _page.aliases_ parameter). Use this to redirect or for canonocal link.
-- __page.data__
-  Files to load data from. This data is passed to index.jade in object named _F_. You can put locale identificator to filename (like my_custom_list.en.yaml). You can use relative path (./ or ../). If used it's relative to source folder (set in _config.yaml_) and not this _data.yaml_ file
+- _self.page.originalPath__
+  Original path (if this page is generated to differnt path using _self.page.aliases_ parameter). Use this to redirect or for canonocal link.
+- _self.page.data__
+  Files to load data from. This data is passed to index.jade in object named _self.F_. You can put locale identificator to filename (like my_custom_list.en.yaml). You can use relative path (./ or ../). If used it's relative to source folder (set in _config.yaml_) and not this _data.yaml_ file
 
 ### Example page data.yaml:
 

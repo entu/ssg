@@ -124,6 +124,7 @@ const makeHTML = (folderName, watch, callback) => {
             op.ensureExists(data, 'page.path', path.dirname(jadeFile).replace(appConf.source, '').substr(1))
             op.ensureExists(data, 'page.otherLocales', {})
 
+            op.ensureExists(data, 'self', true)
             op.ensureExists(data, 'filename', jadeFile)
             op.ensureExists(data, 'basedir', appConf.jade.basedir)
 
