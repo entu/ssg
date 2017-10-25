@@ -1,7 +1,7 @@
 {
   "name": "entu-cms",
   "productName": "Entu CMS",
-  "version": "1.1.3",
+  "version": "3.0.0",
   "author": "Argo Roots <argo@roots.ee>",
   "description": "Simple (Jade) filebased CMS",
   "keywords": [
@@ -9,6 +9,7 @@
     "static",
     "html",
     "jade",
+    "pug",
     "markdown",
     "yaml"
   ],
@@ -26,28 +27,32 @@
     "start": "electron main.js"
   },
   "dependencies": {
-    "async": "^2.1.2",
-    "chokidar": "^1.6.0",
-    "electron-pug": "^1.5.1",
-    "electron-stylus": "^0.1.1",
-    "entulib": "^2.0.0",
-    "front-matter": "^2.1.0",
-    "fs-extra": "^2.0.0",
-    "html-minifier": "^3.2.3",
-    "jade": "^1.11.0",
-    "js-yaml": "^3.6.1",
-    "jstransformer-markdown-it": "^2.0.0",
-    "jstransformer-uglify-js": "^1.1.1",
-    "klaw": "^1.3.1",
-    "markdown-it": "^8.1.0",
-    "mime-types": "^2.1.12",
-    "object-path": "^0.11.2",
-    "simple-git": "^1.65.0",
-    "stylus": "^0.54.5",
-    "uglify-js": "^2.7.3"
+    "async": "2.*",
+    "chokidar": "1.*",
+    "electron-installer-dmg": "0.*",
+    "electron-pug": "1.*",
+    "electron-stylus": "0.*",
+    "entulib": "2.*",
+    "front-matter": "2.*",
+    "fs-extra": "4.*",
+    "html-minifier": "3.*",
+    "js-yaml": "3.*",
+    "jstransformer-markdown-it": "2.*",
+    "jstransformer-uglify-js": "1.*",
+    "klaw": "2.*",
+    "markdown-it": "8.*",
+    "markdown-it-attrs": "1.*",
+    "markdown-it-sup": "1.*",
+    "mime-types": "2.*",
+    "object-path": "0.*",
+    "pug": "^2.0.0-rc.4",
+    "simple-git": "1.*",
+    "stylus": "0.*",
+    "uglify-js": "3.*"
   },
   "devDependencies": {
-    "electron-prebuilt": "^1.4.10",
-    "html2jade": "^0.8.6"
+    "electron": "1.*",
+    "electron-packager": "9.*",
+    "html2jade": "0.*"
   }
 }

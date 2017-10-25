@@ -7,11 +7,13 @@ const fm = require('front-matter')
 const fs = require('fs')
 const fse = require('fs-extra')
 const http = require('http')
-const jade = require('jade')
 const md = require('markdown-it')
+const mdAttrs = require('markdown-it-attrs')
+const mdSup = require('markdown-it-sup')
 const mime = require('mime-types')
 const op = require('object-path')
 const path = require('path')
+const pug = require('pug')
 const stylus = require('stylus')
 const uglify = require('uglify-js')
 const yaml = require('js-yaml')
@@ -37,7 +39,7 @@ const jsMinifyConf = {
 
 
 // Returns file path with locale if exists
-var getFilePath = (dirName, fileName, locale) => {
+const getFilePath = (dirName, fileName, locale) => {
     var localeFile = fileName.split('.')
     localeFile.splice(localeFile.length - 1, 0, locale)
 
@@ -54,7 +56,7 @@ var getFilePath = (dirName, fileName, locale) => {
 }
 
 // Load Yaml file
-var getYamlFile = (dirName, fileName, locale, defaultResult) => {
+const getYamlFile = (dirName, fileName, locale, defaultResult) => {
     var dataFile = getFilePath(dirName, fileName, locale)
 
     if (!dataFile) return defaultResult
@@ -63,7 +65,7 @@ var getYamlFile = (dirName, fileName, locale, defaultResult) => {
 }
 
 // Check if file is in dev.paths
-var isFileIgnored = (file) => {
+const isFileIgnored = (file) => {
     if (!appConf.dev.paths) { appConf.dev.paths = [] }
     if (appConf.dev.paths.length === 0) { return false }
 
@@ -79,7 +81,7 @@ var isFileIgnored = (file) => {
 }
 
 // Generate dependency file key
-var getDependentFileKey = file => {
+const getDependentFileKey = file => {
     return file.replace(appConf.source, '').replace(/\./g, '-')
 }
 
@@ -87,7 +89,7 @@ var getDependentFileKey = file => {
 // Generates HTMLs from template
 var appConf = {}
 var jadeDependencies = {}
-var makeHTML = (folderName, watch, callback) => {
+const makeHTML = (folderName, watch, callback) => {
     try {
         var outputFiles = []
         let locales = []
@@ -123,7 +125,6 @@ var makeHTML = (folderName, watch, callback) => {
             op.ensureExists(data, 'page.otherLocales', {})
 
             op.ensureExists(data, 'filename', jadeFile)
-            op.ensureExists(data, 'pretty', true)
             op.ensureExists(data, 'basedir', appConf.jade.basedir)
 
             // set custom data from Yaml files
@@ -155,7 +156,7 @@ var makeHTML = (folderName, watch, callback) => {
             data.G = appConf.data[locale]
             data.G.md = text => {
                 if (text) {
-                    return md({ breaks: appConf.markdown.breaks, html: appConf.markdown.html }).render(text).replace(/\r?\n|\r/g, '')
+                    return md({ breaks: appConf.markdown.breaks, html: appConf.markdown.html }).use(mdSup).use(mdAttrs).render(text).replace(/\r?\n|\r/g, '')
                 } else {
                     return ''
                 }
@@ -178,7 +179,7 @@ var makeHTML = (folderName, watch, callback) => {
 
             let data = d.data
             let template = d.template
-            let compiledJade = jade.compile(template || '', data)
+            let compiledJade = pug.compile(template || '', data)
 
             let htmlDirs = appConf.dev.aliases ? op.get(data, 'page.aliases', []) : []
             let defaultHtmlDir = path.join('/', l, data.page.path)
@@ -237,7 +238,7 @@ exports.makeHTML = makeHTML
 
 // Generates CSS from separate .styl files
 var stylesList = {}
-var makeCSS = (filePath, callback) => {
+const makeCSS = (filePath, callback) => {
     try {
         var folderName = path.dirname(filePath)
         var fileName = path.basename(filePath)
@@ -328,7 +329,7 @@ exports.makeCSS = makeCSS
 
 // Generates JS from separate .js files
 var scriptsList = []
-var makeJS = (filePath, callback) => {
+const makeJS = (filePath, callback) => {
     try {
         let folderName = path.dirname(filePath)
         let fileName = path.basename(filePath)
@@ -440,6 +441,8 @@ exports.openConfFile = (appConfFile, callback) => {
         if (appConf.jade.basedir.substr(0, 1) === '.') {
             appConf.jade.basedir = path.resolve(path.join(path.dirname(appConfFile), appConf.jade.basedir))
         }
+
+        if (!appConf.dev.paths) { appConf.dev.paths = [] }
 
         // Printout configuration
         // var c = {}
