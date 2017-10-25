@@ -9,12 +9,13 @@ let mainWindow
 let createWindow = () => {
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        width: 900,
-        height: 470,
+        width: 999,
+        height: 777,
         // resizable: false,
         // fullscreen: false,
         titleBarStyle: 'hidden',
-        title: 'Entu CMS'
+        title: 'Entu CMS',
+        backgroundColor: '#ffffff'
     })
 
     // and load the index.html of the app.

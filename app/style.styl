@@ -1,6 +1,8 @@
-body
+*
     margin 0px
     padding 0px
+
+body
     font-family -apple-system, 'Segoe UI', 'Oxygen', 'Ubuntu', 'Cantarell', 'Helvetica Neue', sans-serif
     font-weight 200
     letter-spacing 1px
@@ -18,11 +20,11 @@ a
 #tools
     float left
     display none
-    height 100%
     min-width 200px
-    padding 0px
+    padding-right 16px
+    padding-left 16px
     text-decoration none
-    font-size 14px
+    font-size 16px
     line-height 20px
     color #182530
     background #f4f4f4
@@ -36,7 +38,6 @@ a
 
     h1
         margin 60px 0px 40px 0px
-        padding 0px
         font-size 40px
         font-weight 100
         line-height 40px
@@ -56,8 +57,8 @@ a
                 text-decoration none
 
     h2
-        margin 60px 15px 0px 15px
-        padding 0px 5px 2px 5px
+        margin-top 60px
+        padding-bottom 2px
         font-size 12px
         font-weight 400
         line-height 14px
@@ -66,8 +67,7 @@ a
         border-bottom solid 1px #C5C8CB
 
     h3
-        margin 20px 20px 0px 20px
-        padding 0px
+        margin-top 20px
         font-size 14px
         font-weight 200
         line-height 14px
@@ -79,8 +79,8 @@ a
 
     a.button
         display block
-        margin 5px 0px 0px 0px
-        padding 3px 20px
+        margin 5px -16px 0px -16px
+        padding 4px 16px
         text-decoration none
         font-size 14px
         line-height 20px
@@ -93,42 +93,42 @@ a
             background #E6E8E9
 
     select
-        margin 5px 20px 0px 20px
+        margin-top 5px
         -webkit-app-region no-drag
         -webkit-user-select none
 
 
 #log
-    padding 0px
+    padding-right 16px
+    padding-left 16px
     font-size 12px
     line-height 20px
     overflow auto
 
     table
+        margin-top 52px
         width 100%
 
         tr
-            &:hover
-                background #f4f4f4
-
-            &.log
-                white-space nowrap
-
             &.error
                 color red
 
+            &:last-child
+                td
+                    border-bottom none
             td
-                margin 0px
-                padding 5px 10px
+                padding 8px 4px
                 vertical-align top
                 border-bottom 1px solid #f4f4f4
+
+                &.nowrap
+                    white-space nowrap
 
                 .alias
                     color #B9B9B9
 
                 pre
-                    margin 0px
-                    padding 5px 0px 0px 0px
+                    padding-top 5px
 
 
 #log-footer

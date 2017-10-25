@@ -5,10 +5,11 @@ html
         title Entu CMS
         script.
             require('electron-stylus')(__dirname + '/style.styl')
+
     body
         #tools
-            h1 Entu SSG
-                a#version(href="javascript:shell.openExternal('http://cms.entu.eu')")
+            h1 Entu CMS
+                a#version(href="javascript:shell.openExternal('https://cms.entu.eu')")
 
             h2 Git
 
@@ -16,7 +17,7 @@ html
             a#remote.button(href='javascript:void(0)')
 
             h3 Folder
-            a#repo.button(href='javascript:void(0)')
+            a#repo.button(href='javascript:shell.showItemInFolder(gitRepo)')
 
             h3 Branch
             select#branch.button(onchange='javascript:setBranch()')
@@ -37,7 +38,7 @@ html
         #log
             table(cellspacing='0')
                 tbody#log-table
-        #log-footer
-            a(href='javascript:clearLog()') clear log
+        //- #log-footer
+        //-     a(href='javascript:clearLog()') clear log
 
         script(src='script.js', charset='utf-8')
