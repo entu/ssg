@@ -55,6 +55,25 @@ var openConf = () => {
             }
             document.getElementById('branch').innerHTML = select.join('')
 
+            git(gitRepo).log({splitter: 'commit', '--max-count': '10'}, callback)
+        },
+        (log, callback) => {
+            for (let i = 0; i < log.all.length; i++) {
+                let dt = new Date(log.all[i].date)
+
+                document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
+                    <tr class="log">
+                        <td>${log.all[i].message}</td>
+                        <td class="nowrap">${log.all[i].author_name}</td>
+                        <td class="nowrap" style="text-align:right;">${dt.toLocaleDateString('de-DE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+                    </tr>
+                `
+            }
+
+            git(gitRepo).show({'--name-only': null, '0da5fc637ea889d8ca5c3ca9b4fcaed78d077458': null}, callback)
+        },
+        (diff, callback) => {
+            console.log(diff);
             callback(null)
         }
     ], err => {
@@ -78,7 +97,8 @@ var openConf = () => {
             document.getElementById('preview').innerHTML = serverUrl
             document.getElementById('tools').style.display = 'block'
 
-            // startRendering()
+            startRendering()
+            startServer()
         }
     })
 }
@@ -102,11 +122,15 @@ var openConfFile = () => {
 
 
 var setBranch = () => {
+    clearLog()
+
     let e = document.getElementById('branch')
     gitBranch = e.options[e.selectedIndex].value
 
     git(gitRepo).checkout(gitBranch).fetch().status(function (err, data) {
         if (err) { console.error(err) }
+
+        openConf()
     })
 }
 
@@ -136,7 +160,8 @@ var startRendering = () => {
                         err.event,
                         err.source,
                         `javascript:shell.showItemInFolder('${appConf.source + err.source}')`,
-                        err.error.toString().trim()
+                        err.error.toString().trim(),
+                        true
                     )
                 } else {
                     if (data.build.length > 0) {
@@ -167,7 +192,8 @@ var startServer = () => {
                 err.event,
                 err.source,
                 `javascript:openUrl('${serverUrl + err.source}')`,
-                err.error.toString().trim()
+                err.error.toString().trim(),
+                false
             )
         } else {
             serverStarted = true
@@ -189,8 +215,10 @@ var clearLog = () => {
 }
 
 
-var addLogError = (event, source, sourceLink, error) => {
-    let myNotification = new Notification('Error in file', { body: source })
+var addLogError = (event, source, sourceLink, error, notify) => {
+    if (notify) {
+        let myNotification = new Notification('Error in file', { body: source })
+    }
 
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
         <tr class="error">
