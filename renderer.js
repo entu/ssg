@@ -107,32 +107,26 @@ const makeHTML = (folderName, watch, callback) => {
             let jadeFileContent = fm(fs.readFileSync(jadeFile, 'utf8'))
             let yamlFileContent = getYamlFile(folderName, 'data.yaml', locale, {})
 
-            let data = {
-                page: {},
-                D: Object.assign(yamlFileContent, jadeFileContent.attributes),
-                G: {},
-                F: {}
+            let defaultContent = {
+                self: true,
+                filename: jadeFile,
+                basedir: appConf.jade.basedir,
+                disabled: false,
+                language: locale,
+                path: path.dirname(jadeFile).replace(appConf.source, '').substr(1),
+                otherLocales: {},
+                file: {}
             }
-            op.set(data, 'page', op.get(data, 'D.page'))
-            op.del(data, 'D.page')
 
+            let data = Object.assign(defaultContent, yamlFileContent, jadeFileContent.attributes)
 
-            if (op.get(data, 'page.disabled', false) === true) { continue }
-
-            op.ensureExists(data, 'page', {})
-            op.ensureExists(data, 'page.language', locale)
-            op.ensureExists(data, 'page.path', path.dirname(jadeFile).replace(appConf.source, '').substr(1))
-            op.ensureExists(data, 'page.otherLocales', {})
-
-            op.ensureExists(data, 'self', true)
-            op.ensureExists(data, 'filename', jadeFile)
-            op.ensureExists(data, 'basedir', appConf.jade.basedir)
+            if (op.get(data, 'disabled', false) === true) { continue }
 
             // set custom data from Yaml files
-            for (let i in op.get(data, 'page.data', {})) {
-                if (!data.page.data.hasOwnProperty(i)) { continue }
+            for (let i in op.get(data, 'file', {})) {
+                if (!data.file.hasOwnProperty(i)) { continue }
 
-                let customDataFile = data.page.data[i]
+                let customDataFile = data.file[i]
 
                 if (customDataFile.substr(0, 1) === '.') {
                     customDataFile = path.resolve(path.join(appConf.source, customDataFile))
@@ -182,8 +176,8 @@ const makeHTML = (folderName, watch, callback) => {
             let template = d.template
             let compiledJade = pug.compile(template || '', data)
 
-            let htmlDirs = appConf.dev.aliases ? op.get(data, 'page.aliases', []) : []
-            let defaultHtmlDir = path.join('/', l, data.page.path)
+            let htmlDirs = appConf.dev.aliases ? op.get(data, 'aliases', []) : []
+            let defaultHtmlDir = path.join('/', l, data.path)
             htmlDirs.push(defaultHtmlDir)
 
             let html = compiledJade(data)
@@ -199,7 +193,7 @@ const makeHTML = (folderName, watch, callback) => {
             }
 
             if (htmlDirs.length > 1) {
-                op.set(data, 'page.originalPath', defaultHtmlDir)
+                op.set(data, 'originalPath', defaultHtmlDir)
                 htmlAlias = compiledJade(data)
             }
 
