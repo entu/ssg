@@ -102,8 +102,21 @@ renderer.openConfFile(process.argv[2], (err, conf) => {
 
     appConf = conf
 
+    var limitedFiles = appConf.dev.paths.length > 0
+
     klaw(appConf.source).on('data', item => {
         if (!fs.lstatSync(item.path).isFile() ) { return }
+
+        if (limitedFiles) {
+            var ignore = true
+            for (var i = 0; i < appConf.dev.paths.length; i++) {
+                if (appConf.dev.paths[i] && item.path.startsWith(path.join(appConf.source, appConf.dev.paths[i]))) {
+                    ignore = false
+                    break
+                }
+            }
+            if (ignore) { return }
+        }
 
         let fileName = path.basename(item.path)
         let fileExt = path.extname(item.path)
