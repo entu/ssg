@@ -88,7 +88,7 @@ const getDependentFileKey = file => {
 
 // Generates HTMLs from template
 var appConf = {}
-var jadeDependencies = {}
+var pugDependencies = {}
 const makeHTML = (folderName, watch, callback) => {
     try {
         var outputFiles = []
@@ -101,24 +101,24 @@ const makeHTML = (folderName, watch, callback) => {
         for (let i = 0; i < appConf.locales.length; i++) {
             let locale = appConf.locales[i]
 
-            let jadeFile = getFilePath(folderName, 'index.pug', locale)
-            if (!jadeFile) { continue }
+            let pugFile = getFilePath(folderName, 'index.pug', locale)
+            if (!pugFile) { continue }
 
-            let jadeFileContent = fm(fs.readFileSync(jadeFile, 'utf8'))
+            let pugFileContent = fm(fs.readFileSync(pugFile, 'utf8'))
             let yamlFileContent = getYamlFile(folderName, 'data.yaml', locale, {})
 
             let defaultContent = {
                 self: true,
-                filename: jadeFile,
+                filename: pugFile,
                 basedir: appConf.pug.basedir,
                 disabled: false,
                 language: locale,
-                path: path.dirname(jadeFile).replace(appConf.source, '').substr(1),
+                path: path.dirname(pugFile).replace(appConf.source, '').substr(1),
                 otherLocales: {},
                 file: {}
             }
 
-            let data = Object.assign(defaultContent, yamlFileContent, jadeFileContent.attributes)
+            let data = Object.assign(defaultContent, yamlFileContent, pugFileContent.attributes)
 
             if (op.get(data, 'disabled', false) === true) { continue }
 
@@ -140,8 +140,8 @@ const makeHTML = (folderName, watch, callback) => {
                 op.set(data, ['F', i], customData)
 
                 if (watch) {
-                    if (op.get(jadeDependencies, getDependentFileKey(customDataFile), []).indexOf(folderName) === -1) {
-                        op.push(jadeDependencies, getDependentFileKey(customDataFile), folderName)
+                    if (op.get(pugDependencies, getDependentFileKey(customDataFile), []).indexOf(folderName) === -1) {
+                        op.push(pugDependencies, getDependentFileKey(customDataFile), folderName)
                         dependenciesWatcher.add(customDataFile)
                     }
                 }
@@ -158,7 +158,7 @@ const makeHTML = (folderName, watch, callback) => {
             }
 
             op.set(pageData, [locale, 'data'], data)
-            op.set(pageData, [locale, 'template'], jadeFileContent.body)
+            op.set(pageData, [locale, 'template'], pugFileContent.body)
         }
 
 
@@ -174,27 +174,27 @@ const makeHTML = (folderName, watch, callback) => {
 
             let data = d.data
             let template = d.template
-            let compiledJade = pug.compile(template || '', data)
+            let compiledPug = pug.compile(template || '', data)
 
             let htmlDirs = appConf.dev.aliases ? op.get(data, 'aliases', []) : []
             let defaultHtmlDir = path.join('/', l, data.path)
             htmlDirs.push(defaultHtmlDir)
 
-            let html = compiledJade(data)
+            let html = compiledPug(data)
             let htmlAlias = ''
 
             if (watch) {
-                for (var i = 0; i < compiledJade.dependencies.length; i++) {
-                    if (op.get(jadeDependencies, getDependentFileKey(compiledJade.dependencies[i]), []).indexOf(folderName) === -1) {
-                        op.push(jadeDependencies, getDependentFileKey(compiledJade.dependencies[i]), folderName)
-                        dependenciesWatcher.add(compiledJade.dependencies[i])
+                for (var i = 0; i < compiledPug.dependencies.length; i++) {
+                    if (op.get(pugDependencies, getDependentFileKey(compiledPug.dependencies[i]), []).indexOf(folderName) === -1) {
+                        op.push(pugDependencies, getDependentFileKey(compiledPug.dependencies[i]), folderName)
+                        dependenciesWatcher.add(compiledPug.dependencies[i])
                     }
                 }
             }
 
             if (htmlDirs.length > 1) {
                 op.set(data, 'originalPath', defaultHtmlDir)
-                htmlAlias = compiledJade(data)
+                htmlAlias = compiledPug(data)
             }
 
             if (!appConf.pug.pretty) {
@@ -414,8 +414,8 @@ exports.openConfFile = (appConfFile, callback) => {
         op.ensureExists(appConf, 'assets', path.join(__dirname, 'assets'))
         op.ensureExists(appConf, 'markdown.breaks', true)
         op.ensureExists(appConf, 'markdown.html', false)
-        op.ensureExists(appConf, 'jade.basedir', path.join(__dirname, 'source'))
-        op.ensureExists(appConf, 'jade.pretty', false)
+        op.ensureExists(appConf, 'pug.basedir', path.join(__dirname, 'source'))
+        op.ensureExists(appConf, 'pug.pretty', false)
         op.ensureExists(appConf, 'stylus.pretty', false)
         op.ensureExists(appConf, 'javascript.pretty', false)
         op.ensureExists(appConf, 'server.assets', '/assets')
@@ -504,12 +504,12 @@ exports.startServer = callback => {
 // Watch source files
 var dependenciesWatcher
 exports.watchFiles = callback => {
-    // Start to watch Jade files
-    let jadeFolders = []
+    // Start to watch Pug files
+    let pugFolders = []
     chokidar.watch(appConf.source + '/**/index*.pug').on('all', (fileEvent, filePath) => {
-        if (fileEvent !== 'add' || jadeFolders.indexOf(path.dirname(filePath)) === -1) {
-            if (jadeFolders.indexOf(path.dirname(filePath)) === -1) {
-                jadeFolders.push(path.dirname(filePath))
+        if (fileEvent !== 'add' || pugFolders.indexOf(path.dirname(filePath)) === -1) {
+            if (pugFolders.indexOf(path.dirname(filePath)) === -1) {
+                pugFolders.push(path.dirname(filePath))
             }
             makeHTML(path.dirname(filePath), true, (err, file) => {
                 if (err) {
@@ -588,7 +588,7 @@ exports.watchFiles = callback => {
 
     // Start to watch all dependencies
     dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', (fileEvent, filePath) => {
-        var files = op.get(jadeDependencies, getDependentFileKey(filePath))
+        var files = op.get(pugDependencies, getDependentFileKey(filePath))
         for (let i in files) {
             if (!files.hasOwnProperty(i)) { continue }
 

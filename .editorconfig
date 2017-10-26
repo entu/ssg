@@ -2,7 +2,7 @@
 
 root=true
 
-[*.{jade,pug,yaml,md,js,styl,css,txt,html}]
+[*]
 charset = utf-8
 indent_style = space
 indent_size = 4

@@ -2,7 +2,7 @@ source: ./
 build: ./
 assets: ./
 
-jade:
+pug:
     basedir: ./_templates
     pretty: false
 markdown:

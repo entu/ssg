@@ -3,8 +3,8 @@
 'use strict'
 
 const fs = require('fs')
-const path = require('path')
 const html2jade = require('html2jade')
+const path = require('path')
 
 
 if (process.argv.length > 2) {

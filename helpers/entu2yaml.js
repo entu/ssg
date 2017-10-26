@@ -2,9 +2,9 @@
 
 'use strict'
 
+const _ = require('lodash')
 const async = require('async')
 const fs = require('fs-extra')
-const _ = require('lodash')
 const request = require('request')
 const yaml = require('js-yaml')
 

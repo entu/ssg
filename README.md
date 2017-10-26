@@ -6,7 +6,7 @@
 
 - Simple file based CMS.
 - Use Your favorite tools/editors.
-- Generate static HTML files from [Jade](http://jade-lang.com) templates or [Markdown](https://en.wikipedia.org/wiki/Markdown).
+- Generate static HTML files from [Pug](https://pugjs.org) templates or [Markdown](https://en.wikipedia.org/wiki/Markdown).
 - Generate site CSS from [Stylus](http://stylus-lang.com) files.
 - Pass data to templates with [Yaml](http://yaml.org) files.
 - Use locale identificator in filenames to generate locale specific content.
@@ -36,9 +36,9 @@ Sites build process is configurable by Yaml file and its path must be first argu
   Folder with static assets (JS, images, ...).
 - __protectedFromCleanup__
   List of paths what is not deleted if _build.sh_ is ran with _cleanup_ parameter. Relative to _build_ path.
-- __jade.basedir__
-  Jade basedir for simpler include/extend.
-- __jade.pretty__
+- __pug.basedir__
+  Pug basedir for simpler include/extend.
+- __pug.pretty__
   Boolean to set if output HTML is pretty formatted or not.
 - __markdown.breaks__
   Convert '\n' in (markdown) paragraphs into <br>.
@@ -69,7 +69,7 @@ assets: ./assets
 protectedFromCleanup:
   - assets
   - index.html
-jade:
+pug:
   basedir: ./source/_templates
   pretty: false
 markdown:
@@ -92,7 +92,7 @@ dev:
 
 ### Page content - index.pug
 
-Page content is generated from __index.pug__ file. All other files are ignored, but You can use those files for Jade [include](http://jade-lang.com/reference/includes)/[extends](http://jade-lang.com/reference/inheritance). You can put locale identificator to filename (like index.en.pug) for locale speciffic content.
+Page content is generated from __index.pug__ file. All other files are ignored, but You can use those files for Pug [include](https://pugjs.org/language/includes.html)/[extends](https://pugjs.org/language/inheritance.html). You can put locale identificator to filename (like index.en.pug) for locale speciffic content.
 
 ### Page style - style.styl
 
