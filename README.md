@@ -27,7 +27,7 @@ Download [latest build](https://github.com/argoroots/entu-cms/releases/latest), 
 Sites build process is configurable by Yaml file and its path must be first argument for entu-cms.js. Required parameters are:
 
 - __locales__
-  List of locale folders to generate. You can put locale identificator to filename (like index.en.jade or data.et.yaml) for locale speciffic content.
+  List of locale folders to generate. You can put locale identificator to filename (like index.en.pug or data.et.yaml) for locale speciffic content.
 - __source__
   Folder with source files (realtive to build config.yaml). Folders beginning with underscore are ignored.
 - __build__
@@ -90,9 +90,9 @@ dev:
 
 ## Content
 
-### Page content - index.jade
+### Page content - index.pug
 
-Page content is generated from __index.jade__ file. All other files are ignored, but You can use those files for Jade [include](http://jade-lang.com/reference/includes)/[extends](http://jade-lang.com/reference/inheritance). You can put locale identificator to filename (like index.en.jade) for locale speciffic content.
+Page content is generated from __index.pug__ file. All other files are ignored, but You can use those files for Jade [include](http://jade-lang.com/reference/includes)/[extends](http://jade-lang.com/reference/inheritance). You can put locale identificator to filename (like index.en.pug) for locale speciffic content.
 
 ### Page style - style.styl
 
@@ -102,7 +102,7 @@ Global, location based, style.css is combined from all style.styl files and put 
 
 ### Page data and configuration - data.yaml
 
-To pass data to index.jade use front matter (Yaml formated data beginning of Jaml file between two \-\-\- lines) or __data.yaml__ file. This data is passed to index.jade in object named _self_ (To get property _text_ from data.yaml use _self.text_ in index.jade).
+To pass data to index.pug use front matter (Yaml formated data beginning of Jaml file between two \-\-\- lines) or __data.yaml__ file. This data is passed to index.pug in object named _self_ (To get property _text_ from data.yaml use _self.text_ in index.pug).
 
 You can put locale identificator to filename (like data.en.yaml) for locale speciffic content. Other locales _self_ object is accessible via _self.otherLocales_ object.
 
@@ -116,7 +116,7 @@ Some page parameters will change how HTML is generated. Those are:
 - _originalPath__
   Original path (if this page is generated to differnt path using _aliases_ parameter). Use this to redirect or for canonocal link.
 - _file__
-  Files to load data from. This data is passed to index.jade in object named _self.file_. You can put locale identificator to filename (like my_custom_list.en.yaml). You can use relative path (./ or ../). If used it's relative to source folder (set in _config.yaml_) and not this _data.yaml_ file
+  Files to load data from. This data is passed to index.pug in object named _self.file_. You can put locale identificator to filename (like my_custom_list.en.yaml). You can use relative path (./ or ../). If used it's relative to source folder (set in _config.yaml_) and not this _data.yaml_ file
 
 ### Example page data.yaml:
 
@@ -139,24 +139,24 @@ someOtherData:
 ```
 - source
     |- _templates
-    |   |- layout.jade
-    |   +- mixins.jade
+    |   |- layout.pug
+    |   +- mixins.pug
     |
     |- testpage1
     |   |- data.en.yaml
     |   |- data.et.yaml
-    |   |- index.jade
+    |   |- index.pug
     |   +- style.et.styl
     |
     |- testpage2
-    |   |- index.en.jade
-    |   |- index.et.jade
+    |   |- index.en.pug
+    |   |- index.et.pug
     |   |- data.yaml
     |   +- testpage2en
-    |       |- index.en.jade
+    |       |- index.en.pug
     |       +- data.en.yaml
     |
-    |- index.jade
+    |- index.pug
     +- style.styl
 ```
 

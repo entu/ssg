@@ -101,7 +101,7 @@ const makeHTML = (folderName, watch, callback) => {
         for (let i = 0; i < appConf.locales.length; i++) {
             let locale = appConf.locales[i]
 
-            let jadeFile = getFilePath(folderName, 'index.jade', locale)
+            let jadeFile = getFilePath(folderName, 'index.pug', locale)
             if (!jadeFile) { continue }
 
             let jadeFileContent = fm(fs.readFileSync(jadeFile, 'utf8'))
@@ -110,7 +110,7 @@ const makeHTML = (folderName, watch, callback) => {
             let defaultContent = {
                 self: true,
                 filename: jadeFile,
-                basedir: appConf.jade.basedir,
+                basedir: appConf.pug.basedir,
                 disabled: false,
                 language: locale,
                 path: path.dirname(jadeFile).replace(appConf.source, '').substr(1),
@@ -197,7 +197,7 @@ const makeHTML = (folderName, watch, callback) => {
                 htmlAlias = compiledJade(data)
             }
 
-            if (!appConf.jade.pretty) {
+            if (!appConf.pug.pretty) {
                 html = minify(html, htmlMinifyConf)
                 htmlAlias = minify(htmlAlias, htmlMinifyConf)
             }
@@ -433,8 +433,8 @@ exports.openConfFile = (appConfFile, callback) => {
         if (appConf.assets.substr(0, 1) === '.') {
             appConf.assets = path.resolve(path.join(path.dirname(appConfFile), appConf.assets))
         }
-        if (appConf.jade.basedir.substr(0, 1) === '.') {
-            appConf.jade.basedir = path.resolve(path.join(path.dirname(appConfFile), appConf.jade.basedir))
+        if (appConf.pug.basedir.substr(0, 1) === '.') {
+            appConf.pug.basedir = path.resolve(path.join(path.dirname(appConfFile), appConf.pug.basedir))
         }
 
         if (!appConf.dev.paths) { appConf.dev.paths = [] }
@@ -506,7 +506,7 @@ var dependenciesWatcher
 exports.watchFiles = callback => {
     // Start to watch Jade files
     let jadeFolders = []
-    chokidar.watch(appConf.source + '/**/index*.jade').on('all', (fileEvent, filePath) => {
+    chokidar.watch(appConf.source + '/**/index*.pug').on('all', (fileEvent, filePath) => {
         if (fileEvent !== 'add' || jadeFolders.indexOf(path.dirname(filePath)) === -1) {
             if (jadeFolders.indexOf(path.dirname(filePath)) === -1) {
                 jadeFolders.push(path.dirname(filePath))

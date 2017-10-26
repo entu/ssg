@@ -122,8 +122,8 @@ renderer.openConfFile(process.argv[2], (err, conf) => {
         let fileExt = path.extname(item.path)
 
         switch(fileExt) {
-            case '.jade':
-                if (fileName === 'index.jade' || fileName.search(/^index\..{2}\.jade$/) === 0) {
+            case '.pug':
+                if (fileName === 'index.pug' || fileName.search(/^index\..{2}\.pug$/) === 0) {
                     if (sourceFiles.indexOf(path.dirname(item.path)) === -1) {
                         sourceFiles.push(path.dirname(item.path))
                     }
