@@ -44,7 +44,6 @@
     "markdown-it-attrs": "1.*",
     "markdown-it-sup": "1.*",
     "mime-types": "2.*",
-    "object-path": "0.*",
     "pug": "^2.0.0-rc.4",
     "request": "2.*",
     "simple-git": "1.*",

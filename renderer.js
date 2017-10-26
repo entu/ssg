@@ -1,5 +1,6 @@
 'use strict'
 
+const _ = require('lodash')
 const {minify} = require('html-minifier')
 const async = require('async')
 const chokidar = require('chokidar')
@@ -120,10 +121,10 @@ const makeHTML = (folderName, watch, callback) => {
 
             let data = Object.assign(defaultContent, yamlFileContent, pugFileContent.attributes)
 
-            if (op.get(data, 'disabled', false) === true) { continue }
+            if (_.get(data, 'disabled', false) === true) { continue }
 
             // set custom data from Yaml files
-            for (let i in op.get(data, 'file', {})) {
+            for (let i in _.get(data, 'file', {})) {
                 if (!data.file.hasOwnProperty(i)) { continue }
 
                 let customDataFile = data.file[i]
@@ -137,11 +138,11 @@ const makeHTML = (folderName, watch, callback) => {
                 let customDataFileName = path.basename(customDataFile)
                 let customData = getYamlFile(customDataFolderName, customDataFileName, locale)
 
-                op.set(data, ['F', i], customData)
+                _.set(data, ['F', i], customData)
 
                 if (watch) {
-                    if (op.get(pugDependencies, getDependentFileKey(customDataFile), []).indexOf(folderName) === -1) {
-                        op.push(pugDependencies, getDependentFileKey(customDataFile), folderName)
+                    if (_.get(pugDependencies, getDependentFileKey(customDataFile), []).indexOf(folderName) === -1) {
+                        _.push(pugDependencies, getDependentFileKey(customDataFile), folderName)
                         dependenciesWatcher.add(customDataFile)
                     }
                 }
@@ -157,8 +158,8 @@ const makeHTML = (folderName, watch, callback) => {
                 }
             }
 
-            op.set(pageData, [locale, 'data'], data)
-            op.set(pageData, [locale, 'template'], pugFileContent.body)
+            _.set(pageData, [locale, 'data'], data)
+            _.set(pageData, [locale, 'template'], pugFileContent.body)
         }
 
 
@@ -168,7 +169,7 @@ const makeHTML = (folderName, watch, callback) => {
                 if (!pageData.hasOwnProperty(i)) { continue }
 
                 if (i !== l) {
-                    op.set(pageData, [l, 'data', 'page', 'otherLocales', i], pageData[i].data.page)
+                    _.set(pageData, [l, 'data', 'page', 'otherLocales', i], pageData[i].data.page)
                 }
             }
 
@@ -176,7 +177,7 @@ const makeHTML = (folderName, watch, callback) => {
             let template = d.template
             let compiledPug = pug.compile(template || '', data)
 
-            let htmlDirs = appConf.dev.aliases ? op.get(data, 'aliases', []) : []
+            let htmlDirs = appConf.dev.aliases ? _.get(data, 'aliases', []) : []
             let defaultHtmlDir = path.join('/', l, data.path)
             htmlDirs.push(defaultHtmlDir)
 
@@ -185,15 +186,15 @@ const makeHTML = (folderName, watch, callback) => {
 
             if (watch) {
                 for (var i = 0; i < compiledPug.dependencies.length; i++) {
-                    if (op.get(pugDependencies, getDependentFileKey(compiledPug.dependencies[i]), []).indexOf(folderName) === -1) {
-                        op.push(pugDependencies, getDependentFileKey(compiledPug.dependencies[i]), folderName)
+                    if (_.get(pugDependencies, getDependentFileKey(compiledPug.dependencies[i]), []).indexOf(folderName) === -1) {
+                        _.push(pugDependencies, getDependentFileKey(compiledPug.dependencies[i]), folderName)
                         dependenciesWatcher.add(compiledPug.dependencies[i])
                     }
                 }
             }
 
             if (htmlDirs.length > 1) {
-                op.set(data, 'originalPath', defaultHtmlDir)
+                _.set(data, 'originalPath', defaultHtmlDir)
                 htmlAlias = compiledPug(data)
             }
 
@@ -406,23 +407,36 @@ exports.makeJS = makeJS
 // Open config.yaml and set config variables
 exports.openConfFile = (appConfFile, callback) => {
     try {
-        appConf = yaml.safeLoad(fs.readFileSync(appConfFile, 'utf8'))
+        appConf = Object.assign({
+            locales: [''],
+            source: path.join(__dirname, 'source'),
+            build: path.join(__dirname, 'build'),
+            assets: path.join(__dirname, 'assets'),
+            markdown: {
+                breaks: true,
+                html: false
+            },
+            pug: {
+                basedir: path.join(__dirname, 'source'),
+                pretty: false
+            },
+            stylus: {
+                pretty: false
+            },
+            javascript: {
+                pretty: false
+            },
+            server: {
+                assets: '/assets',
+                port: 0
+            },
+            dev: {
+                aliases: true,
+                paths: []
+            },
+            protectedFromCleanup: []
+        }, yaml.safeLoad(fs.readFileSync(appConfFile, 'utf8')))
 
-        op.ensureExists(appConf, 'locales', [''])
-        op.ensureExists(appConf, 'source', path.join(__dirname, 'source'))
-        op.ensureExists(appConf, 'build', path.join(__dirname, 'build'))
-        op.ensureExists(appConf, 'assets', path.join(__dirname, 'assets'))
-        op.ensureExists(appConf, 'markdown.breaks', true)
-        op.ensureExists(appConf, 'markdown.html', false)
-        op.ensureExists(appConf, 'pug.basedir', path.join(__dirname, 'source'))
-        op.ensureExists(appConf, 'pug.pretty', false)
-        op.ensureExists(appConf, 'stylus.pretty', false)
-        op.ensureExists(appConf, 'javascript.pretty', false)
-        op.ensureExists(appConf, 'server.assets', '/assets')
-        op.ensureExists(appConf, 'server.port', 0)
-        op.ensureExists(appConf, 'dev.aliases', true)
-        op.ensureExists(appConf, 'dev.paths', [])
-        op.ensureExists(appConf, 'protectedFromCleanup', [])
 
         if (appConf.source.substr(0, 1) === '.') {
             appConf.source = path.resolve(path.join(path.dirname(appConfFile), appConf.source))
@@ -449,7 +463,7 @@ exports.openConfFile = (appConfFile, callback) => {
             if (!appConf.locales.hasOwnProperty(i)) { continue }
 
             var locale = appConf.locales[i]
-            op.set(appConf, ['data', locale], getYamlFile(appConf.source, 'global.yaml', locale, {}))
+            _.set(appConf, ['data', locale], getYamlFile(appConf.source, 'global.yaml', locale, {}))
         }
 
         callback(null, appConf)
@@ -588,7 +602,7 @@ exports.watchFiles = callback => {
 
     // Start to watch all dependencies
     dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', (fileEvent, filePath) => {
-        var files = op.get(pugDependencies, getDependentFileKey(filePath))
+        var files = _.get(pugDependencies, getDependentFileKey(filePath))
         for (let i in files) {
             if (!files.hasOwnProperty(i)) { continue }
 
