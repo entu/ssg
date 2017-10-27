@@ -164,7 +164,7 @@ const makeHTML = (folderName, watch, callback) => {
     const defaultContent = {
         self: true,
         filename: null,
-        basedir: appConf.pugBasedir,
+        basedir: appConf.pug.basedir,
         disabled: false,
         language: null,
         path: folderName.replace(appConf.source, '').substr(1),
@@ -374,7 +374,9 @@ exports.openConfFile = (appConfFile, callback) => {
             source: path.join(__dirname, 'source'),
             build: path.join(__dirname, 'build'),
             assets: path.join(__dirname, 'assets'),
-            pugBasedir: path.join(__dirname, 'source'),
+            pug: {
+                basedir: path.join(__dirname, 'source')
+            },
             server: {
                 assets: '/assets',
                 port: 0
@@ -396,8 +398,8 @@ exports.openConfFile = (appConfFile, callback) => {
         if (appConf.assets.substr(0, 1) === '.') {
             appConf.assets = path.resolve(path.join(path.dirname(appConfFile), appConf.assets))
         }
-        if (appConf.pugBasedir.substr(0, 1) === '.') {
-            appConf.pugBasedir = path.resolve(path.join(path.dirname(appConfFile), appConf.pugBasedir))
+        if (appConf.pug.basedir.substr(0, 1) === '.') {
+            appConf.pug.basedir = path.resolve(path.join(path.dirname(appConfFile), appConf.pug.basedir))
         }
 
         if (!appConf.dev.paths) { appConf.dev.paths = [] }

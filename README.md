@@ -36,7 +36,7 @@ Sites build process is configurable by Yaml file and its path must be first argu
   Folder with static assets (JS, images, ...).
 - __protectedFromCleanup__
   List of paths what is not deleted if _build.sh_ is ran with _cleanup_ parameter. Relative to _build_ path.
-- __pugBasedir__
+- __pug.basedir__
   Pug basedir for simpler include/extend.
 - __server.port__
   What port to use for serving on localhost.
