@@ -23,8 +23,6 @@ const getPropertyValue = property => {
     if (property.boolean) { return property.boolean }
     if (property.reference) { return property.reference }
 
-    delete property._id
-
     return property
 }
 
