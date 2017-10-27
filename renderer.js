@@ -17,20 +17,6 @@ const stylus = require('stylus')
 const uglify = require('uglify-js')
 const yaml = require('js-yaml')
 
-const htmlMinifyConf = {
-    caseSensitive: false,
-    collapseBooleanAttributes: true,
-    collapseWhitespace: true,
-    decodeEntities: false,
-    html5: true,
-    keepClosingSlash: false,
-    minifyCSS: true,
-    minifyJS: true,
-    preserveLineBreaks: false,
-    quoteCharacter: '"',
-    removeComments: true,
-    removeEmptyAttributes: true
-}
 const jsMinifyConf = {
     fromString: true,
     outSourceMap: true
@@ -159,6 +145,34 @@ const getPageData = (folder, file, locales, callback) => {
 }
 
 
+// Write HTML
+const writeHtml = (template, data, fileName, callback) => {
+    const htmlMinifyConf = {
+        caseSensitive: false,
+        collapseBooleanAttributes: true,
+        collapseWhitespace: true,
+        decodeEntities: false,
+        html5: true,
+        keepClosingSlash: false,
+        minifyCSS: true,
+        minifyJS: true,
+        preserveLineBreaks: false,
+        quoteCharacter: '"',
+        removeComments: true,
+        removeEmptyAttributes: true
+    }
+
+    let compiledPug = pug.compile(template, data)
+    let dependencies = compiledPug.dependencies
+    let html = compiledPug(data)
+    html = minify(html, htmlMinifyConf)
+
+    fs.mkdir(path.dirname(fileName), err => {
+        fs.writeFile(fileName, html, callback)
+    })
+}
+
+
 // Generates HTMLs from template
 var appConf = {}
 var pugDependencies = {}
@@ -172,7 +186,7 @@ const makeHTML = (folderName, watch, callback) => {
         language: null,
         path: folderName.replace(appConf.source, '').substr(1),
         otherLocales: {},
-        file: {},
+        file: null,
         toMarkdown: text => {
             if (text) {
                 return md({ breaks: true, html: true }).use(mdSup).use(mdAttrs).render(text).replace(/\r?\n|\r/g, '')
@@ -197,30 +211,28 @@ const makeHTML = (folderName, watch, callback) => {
             async.each(page.data[locale], (data, callback) => {
                 data = Object.assign(defaultContent, appConf.data[locale], data)
 
-                let filePath = path.join(appConf.build, locale, data.path)
-                let fileName = path.join(filePath, 'index.html')
+                let fileName = path.join(appConf.build, locale, data.path, 'index.html')
 
                 data.filename = fileName
                 data.locale = locale
 
-                async.eachOf(data.file, (file, name, callback) => {
-                    file = path.join(appConf.source, file)
-                    getPageData(path.dirname(file), path.basename(file), [locale], (err, fileData) => {
+                if (data.file) {
+                    async.eachOf(data.file, (file, name, callback) => {
+                        file = path.join(appConf.source, file)
+                        getPageData(path.dirname(file), path.basename(file), [locale], (err, fileData) => {
+                            if (err) { return callback(err) }
+
+                            data.file[name] = fileData[locale]
+
+                            callback(null)
+                        })
+                    }, err => {
                         if (err) { return callback(err) }
-
-                        data.file[name] = fileData[locale]
+                        writeHtml(template, data, fileName, callback)
                     })
-                }, err => {
-                    let compiledPug = pug.compile(template, data)
-                    let dependencies = compiledPug.dependencies
-                    let html = compiledPug(data)
-                    html = minify(html, htmlMinifyConf)
-
-                    fs.mkdir(filePath, err => {
-                        fs.writeFile(fileName, html, callback)
-                    })
-                })
-
+                } else {
+                    writeHtml(template, data, fileName, callback)
+                }
             }, err => {
                 callback(null)
             })
