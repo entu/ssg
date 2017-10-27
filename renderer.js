@@ -119,17 +119,20 @@ const getPageTemplate = (folder, locales, callback) => {
 
 
 // Load page Yaml file(s)
-const getPageData = (folder, locales, callback) => {
+const getPageData = (folder, file, locales, callback) => {
     var result = {}
 
     async.each(locales, (locale, callback) => {
         result[locale] = [{}]
 
-        var fileName = `data.${locale}.yaml`
+        let localeFile = file.split('.')
+        localeFile.splice(localeFile.length - 1, 0, locale)
+
+        var fileName = localeFile.join('.')
 
         fs.access(path.join(folder, fileName), fs.constants.R_OK, err => {
             if (err) {
-                fileName = 'data.yaml'
+                fileName = file
             }
 
             fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
@@ -185,7 +188,7 @@ const makeHTML = (folderName, watch, callback) => {
             getPageTemplate(folderName, appConf.locales, callback)
         },
         data: callback => {
-            getPageData(folderName, appConf.locales, callback)
+            getPageData(folderName, 'data.yaml', appConf.locales, callback)
         }
     }, (err, page) => {
         if (err) { return callback(err) }
@@ -200,14 +203,24 @@ const makeHTML = (folderName, watch, callback) => {
                 data.filename = fileName
                 data.locale = locale
 
-                let compiledPug = pug.compile(template, data)
-                let dependencies = compiledPug.dependencies
-                let html = compiledPug(data)
-                html = minify(html, htmlMinifyConf)
+                async.eachOf(data.file, (file, name, callback) => {
+                    file = path.join(appConf.source, file)
+                    getPageData(path.dirname(file), path.basename(file), [locale], (err, fileData) => {
+                        if (err) { return callback(err) }
 
-                fs.mkdir(filePath, err => {
-                    fs.writeFile(fileName, html, callback)
+                        data.file[name] = fileData[locale]
+                    })
+                }, err => {
+                    let compiledPug = pug.compile(template, data)
+                    let dependencies = compiledPug.dependencies
+                    let html = compiledPug(data)
+                    html = minify(html, htmlMinifyConf)
+
+                    fs.mkdir(filePath, err => {
+                        fs.writeFile(fileName, html, callback)
+                    })
                 })
+
             }, err => {
                 callback(null)
             })
