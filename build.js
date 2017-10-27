@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 
+
 'use strict'
 
 const async = require('async')
 const fs = require('fs')
 const fse = require('fs-extra')
 const klaw = require('klaw')
-const op = require('object-path')
 const path = require('path')
 
 const renderer = require('./renderer.js')
+
 
 var startDate = new Date()
 var appConf = {}
@@ -84,6 +85,7 @@ var theEnd = () => {
         }
     }
 }
+
 
 var fileBuildEnd = (err, files) => {
     if (err) {

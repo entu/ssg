@@ -4,7 +4,6 @@ const _ = require('lodash')
 const {minify} = require('html-minifier')
 const async = require('async')
 const chokidar = require('chokidar')
-const fm = require('front-matter')
 const fs = require('fs')
 const fse = require('fs-extra')
 const http = require('http')
@@ -12,7 +11,6 @@ const md = require('markdown-it')
 const mdAttrs = require('markdown-it-attrs')
 const mdSup = require('markdown-it-sup')
 const mime = require('mime-types')
-const op = require('object-path')
 const path = require('path')
 const pug = require('pug')
 const stylus = require('stylus')
@@ -56,6 +54,7 @@ const getFilePath = (dirName, fileName, locale) => {
     return false
 }
 
+
 // Load Yaml file
 const getYamlFile = (dirName, fileName, locale, defaultResult) => {
     var dataFile = getFilePath(dirName, fileName, locale)
@@ -64,6 +63,7 @@ const getYamlFile = (dirName, fileName, locale, defaultResult) => {
 
     return yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
 }
+
 
 // Check if file is in dev.paths
 const isFileIgnored = (file) => {
@@ -81,9 +81,78 @@ const isFileIgnored = (file) => {
     return ignore
 }
 
+
 // Generate dependency file key
 const getDependentFileKey = file => {
     return file.replace(appConf.source, '').replace(/\./g, '-')
+}
+
+
+// Load page Pug file
+const getPageTemplate = (folder, locales, callback) => {
+    var result = {}
+
+    async.each(locales, (locale, callback) => {
+        var fileName = `index.${locale}.pug`
+
+        fs.access(path.join(folder, fileName), fs.constants.R_OK, err => {
+            if (err) {
+                fileName = 'index.pug'
+            }
+
+            fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
+                if (!err) {
+                    result[locale] = data
+                }
+
+                callback(null)
+            })
+        })
+    }, err => {
+        if (err) {
+            return callback(err)
+        } else {
+            return callback(null, result)
+        }
+    })
+}
+
+
+// Load page Yaml file(s)
+const getPageData = (folder, locales, callback) => {
+    var result = {}
+
+    async.each(locales, (locale, callback) => {
+        result[locale] = [{}]
+
+        var fileName = `data.${locale}.yaml`
+
+        fs.access(path.join(folder, fileName), fs.constants.R_OK, err => {
+            if (err) {
+                fileName = 'data.yaml'
+            }
+
+            fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
+                if (!err) {
+                    let yamlData = yaml.safeLoad(data)
+
+                    if (Array.isArray(yamlData)) {
+                        result[locale] = yamlData
+                    } else {
+                        result[locale] = [yamlData]
+                    }
+                }
+
+                callback(null)
+            })
+        })
+    }, err => {
+        if (err) {
+            return callback(err)
+        } else {
+            return callback(null, result)
+        }
+    })
 }
 
 
@@ -91,146 +160,65 @@ const getDependentFileKey = file => {
 var appConf = {}
 var pugDependencies = {}
 const makeHTML = (folderName, watch, callback) => {
-    try {
-        var outputFiles = []
-        let locales = []
-        let pageData = {}
 
-        if (isFileIgnored(folderName)) { return callback(null, outputFiles) }
-
-        // loop thru locales and generate pages
-        for (let i = 0; i < appConf.locales.length; i++) {
-            let locale = appConf.locales[i]
-
-            let pugFile = getFilePath(folderName, 'index.pug', locale)
-            if (!pugFile) { continue }
-
-            let pugFileContent = fm(fs.readFileSync(pugFile, 'utf8'))
-            let yamlFileContent = getYamlFile(folderName, 'data.yaml', locale, {})
-
-            let defaultContent = {
-                self: true,
-                filename: pugFile,
-                basedir: appConf.pug.basedir,
-                disabled: false,
-                language: locale,
-                path: path.dirname(pugFile).replace(appConf.source, '').substr(1),
-                otherLocales: {},
-                file: {}
+    const defaultContent = {
+        self: true,
+        filename: null,
+        basedir: appConf.pugBasedir,
+        disabled: false,
+        language: null,
+        path: folderName.replace(appConf.source, '').substr(1),
+        otherLocales: {},
+        file: {},
+        toMarkdown: text => {
+            if (text) {
+                return md({ breaks: appConf.markdown.breaks, html: appConf.markdown.html }).use(mdSup).use(mdAttrs).render(text).replace(/\r?\n|\r/g, '')
+            } else {
+                return ''
             }
-
-            let data = Object.assign(defaultContent, yamlFileContent, pugFileContent.attributes)
-
-            if (_.get(data, 'disabled', false) === true) { continue }
-
-            // set custom data from Yaml files
-            for (let i in _.get(data, 'file', {})) {
-                if (!data.file.hasOwnProperty(i)) { continue }
-
-                let customDataFile = data.file[i]
-
-                if (customDataFile.substr(0, 1) === '.') {
-                    customDataFile = path.resolve(path.join(appConf.source, customDataFile))
-                } else {
-                    customDataFile = path.resolve(path.join(folderName, customDataFile))
-                }
-                let customDataFolderName = path.dirname(customDataFile)
-                let customDataFileName = path.basename(customDataFile)
-                let customData = getYamlFile(customDataFolderName, customDataFileName, locale)
-
-                _.set(data, ['F', i], customData)
-
-                if (watch) {
-                    if (_.get(pugDependencies, getDependentFileKey(customDataFile), []).indexOf(folderName) === -1) {
-                        _.push(pugDependencies, getDependentFileKey(customDataFile), folderName)
-                        dependenciesWatcher.add(customDataFile)
-                    }
-                }
-            }
-
-            // set global data
-            data.G = appConf.data[locale]
-            data.G.md = text => {
-                if (text) {
-                    return md({ breaks: appConf.markdown.breaks, html: appConf.markdown.html }).use(mdSup).use(mdAttrs).render(text).replace(/\r?\n|\r/g, '')
-                } else {
-                    return ''
-                }
-            }
-
-            _.set(pageData, [locale, 'data'], data)
-            _.set(pageData, [locale, 'template'], pugFileContent.body)
-        }
-
-
-        async.eachOf(pageData, function (d, l, callback) {
-            // set other locales data
-            for (let i in pageData) {
-                if (!pageData.hasOwnProperty(i)) { continue }
-
-                if (i !== l) {
-                    _.set(pageData, [l, 'data', 'page', 'otherLocales', i], pageData[i].data.page)
-                }
-            }
-
-            let data = d.data
-            let template = d.template
-            let compiledPug = pug.compile(template || '', data)
-
-            let htmlDirs = appConf.dev.aliases ? _.get(data, 'aliases', []) : []
-            let defaultHtmlDir = path.join('/', l, data.path)
-            htmlDirs.push(defaultHtmlDir)
-
-            let html = compiledPug(data)
-            let htmlAlias = ''
-
-            if (watch) {
-                for (var i = 0; i < compiledPug.dependencies.length; i++) {
-                    if (_.get(pugDependencies, getDependentFileKey(compiledPug.dependencies[i]), []).indexOf(folderName) === -1) {
-                        _.push(pugDependencies, getDependentFileKey(compiledPug.dependencies[i]), folderName)
-                        dependenciesWatcher.add(compiledPug.dependencies[i])
-                    }
-                }
-            }
-
-            if (htmlDirs.length > 1) {
-                _.set(data, 'originalPath', defaultHtmlDir)
-                htmlAlias = compiledPug(data)
-            }
-
-            if (!appConf.pug.pretty) {
-                html = minify(html, htmlMinifyConf)
-                htmlAlias = minify(htmlAlias, htmlMinifyConf)
-            }
-
-            async.each(htmlDirs, function (dir, callback) {
-                let htmlFile = path.join(appConf.build, dir, 'index.html')
-
-                if (dir === defaultHtmlDir) {
-                    fse.outputFile(htmlFile, html, {}, function (err) {
-                        if (err) { return callback(err) }
-
-                        outputFiles.push({ path: htmlFile })
-                        callback(null)
-                    })
-                } else {
-                    fse.outputFile(htmlFile, htmlAlias, {}, function (err) {
-                        if (err) { return callback(err) }
-
-                        outputFiles.push({ path: htmlFile, alias: true })
-                        callback(null)
-                    })
-                }
-            }, callback)
-        }, function(err) {
-            if (err) { return callback(err) }
-            callback(null, outputFiles)
-        })
-    } catch (e) {
-        callback(e)
+        },
+        G: {}
     }
+
+    async.parallel({
+        template: callback => {
+            getPageTemplate(folderName, appConf.locales, callback)
+        },
+        data: callback => {
+            getPageData(folderName, appConf.locales, callback)
+        }
+    }, (err, page) => {
+        if (err) { return callback(err) }
+
+        async.eachOf(page.template, (template, locale, callback) => {
+            async.each(page.data[locale], (data, callback) => {
+                data = Object.assign(defaultContent, appConf.data[locale], data)
+
+                let filePath = path.join(appConf.build, locale, data.path)
+                let fileName = path.join(filePath, 'index.html')
+
+                data.filename = fileName
+                data.locale = locale
+
+                let compiledPug = pug.compile(template, data)
+                let dependencies = compiledPug.dependencies
+                let html = compiledPug(data)
+                html = minify(html, htmlMinifyConf)
+
+                fs.mkdir(filePath, err => {
+                    fs.writeFile(fileName, html, callback)
+                })
+            }, err => {
+                callback(null)
+            })
+        }, callback)
+    })
+
+
+    return callback(null)
 }
 exports.makeHTML = makeHTML
+
 
 // Generates CSS from separate .styl files
 var stylesList = {}
@@ -323,6 +311,7 @@ const makeCSS = (filePath, callback) => {
 }
 exports.makeCSS = makeCSS
 
+
 // Generates JS from separate .js files
 var scriptsList = []
 const makeJS = (filePath, callback) => {
@@ -404,11 +393,13 @@ const makeJS = (filePath, callback) => {
 }
 exports.makeJS = makeJS
 
+
 // Open config.yaml and set config variables
 exports.openConfFile = (appConfFile, callback) => {
     try {
         appConf = Object.assign({
             locales: [''],
+            defaultLocale: null,
             source: path.join(__dirname, 'source'),
             build: path.join(__dirname, 'build'),
             assets: path.join(__dirname, 'assets'),
@@ -416,16 +407,7 @@ exports.openConfFile = (appConfFile, callback) => {
                 breaks: true,
                 html: false
             },
-            pug: {
-                basedir: path.join(__dirname, 'source'),
-                pretty: false
-            },
-            stylus: {
-                pretty: false
-            },
-            javascript: {
-                pretty: false
-            },
+            pugBasedir: path.join(__dirname, 'source'),
             server: {
                 assets: '/assets',
                 port: 0
@@ -447,8 +429,8 @@ exports.openConfFile = (appConfFile, callback) => {
         if (appConf.assets.substr(0, 1) === '.') {
             appConf.assets = path.resolve(path.join(path.dirname(appConfFile), appConf.assets))
         }
-        if (appConf.pug.basedir.substr(0, 1) === '.') {
-            appConf.pug.basedir = path.resolve(path.join(path.dirname(appConfFile), appConf.pug.basedir))
+        if (appConf.pugBasedir.substr(0, 1) === '.') {
+            appConf.pugBasedir = path.resolve(path.join(path.dirname(appConfFile), appConf.pugBasedir))
         }
 
         if (!appConf.dev.paths) { appConf.dev.paths = [] }
@@ -471,6 +453,7 @@ exports.openConfFile = (appConfFile, callback) => {
         callback(e)
     }
 }
+
 
 // Start web server
 exports.startServer = callback => {
@@ -514,6 +497,7 @@ exports.startServer = callback => {
         callback(e)
     }
 }
+
 
 // Watch source files
 var dependenciesWatcher

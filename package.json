@@ -32,7 +32,6 @@
     "electron-installer-dmg": "0.*",
     "electron-pug": "1.*",
     "electron-stylus": "0.*",
-    "front-matter": "2.*",
     "fs-extra": "4.*",
     "html-minifier": "3.*",
     "js-yaml": "3.*",
