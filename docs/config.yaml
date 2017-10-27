@@ -2,7 +2,7 @@ source: ./
 build: ./
 assets: ./
 
-pugBasedir: ./_templates
+pug.basedir: ./_templates
 
 markdown:
     html: true
