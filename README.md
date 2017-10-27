@@ -36,18 +36,8 @@ Sites build process is configurable by Yaml file and its path must be first argu
   Folder with static assets (JS, images, ...).
 - __protectedFromCleanup__
   List of paths what is not deleted if _build.sh_ is ran with _cleanup_ parameter. Relative to _build_ path.
-- __pug.basedir__
+- __pugBasedir__
   Pug basedir for simpler include/extend.
-- __pug.pretty__
-  Boolean to set if output HTML is pretty formatted or not.
-- __markdown.breaks__
-  Convert '\n' in (markdown) paragraphs into <br>.
-- __markdown.html__
-  Enable HTML tags in (markdown) source.
-- __stylus.pretty__
-  Boolean to set if output CSS is pretty formatted or not.
-- __javascript.pretty__
-  Boolean to set if output JavaScript is pretty formatted or not.
 - __server.port__
   What port to use for serving on localhost.
 - __server.assets__
@@ -69,14 +59,7 @@ assets: ./assets
 protectedFromCleanup:
   - assets
   - index.html
-pug:
-  basedir: ./source/_templates
-  pretty: false
-markdown:
-  breaks: true
-  html: false
-stylus:
-  pretty: false
+pugBasedir: ./source/_templates
 server:
   port: 4000
   assets: /assets/

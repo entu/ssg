@@ -2,13 +2,8 @@ source: ./
 build: ./
 assets: ./
 
-pug:
-    basedir: ./_templates
-    pretty: false
+pugBasedir: ./_templates
+
 markdown:
     html: true
     breaks: true
-stylus:
-    pretty: false
-javascript:
-    pretty: false

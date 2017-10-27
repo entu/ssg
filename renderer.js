@@ -172,7 +172,7 @@ const makeHTML = (folderName, watch, callback) => {
         file: {},
         toMarkdown: text => {
             if (text) {
-                return md({ breaks: appConf.markdown.breaks, html: appConf.markdown.html }).use(mdSup).use(mdAttrs).render(text).replace(/\r?\n|\r/g, '')
+                return md({ breaks: true, html: true }).use(mdSup).use(mdAttrs).render(text).replace(/\r?\n|\r/g, '')
             } else {
                 return ''
             }
@@ -259,47 +259,28 @@ const makeCSS = (filePath, callback) => {
 
             var cssDir = path.join(appConf.build, locale)
             var cssFile = path.join(cssDir, 'style.css')
+            let styl = stylus(css.join('\n\n')).set('warn', false).set('compress', true).set('sourcemap', {})
 
-            if (appConf.stylus.pretty) {
-                stylus(css.join('\n\n')).set('warn', false).render(function (err, css) {
-                    if (err) { return callback(err) }
+            styl.render(function (err, css) {
+                async.parallel([
+                    function (callback) {
+                        fse.outputFile(cssFile, css, {}, function (err) {
+                            if (err) { return callback(err) }
 
-                    fse.outputFile(cssFile, css, {}, function (err) {
-                        if (err) { return callback(err) }
+                            outputFiles.push({ path: cssFile })
+                            callback(null)
+                        })
+                    },
+                    function (callback) {
+                        fse.outputFile(cssFile + '.map', JSON.stringify(styl.sourcemap), {}, function (err) {
+                            if (err) { return callback(err) }
 
-                        outputFiles.push({ path: cssFile })
-                        callback(null)
-                    })
-                })
-            } else {
-                let styl = stylus(css.join('\n\n')).set('warn', false).set('compress', true).set('sourcemap', {})
-
-                styl.render(function (err, css) {
-                    async.parallel([
-                        function (callback) {
-                            fse.outputFile(cssFile, css, {}, function (err) {
-                                if (err) { return callback(err) }
-
-                                outputFiles.push({ path: cssFile })
-                                callback(null)
-                            })
-                        },
-                        function (callback) {
-                            fse.outputFile(cssFile + '.map', JSON.stringify(styl.sourcemap), {}, function (err) {
-                                if (err) { return callback(err) }
-
-                                outputFiles.push({ path: cssFile + '.map', alias: true })
-                                callback(null)
-                            })
-                        }
-                    ], callback)
-                })
-
-            }
-
-
-
-
+                            outputFiles.push({ path: cssFile + '.map', alias: true })
+                            callback(null)
+                        })
+                    }
+                ], callback)
+            })
         }, function (err) {
             if (err) { return callback(err) }
 
@@ -351,36 +332,26 @@ const makeJS = (filePath, callback) => {
 
             let jsDir = path.join(appConf.build, locale)
             let jsFile = path.join(jsDir, 'script.js')
+            let script = uglify.minify(js.join('\n\n'), jsMinifyConf)
 
-            if (appConf.javascript.pretty) {
-                fse.outputFile(jsFile, js.join('\n\n'), {}, function (err) {
-                    if (err) { return callback(err) }
+            async.parallel([
+                function (callback) {
+                    fse.outputFile(jsFile, script.code, {}, function (err) {
+                        if (err) { return callback(err) }
 
-                    outputFiles.push({ path: jsFile.replace(appConf.build, '') })
-                    callback(null)
-                })
-            } else {
-                let script = uglify.minify(js.join('\n\n'), jsMinifyConf)
+                        outputFiles.push({ path: jsFile })
+                        callback(null)
+                    })
+                },
+                function (callback) {
+                    fse.outputFile(jsFile + '.map', script.map, {}, function (err) {
+                        if (err) { return callback(err) }
 
-                async.parallel([
-                    function (callback) {
-                        fse.outputFile(jsFile, script.code, {}, function (err) {
-                            if (err) { return callback(err) }
-
-                            outputFiles.push({ path: jsFile })
-                            callback(null)
-                        })
-                    },
-                    function (callback) {
-                        fse.outputFile(jsFile + '.map', script.map, {}, function (err) {
-                            if (err) { return callback(err) }
-
-                            outputFiles.push({ path: jsFile + '.map', alias: true })
-                            callback(null)
-                        })
-                    }
-                ], callback)
-            }
+                        outputFiles.push({ path: jsFile + '.map', alias: true })
+                        callback(null)
+                    })
+                }
+            ], callback)
         }, function(err) {
             if (err) { return callback(err) }
 
@@ -403,10 +374,6 @@ exports.openConfFile = (appConfFile, callback) => {
             source: path.join(__dirname, 'source'),
             build: path.join(__dirname, 'build'),
             assets: path.join(__dirname, 'assets'),
-            markdown: {
-                breaks: true,
-                html: false
-            },
             pugBasedir: path.join(__dirname, 'source'),
             server: {
                 assets: '/assets',
