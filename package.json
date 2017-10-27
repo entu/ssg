@@ -1,10 +1,11 @@
 {
-  "name": "entu-cms",
-  "productName": "Entu CMS",
-  "version": "3.1.1",
+  "name": "entu-ssg",
+  "productName": "Entu SSG",
+  "version": "3.1.2",
   "author": "Argo Roots <argo@roots.ee>",
-  "description": "Simple (Pug/Jade) filebased CMS",
+  "description": "Simple Pug (Jade), Markdown, Yaml static site generator",
   "keywords": [
+    "ssg",
     "cms",
     "static",
     "html",
@@ -13,14 +14,14 @@
     "markdown",
     "yaml"
   ],
-  "homepage": "https://github.com/argoroots/entu-cms",
+  "homepage": "https://github.com/argoroots/entu-ssg",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/argoroots/entu-cms.git"
+    "url": "git+https://github.com/argoroots/entu-ssg.git"
   },
   "bugs": {
-    "url": "https://github.com/argoroots/entu-cms/issues"
+    "url": "https://github.com/argoroots/entu-ssg/issues"
   },
   "main": "main.js",
   "scripts": {

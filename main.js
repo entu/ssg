@@ -14,7 +14,7 @@ let createWindow = () => {
         // resizable: false,
         // fullscreen: false,
         titleBarStyle: 'hidden',
-        title: 'Entu CMS',
+        title: 'Entu SSG',
         backgroundColor: '#ffffff'
     })
 
@@ -118,7 +118,7 @@ let template = [{
     submenu: [{
         label: 'Learn More',
         click: () => {
-            electron.shell.openExternal('http://cms.entu.eu')
+            electron.shell.openExternal('http://ssg.entu.eu')
         }
     }]
 }]

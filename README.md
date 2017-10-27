@@ -1,10 +1,10 @@
-# Entu CMS
+# Entu SSG
 
-![Screenshot](https://cms.entu.eu/screenshot.png)
+![Screenshot](https://ssg.entu.eu/screenshot.png)
 
 ## Benefits
 
-- Simple file based CMS.
+- Simple Pug (Jade), Markdown, Yaml static site generator.
 - Use Your favorite tools/editors.
 - Generate static HTML files from [Pug](https://pugjs.org) templates or [Markdown](https://en.wikipedia.org/wiki/Markdown).
 - Generate site CSS from [Stylus](http://stylus-lang.com) files.
@@ -15,7 +15,7 @@
 
 ## Installation and usage
 
-Download [latest build](https://github.com/argoroots/entu-cms/releases/latest), unzip and run. Choose config.yaml file and it will:
+Download [latest build](https://github.com/argoroots/entu-ssg/releases/latest), unzip and run. Choose config.yaml file and it will:
 
 1. generate HTML/CSS files
 2. start server on localhost
@@ -24,7 +24,7 @@ Download [latest build](https://github.com/argoroots/entu-cms/releases/latest), 
 
 ### Configuration
 
-Sites build process is configurable by Yaml file and its path must be first argument for entu-cms.js. Required parameters are:
+Sites build process is configurable by Yaml file and its path must be first argument for entu-ssg.js. Required parameters are:
 
 - __locales__
   List of locale folders to generate. You can put locale identificator to filename (like index.en.pug or data.et.yaml) for locale speciffic content.
@@ -168,4 +168,4 @@ someOtherData:
             +- index.html
 ```
 
-[![npm version](https://badge.fury.io/js/entu-cms.svg)](https://badge.fury.io/js/entu-cms) [![Dependency Status](https://david-dm.org/argoroots/entu-cms/status.svg)](https://david-dm.org/argoroots/entu-cms) [![Codacy Badge](https://api.codacy.com/project/badge/grade/66531026074a471897b076fb91a74601)](https://www.codacy.com/app/argoroots/entu-cms)
+[![npm version](https://badge.fury.io/js/entu-ssg.svg)](https://badge.fury.io/js/entu-ssg) [![Dependency Status](https://david-dm.org/argoroots/entu-ssg/status.svg)](https://david-dm.org/argoroots/entu-ssg) [![Codacy Badge](https://api.codacy.com/project/badge/grade/66531026074a471897b076fb91a74601)](https://www.codacy.com/app/argoroots/entu-ssg)
