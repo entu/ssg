@@ -150,7 +150,7 @@ const getPageData = (folder, file, locales, callback) => {
 
 
 // Write HTML
-const writeHtml = (template, data, fileName, callback) => {
+const writeHtml = (template, data, callback) => {
     const htmlMinifyConf = {
         caseSensitive: false,
         collapseBooleanAttributes: true,
@@ -172,11 +172,11 @@ const writeHtml = (template, data, fileName, callback) => {
         let html = compiledPug(data)
         html = minify(html, htmlMinifyConf)
 
-        fs.outputFile(fileName, html, err => {
+        fs.outputFile(data.filename, html, err => {
             if (err) {
                 callback(err)
             } else {
-                callback(null, fileName)
+                callback(null, data.filename)
             }
         })
     } catch (e) {
@@ -192,9 +192,10 @@ const makeHTML = (folderName, watch, callback) => {
     const defaultContent = {
         self: true,
         filename: null,
+        cache: true,
         basedir: appConf.pug.basedir,
         disabled: false,
-        language: null,
+        locale: null,
         path: folderName.replace(appConf.source, '').substr(1),
         otherLocales: {},
         file: null,
@@ -222,12 +223,10 @@ const makeHTML = (folderName, watch, callback) => {
         }
 
         async.eachOf(page.template, (template, locale, callback) => {
-            async.each(page.data[locale], (data, callback) => {
-                data = Object.assign(defaultContent, appConf.data[locale], data)
+            async.each(page.data[locale], (d, callback) => {
+                let data = Object.assign(defaultContent, appConf.data[locale], d)
 
-                let fileName = path.join(appConf.build, locale, data.path, 'index.html')
-
-                data.filename = fileName
+                data.filename = path.join(appConf.build, locale, data.path, 'index.html')
                 data.locale = locale
 
                 if (data.file) {
@@ -247,7 +246,7 @@ const makeHTML = (folderName, watch, callback) => {
                             console.log(err)
                             callback(null)
                         } else {
-                            writeHtml(template, data, fileName, (err, file) => {
+                            writeHtml(template, data, (err, file) => {
                                 if (err) {
                                     console.log(folderName)
                                     console.log(locale)
@@ -261,7 +260,7 @@ const makeHTML = (folderName, watch, callback) => {
                         }
                     })
                 } else {
-                    writeHtml(template, data, fileName, (err, file) => {
+                    writeHtml(template, data, (err, file) => {
                         if (err) {
                             console.log(folderName)
                             console.log(locale)
