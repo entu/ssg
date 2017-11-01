@@ -11,8 +11,7 @@ const yaml = require('js-yaml')
 
 const ENTU_DB = process.env.ENTU_DB
 const ENTU_KEY = process.env.ENTU_KEY
-const ENTU_PARENT = process.env.ENTU_PARENT
-const ENTU_TYPE = process.env.ENTU_TYPE
+const ENTU_QUERY = process.env.ENTU_QUERY || ''
 const DATA_YAML = process.argv[2]
 
 
@@ -43,21 +42,13 @@ request({
         limit: 1000
     }
 
-    if (ENTU_TYPE) {
-        qs['_type.string'] = ENTU_TYPE
-    }
-    if (ENTU_PARENT) {
-        qs['_parent.reference'] = ENTU_PARENT
-    }
-
     request({
-        url: 'https://api.entu.ee/entity',
+        url: 'https://api.entu.ee/entity' + '?' + ENTU_QUERY,
         method: 'GET',
         json: true,
         'auth': {
             'bearer': token
-        },
-        qs: qs
+        }
     }, (error, response, body) => {
         if (error) { console.error(error) }
         if (response.statusCode !== 200) { console.error(body) }
