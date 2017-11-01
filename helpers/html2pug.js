@@ -2,7 +2,7 @@
 
 'use strict'
 
-const fs = require('fs')
+const fs = require('fs-extra')
 const html2jade = require('html2jade')
 const path = require('path')
 

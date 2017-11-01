@@ -4,8 +4,7 @@
 'use strict'
 
 const async = require('async')
-const fs = require('fs')
-const fse = require('fs-extra')
+const fs = require('fs-extra')
 const klaw = require('klaw')
 const path = require('path')
 
@@ -91,6 +90,7 @@ var fileBuildEnd = (err, files) => {
     if (err) {
         console.error(err)
     } else {
+        // console.log(files);
         buildErrors--
         if (files && files.length) { buildFiles = buildFiles.concat(files) }
     }

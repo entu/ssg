@@ -4,8 +4,7 @@ const _ = require('lodash')
 const {minify} = require('html-minifier')
 const async = require('async')
 const chokidar = require('chokidar')
-const fs = require('fs')
-const fse = require('fs-extra')
+const fs = require('fs-extra')
 const http = require('http')
 const md = require('markdown-it')
 const mdAttrs = require('markdown-it-attrs')
@@ -123,13 +122,18 @@ const getPageData = (folder, file, locales, callback) => {
 
             fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
                 if (!err) {
-                    let yamlData = yaml.safeLoad(data)
+                    try {
+                        let yamlData = yaml.safeLoad(data)
 
-                    if (Array.isArray(yamlData)) {
-                        result[locale] = yamlData
-                    } else {
-                        result[locale] = [yamlData]
+                        if (Array.isArray(yamlData)) {
+                            result[locale] = yamlData
+                        } else {
+                            result[locale] = [yamlData]
+                        }
+                    } catch (e) {
+                        console.log(e)
                     }
+
                 }
 
                 callback(null)
@@ -162,14 +166,22 @@ const writeHtml = (template, data, fileName, callback) => {
         removeEmptyAttributes: true
     }
 
-    let compiledPug = pug.compile(template, data)
-    let dependencies = compiledPug.dependencies
-    let html = compiledPug(data)
-    html = minify(html, htmlMinifyConf)
+    try {
+        let compiledPug = pug.compile(template, data)
+        let dependencies = compiledPug.dependencies
+        let html = compiledPug(data)
+        html = minify(html, htmlMinifyConf)
 
-    fs.mkdir(path.dirname(fileName), err => {
-        fs.writeFile(fileName, html, callback)
-    })
+        fs.outputFile(fileName, html, err => {
+            if (err) {
+                callback(err)
+            } else {
+                callback(null, fileName)
+            }
+        })
+    } catch (e) {
+        callback(e)
+    }
 }
 
 
@@ -177,7 +189,6 @@ const writeHtml = (template, data, fileName, callback) => {
 var appConf = {}
 var pugDependencies = {}
 const makeHTML = (folderName, watch, callback) => {
-
     const defaultContent = {
         self: true,
         filename: null,
@@ -193,9 +204,9 @@ const makeHTML = (folderName, watch, callback) => {
             } else {
                 return ''
             }
-        },
-        G: {}
+        }
     }
+    var files = []
 
     async.parallel({
         template: callback => {
@@ -205,7 +216,10 @@ const makeHTML = (folderName, watch, callback) => {
             getPageData(folderName, 'data.yaml', appConf.locales, callback)
         }
     }, (err, page) => {
-        if (err) { return callback(err) }
+        if (err) {
+            console.log(err)
+            return callback(null)
+        }
 
         async.eachOf(page.template, (template, locale, callback) => {
             async.each(page.data[locale], (data, callback) => {
@@ -220,27 +234,50 @@ const makeHTML = (folderName, watch, callback) => {
                     async.eachOf(data.file, (file, name, callback) => {
                         file = path.join(appConf.source, file)
                         getPageData(path.dirname(file), path.basename(file), [locale], (err, fileData) => {
-                            if (err) { return callback(err) }
-
-                            data.file[name] = fileData[locale]
+                            if (err) {
+                                console.log(err)
+                            } else {
+                                data.file[name] = fileData[locale]
+                            }
 
                             callback(null)
                         })
                     }, err => {
-                        if (err) { return callback(err) }
-                        writeHtml(template, data, fileName, callback)
+                        if (err) {
+                            console.log(err)
+                            callback(null)
+                        } else {
+                            writeHtml(template, data, fileName, (err, file) => {
+                                if (err) {
+                                    console.log(folderName)
+                                    console.log(locale)
+                                    console.log(err)
+                                    console.log('')
+                                } else {
+                                    if(file) { files.push({ path: file }) }
+                                }
+                                callback(null)
+                            })
+                        }
                     })
                 } else {
-                    writeHtml(template, data, fileName, callback)
+                    writeHtml(template, data, fileName, (err, file) => {
+                        if (err) {
+                            console.log(folderName)
+                            console.log(locale)
+                            console.log(err)
+                            console.log('')
+                        } else {
+                            if(file) { files.push({ path: file }) }
+                        }
+                        callback(null)
+                    })
                 }
-            }, err => {
-                callback(null)
-            })
-        }, callback)
+            }, callback)
+        }, err => {
+            callback(null, files)
+        })
     })
-
-
-    return callback(null)
 }
 exports.makeHTML = makeHTML
 
@@ -289,7 +326,7 @@ const makeCSS = (filePath, callback) => {
             styl.render(function (err, css) {
                 async.parallel([
                     function (callback) {
-                        fse.outputFile(cssFile, css, {}, function (err) {
+                        fs.outputFile(cssFile, css, {}, function (err) {
                             if (err) { return callback(err) }
 
                             outputFiles.push({ path: cssFile })
@@ -297,7 +334,7 @@ const makeCSS = (filePath, callback) => {
                         })
                     },
                     function (callback) {
-                        fse.outputFile(cssFile + '.map', JSON.stringify(styl.sourcemap), {}, function (err) {
+                        fs.outputFile(cssFile + '.map', JSON.stringify(styl.sourcemap), {}, function (err) {
                             if (err) { return callback(err) }
 
                             outputFiles.push({ path: cssFile + '.map', alias: true })
@@ -361,7 +398,7 @@ const makeJS = (filePath, callback) => {
 
             async.parallel([
                 function (callback) {
-                    fse.outputFile(jsFile, script.code, {}, function (err) {
+                    fs.outputFile(jsFile, script.code, {}, function (err) {
                         if (err) { return callback(err) }
 
                         outputFiles.push({ path: jsFile })
@@ -369,7 +406,7 @@ const makeJS = (filePath, callback) => {
                     })
                 },
                 function (callback) {
-                    fse.outputFile(jsFile + '.map', script.map, {}, function (err) {
+                    fs.outputFile(jsFile + '.map', script.map, {}, function (err) {
                         if (err) { return callback(err) }
 
                         outputFiles.push({ path: jsFile + '.map', alias: true })
