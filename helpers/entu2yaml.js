@@ -62,26 +62,28 @@ request({
         if (error) { console.error(error) }
         if (response.statusCode !== 200) { console.error(body) }
 
-        let data = []
+        if (body.entities) {
+            let data = []
 
-        for (let i = 0; i < body.entities.length; i++) {
-            let entity = {}
+            for (let i = 0; i < body.entities.length; i++) {
+                let entity = {}
 
-            for (var e in body.entities[i]) {
-                if (!body.entities[i].hasOwnProperty(e)) { continue }
+                for (var e in body.entities[i]) {
+                    if (!body.entities[i].hasOwnProperty(e)) { continue }
 
-                if (e === '_id') {
-                    entity[e] = body.entities[i][e]
-                } else if (body.entities[i][e].length === 1) {
-                    entity[e] = getPropertyValue(body.entities[i][e][0])
-                } else {
-                    entity[e] = _.map(body.entities[i][e], getPropertyValue)
+                    if (e === '_id') {
+                        entity[e] = body.entities[i][e]
+                    } else if (body.entities[i][e].length === 1) {
+                        entity[e] = getPropertyValue(body.entities[i][e][0])
+                    } else {
+                        entity[e] = _.map(body.entities[i][e], getPropertyValue)
+                    }
                 }
+
+                data.push(entity)
             }
 
-            data.push(entity)
+            fs.outputFileSync(DATA_YAML, yaml.safeDump(data, { indent: 4, lineWidth: 999999999 }))
         }
-
-        fs.writeFileSync(DATA_YAML, yaml.safeDump(data, { indent: 4, lineWidth: 999999999 }))
     })
 })
