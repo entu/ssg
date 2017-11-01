@@ -133,7 +133,6 @@ const getPageData = (folder, file, locales, callback) => {
                     } catch (e) {
                         console.log(e)
                     }
-
                 }
 
                 callback(null)
@@ -224,7 +223,7 @@ const makeHTML = (folderName, watch, callback) => {
 
         async.eachOf(page.template, (template, locale, callback) => {
             async.each(page.data[locale], (d, callback) => {
-                var data = Object.assign(defaultContent, appConf.data[locale], d)
+                let data = Object.assign(defaultContent, appConf.data[locale], d)
 
                 data.filename = path.join(appConf.build, locale, data.path, 'index.html')
                 data.locale = locale
@@ -232,17 +231,9 @@ const makeHTML = (folderName, watch, callback) => {
                 outputFiles.push({ path: data.filename })
 
                 if (data.file) {
-                    async.eachOf(data.file, (file, name, callback) => {
-                        file = path.join(appConf.source, file)
-                        getPageData(path.dirname(file), path.basename(file), [locale], (err, fileData) => {
-                            if (err) {
-                                console.log(err)
-                            } else {
-                                data.file[name] = fileData[locale]
-                            }
-
-                            callback(null)
-                        })
+                    async.eachOf(data.file, (f, name, callback) => {
+                        data.file[name] = getYamlFile(appConf.source, f, locale, {})
+                        callback(null)
                     }, err => {
                         if (err) {
                             console.log(err)
