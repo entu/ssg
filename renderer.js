@@ -176,7 +176,7 @@ const writeHtml = (template, data, callback) => {
             if (err) {
                 callback(err)
             } else {
-                callback(null, data.filename)
+                callback(null)
             }
         })
     } catch (e) {
@@ -207,7 +207,7 @@ const makeHTML = (folderName, watch, callback) => {
             }
         }
     }
-    var files = []
+    var outputFiles = []
 
     async.parallel({
         template: callback => {
@@ -224,10 +224,12 @@ const makeHTML = (folderName, watch, callback) => {
 
         async.eachOf(page.template, (template, locale, callback) => {
             async.each(page.data[locale], (d, callback) => {
-                let data = Object.assign(defaultContent, appConf.data[locale], d)
+                var data = Object.assign(defaultContent, appConf.data[locale], d)
 
                 data.filename = path.join(appConf.build, locale, data.path, 'index.html')
                 data.locale = locale
+
+                outputFiles.push({ path: data.filename })
 
                 if (data.file) {
                     async.eachOf(data.file, (file, name, callback) => {
@@ -252,8 +254,6 @@ const makeHTML = (folderName, watch, callback) => {
                                     console.log(locale)
                                     console.log(err)
                                     console.log('')
-                                } else {
-                                    if(file) { files.push({ path: file }) }
                                 }
                                 callback(null)
                             })
@@ -266,15 +266,13 @@ const makeHTML = (folderName, watch, callback) => {
                             console.log(locale)
                             console.log(err)
                             console.log('')
-                        } else {
-                            if(file) { files.push({ path: file }) }
                         }
                         callback(null)
                     })
                 }
             }, callback)
         }, err => {
-            callback(null, files)
+            callback(null, outputFiles)
         })
     })
 }
