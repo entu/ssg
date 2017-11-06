@@ -9,7 +9,7 @@ const request = require('request')
 
 const ENTU_DB = process.env.ENTU_DB
 const ENTU_KEY = process.env.ENTU_KEY
-const ENTU_FILE_ID = process.env.ENTU_FILE_ID || ''
+const ENTU_FILE_ID = process.argv[3] || process.env.ENTU_FILE_ID || ''
 const OUTFILE = process.argv[2]
 
 
