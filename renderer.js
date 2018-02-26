@@ -3,315 +3,154 @@
 const _ = require('lodash')
 const {minify} = require('html-minifier')
 const async = require('async')
-const chokidar = require('chokidar')
 const fs = require('fs-extra')
-const http = require('http')
 const md = require('markdown-it')
 const mdAttrs = require('markdown-it-attrs')
 const mdSup = require('markdown-it-sup')
-const mime = require('mime-types')
 const path = require('path')
 const pug = require('pug')
 const stylus = require('stylus')
 const uglify = require('uglify-js')
 const yaml = require('js-yaml')
 
-const jsMinifyConf = {
-    fromString: true,
-    outSourceMap: true
-}
 
 
-// Returns file path with locale if exists
-const getFilePath = (dirName, fileName, locale) => {
-    var localeFile = fileName.split('.')
-    localeFile.splice(localeFile.length - 1, 0, locale)
+module.exports = class {
+    constructor (confFile) {
+        const conf = yaml.safeLoad(fs.readFileSync(confFile, 'utf8'))
 
-    var localeFilePath = path.join(dirName, localeFile.join('.'))
-    var filePath = path.join(dirName, fileName)
+        this.locales = conf.locales || ['']
+        this.defaultLocale = conf.defaultLocale || null
+        this.sourceDir = conf.source || './'
+        this.buildDir = conf.build || './'
+        this.aliases = conf.dev.aliases || true
+        this.paths = conf.dev.paths || []
+        this.globalData = {}
 
-    if (fs.existsSync(localeFilePath)) {
-        return localeFilePath
-    } else if (fs.existsSync(filePath)) {
-        return filePath
-    }
-
-    return false
-}
-
-
-// Load Yaml file
-const getYamlFile = (dirName, fileName, locale, defaultResult) => {
-    var dataFile = getFilePath(dirName, fileName, locale)
-
-    if (!dataFile) return defaultResult
-
-    return yaml.safeLoad(fs.readFileSync(dataFile, 'utf8'))
-}
-
-
-// Check if file is in dev.paths
-const isFileIgnored = (file) => {
-    if (!appConf.dev.paths) { appConf.dev.paths = [] }
-    if (appConf.dev.paths.length === 0) { return false }
-
-    var ignore = true
-    for (var i = 0; i < appConf.dev.paths.length; i++) {
-        if (appConf.dev.paths[i] && file.startsWith(path.join(appConf.source, appConf.dev.paths[i]))) {
-            ignore = false
-            break
+        // Paths are relative to config file path
+        if (this.sourceDir.substr(0, 1) === '.') {
+            this.sourceDir = path.resolve(path.join(path.dirname(confFile), this.sourceDir))
         }
-    }
-
-    return ignore
-}
-
-
-// Generate dependency file key
-const getDependentFileKey = file => {
-    return file.replace(appConf.source, '').replace(/\./g, '-')
-}
-
-
-// Load page Pug file
-const getPageTemplate = (folder, locales, callback) => {
-    var result = {}
-
-    async.each(locales, (locale, callback) => {
-        var fileName = `index.${locale}.pug`
-
-        fs.access(path.join(folder, fileName), fs.constants.R_OK, err => {
-            if (err) {
-                fileName = 'index.pug'
-            }
-
-            fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
-                if (!err) {
-                    result[locale] = data
-                }
-
-                callback(null)
-            })
-        })
-    }, err => {
-        if (err) {
-            return callback(err)
-        } else {
-            return callback(null, result)
+        if (this.buildDir.substr(0, 1) === '.') {
+            this.buildDir = path.resolve(path.join(path.dirname(confFile), this.buildDir))
         }
-    })
-}
 
+        // Load global data
+        this.locales.forEach(locale => {
+            this.globalData[locale] = {}
 
-// Load page Yaml file(s)
-const getPageData = (folder, file, locales, callback) => {
-    var result = {}
-
-    async.each(locales, (locale, callback) => {
-        result[locale] = [{}]
-
-        let localeFile = file.split('.')
-        localeFile.splice(localeFile.length - 1, 0, locale)
-
-        var fileName = localeFile.join('.')
-
-        fs.access(path.join(folder, fileName), fs.constants.R_OK, err => {
-            if (err) {
-                fileName = file
-            }
-
-            fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
-                if (!err) {
-                    try {
-                        let yamlData = yaml.safeLoad(data)
-
-                        if (Array.isArray(yamlData)) {
-                            result[locale] = yamlData
-                        } else {
-                            result[locale] = [yamlData]
-                        }
-                    } catch (e) {
-                        console.log(e)
-                    }
-                }
-
-                callback(null)
-            })
-        })
-    }, err => {
-        if (err) {
-            return callback(err)
-        } else {
-            return callback(null, result)
-        }
-    })
-}
-
-
-// Write HTML
-const writeHtml = (template, data, callback) => {
-    const htmlMinifyConf = {
-        caseSensitive: false,
-        collapseBooleanAttributes: true,
-        collapseWhitespace: true,
-        decodeEntities: false,
-        html5: true,
-        keepClosingSlash: false,
-        minifyCSS: true,
-        minifyJS: true,
-        preserveLineBreaks: false,
-        quoteCharacter: '"',
-        removeComments: true,
-        removeEmptyAttributes: true
-    }
-
-    try {
-        let compiledPug = pug.compile(template, data)
-        let dependencies = compiledPug.dependencies
-        let html = compiledPug(data)
-        html = minify(html, htmlMinifyConf)
-
-        fs.outputFile(data.filename, html, err => {
-            if (err) {
-                callback(err)
-            } else {
-                callback(null)
+            try {
+                this.globalData[locale] = yaml.safeLoad(fs.readFileSync(path.join(this.sourceDir, `global.${locale}.yaml`), 'utf8'))
+            } catch (e) {
+                this.globalData[locale] = yaml.safeLoad(fs.readFileSync(path.join(this.sourceDir, `global.yaml`), 'utf8'))
+            } finally {
+                // No global data
             }
         })
-    } catch (e) {
-        callback(e)
     }
-}
 
 
-// Generates HTMLs from template
-var appConf = {}
-var pugDependencies = {}
-const makeHTML = (folderName, watch, callback) => {
-    const defaultContent = {
-        self: true,
-        filename: null,
-        cache: true,
-        basedir: appConf.pug.basedir,
-        disabled: false,
-        locale: null,
-        path: folderName.replace(appConf.source, '').substr(1),
-        otherLocales: {},
-        file: null,
-        toMarkdown: text => {
-            if (text) {
-                return md({ breaks: true, html: true }).use(mdSup).use(mdAttrs).render(text).replace(/\r?\n|\r/g, '')
-            } else {
-                return ''
-            }
-        }
-    }
-    var outputFiles = []
 
-    async.parallel({
-        template: callback => {
-            getPageTemplate(folderName, appConf.locales, callback)
-        },
-        data: callback => {
-            getPageData(folderName, 'data.yaml', appConf.locales, callback)
-        }
-    }, (err, page) => {
-        if (err) {
-            console.log(err)
-            return callback(null)
-        }
-
-        async.eachOf(page.template, (template, locale, callback) => {
-            async.each(page.data[locale], (d, callback) => {
-                let data = Object.assign(defaultContent, appConf.data[locale], d)
-
-                data.filename = path.join(appConf.build, locale, data.path, 'index.html')
-                data.locale = locale
-
-                outputFiles.push({ path: data.filename })
-
-                if (data.file) {
-                    async.eachOf(data.file, (f, name, callback) => {
-                        data.file[name] = getYamlFile(appConf.source, f, locale, {})
-                        callback(null)
-                    }, err => {
-                        if (err) {
-                            console.log(err)
-                            callback(null)
-                        } else {
-                            writeHtml(template, data, (err, file) => {
-                                if (err) {
-                                    console.log(folderName)
-                                    console.log(locale)
-                                    console.log(err)
-                                    console.log('')
-                                }
-                                callback(null)
-                            })
-                        }
-                    })
-                } else {
-                    writeHtml(template, data, (err, file) => {
-                        if (err) {
-                            console.log(folderName)
-                            console.log(locale)
-                            console.log(err)
-                            console.log('')
-                        }
-                        callback(null)
-                    })
-                }
-            }, callback)
-        }, err => {
-            callback(null, outputFiles)
-        })
-    })
-}
-exports.makeHTML = makeHTML
-
-
-// Generates CSS from separate .styl files
-var stylesList = {}
-const makeCSS = (filePath, callback) => {
-    try {
-        var folderName = path.dirname(filePath)
-        var fileName = path.basename(filePath)
-        var fileNameWithoutLocale
+    makeHTML (sourcePath, callback) {
         var outputFiles = []
-        var locales = []
 
-        if (isFileIgnored(filePath)) { return callback(null, outputFiles) }
-
-        if (fileName.split('.').length > 2) {
-            locales = [fileName.split('.')[1]]
-            fileNameWithoutLocale = [fileName.split('.')[0], fileName.split('.')[2]].join('.')
-        } else {
-            locales = appConf.locales
-            fileNameWithoutLocale = fileName
-        }
-
-        async.each(locales, function(locale, callback) {
-            if (!stylesList[locale]) { stylesList[locale] = {} }
-
-            var styleFile = getFilePath(folderName, fileNameWithoutLocale, locale)
-            if (styleFile) {
-                stylesList[locale][styleFile] = fs.readFileSync(styleFile, 'utf8')
-            } else {
-                delete stylesList[locale][styleFile]
+        async.parallel({
+            template: callback => {
+                this.loadTemplate(sourcePath, callback)
+            },
+            data: callback => {
+                this.loadData(sourcePath, callback)
             }
+        }, (err, page) => {
+            if (err) { return callback(err) }
 
-            var css = []
-            for (let i in stylesList[locale]) {
-                if (!stylesList[locale].hasOwnProperty(i)) { continue }
+            async.eachOf(page.template, (template, locale, callback) => {
+                async.eachOf(page.data[locale], (data, idx, callback) => {
+                    if (data.disabled) { return callback(null) }
 
-                css.push(stylesList[locale][i])
-            }
+                    data.filename = template.filename
 
-            var cssDir = path.join(appConf.build, locale)
-            var cssFile = path.join(cssDir, 'style.css')
-            let styl = stylus(css.join('\n\n')).set('warn', false).set('compress', true).set('sourcemap', {})
+                    let otherLocalePaths = {}
+                    Object.keys(page.template).forEach(otherLocale => {
+                        if (otherLocale === data.locale) { return }
 
-            styl.render(function (err, css) {
+                        otherLocalePaths[otherLocale] = page.data[otherLocale][idx].path
+                    })
+                    data.otherLocalePaths = otherLocalePaths
+
+                    const htmlMinifyConf = {
+                        caseSensitive: false,
+                        collapseBooleanAttributes: true,
+                        collapseWhitespace: true,
+                        decodeEntities: false,
+                        html5: true,
+                        keepClosingSlash: false,
+                        minifyCSS: true,
+                        minifyJS: true,
+                        preserveLineBreaks: false,
+                        quoteCharacter: '"',
+                        removeComments: true,
+                        removeEmptyAttributes: true
+                    }
+
+                    async.each([data.path].concat(data.aliases || []), (buildPath, callback) => {
+                        data.alias = data.path !== buildPath ? buildPath : null
+
+                        try {
+                            let buildFile = path.join(this.buildDir, buildPath, 'index.html')
+
+                            const compiledPug = pug.compile(template.template, data)
+                            const dependencies = compiledPug.dependencies
+                            const html = compiledPug(data)
+
+                            fs.outputFile(buildFile, minify(html, htmlMinifyConf), err => {
+                                if (err) {
+                                    callback(err)
+                                } else {
+                                    outputFiles.push({
+                                        source: template.filename,
+                                        build: buildFile,
+                                        alias: data.path !== buildPath,
+                                        dependencies: dependencies
+                                    })
+                                    callback(null)
+                                }
+                            })
+                        } catch (e) {
+                            console.log(e)
+                            callback(e)
+                        }
+                    }, callback)
+                }, callback)
+            }, err => {
+
+                callback(null, outputFiles)
+            })
+        })
+    }
+
+
+
+    makeCSS (sourceFiles, callback) {
+        var styleComponents = []
+        var outputFiles = []
+
+        async.each(sourceFiles, (stylusFile, callback) => {
+            fs.readFile(stylusFile, 'utf8', (err, data) => {
+                if (err) { return callback(err) }
+
+                styleComponents.push(data)
+                callback(null)
+            })
+        }, err => {
+            if (err) { return callback(err) }
+
+            const cssFile = path.join(this.buildDir, 'style.css')
+            const styl = stylus(styleComponents.join('\n\n')).set('warn', false).set('compress', true).set('sourcemap', {})
+
+            styl.render((err, css) => {
+                if (err) { return callback(err) }
+
                 async.parallel([
                     function (callback) {
                         fs.outputFile(cssFile, css, {}, function (err) {
@@ -329,60 +168,32 @@ const makeCSS = (filePath, callback) => {
                             callback(null)
                         })
                     }
-                ], callback)
+                ], err => {
+                    if (err) { return callback(err) }
+                    callback(null, outputFiles)
+                })
             })
-        }, function (err) {
+        })
+    }
+
+
+
+    makeJS (sourceFiles, callback) {
+        var jsComponents = []
+        var outputFiles = []
+
+        async.each(sourceFiles, (scriptFile, callback) => {
+            fs.readFile(scriptFile, 'utf8', (err, data) => {
+                if (err) { return callback(err) }
+
+                jsComponents.push(data)
+                callback(null)
+            })
+        }, err => {
             if (err) { return callback(err) }
 
-            callback(null, outputFiles)
-        })
-    } catch (e) {
-        callback(e)
-    }
-}
-exports.makeCSS = makeCSS
-
-
-// Generates JS from separate .js files
-var scriptsList = []
-const makeJS = (filePath, callback) => {
-    try {
-        let folderName = path.dirname(filePath)
-        let fileName = path.basename(filePath)
-        let fileNameWithoutLocale
-        let outputFiles = []
-        let locales = []
-
-        if (isFileIgnored(filePath)) { return callback(null, outputFiles) }
-
-        if (fileName.split('.').length > 2) {
-            locales = [fileName.split('.')[1]]
-            fileNameWithoutLocale = [fileName.split('.')[0], fileName.split('.')[2]].join('.')
-        } else {
-            locales = appConf.locales
-            fileNameWithoutLocale = fileName
-        }
-
-        async.each(locales, function(locale, callback) {
-            if (!scriptsList[locale]) { scriptsList[locale] = {} }
-
-            var scriptFile = getFilePath(folderName, fileNameWithoutLocale, locale)
-            if (scriptFile) {
-                scriptsList[locale][scriptFile] = fs.readFileSync(scriptFile, 'utf8')
-            } else {
-                delete scriptsList[locale][scriptFile]
-            }
-
-            var js = []
-            for (let i in scriptsList[locale]) {
-                if (!scriptsList[locale].hasOwnProperty(i)) { continue }
-
-                js.push(scriptsList[locale][i])
-            }
-
-            let jsDir = path.join(appConf.build, locale)
-            let jsFile = path.join(jsDir, 'script.js')
-            let script = uglify.minify(js.join('\n\n'), jsMinifyConf)
+            const jsFile = path.join(this.buildDir, 'script.js')
+            const script = uglify.minify(jsComponents.join('\n\n'), { fromString: true, outSourceMap: true })
 
             async.parallel([
                 function (callback) {
@@ -401,229 +212,131 @@ const makeJS = (filePath, callback) => {
                         callback(null)
                     })
                 }
-            ], callback)
-        }, function(err) {
+            ], err => {
+                if (err) { return callback(err) }
+                callback(null, outputFiles)
+            })
+        })
+    }
+
+
+
+    loadTemplate (folder, callback) {
+        var result = {}
+
+        async.each(this.locales, (locale, callback) => {
+            var fileName = `index.${locale}.pug`
+
+            fs.access(path.join(folder, fileName), fs.constants.R_OK, err => {
+                if (err) {
+                    fileName = 'index.pug'
+                }
+
+                fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
+                    if (!err) {
+                        result[locale] = {
+                            filename: path.join(folder, fileName),
+                            template: data
+                        }
+                    }
+
+                    callback(null)
+                })
+            })
+        }, err => {
+            if (err) {
+                return callback(err)
+            } else {
+                return callback(null, result)
+            }
+        })
+    }
+
+
+
+    loadData (folder, callback) {
+        const defaultContent = {
+            self: true,
+            buildFile: null,
+            cache: true,
+            basedir: this.sourceDir,
+            disabled: false,
+            locale: null,
+            path: folder.replace(this.sourceDir, '').substr(1).replace(/\\/, '/'),
+            otherLocalePaths: {},
+            data: {},
+            md: text => {
+                if (text) {
+                    return md({ breaks: true, html: true }).use(mdSup).use(mdAttrs).render(text).replace(/\r?\n|\r/g, '')
+                } else {
+                    return ''
+                }
+            }
+        }
+        var result = {}
+
+        async.each(this.locales, (locale, callback) => {
+            var fileName = `data.${locale}.yaml`
+
+            result[locale] = [{}]
+
+            fs.access(path.join(folder, fileName), fs.constants.R_OK, err => {
+                if (err) {
+                    fileName = 'data.yaml'
+                }
+
+                fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
+                    if (!err) {
+                        try {
+                            let yamlData = yaml.safeLoad(data)
+
+                            // Move old .page to root
+                            yamlData = Object.assign({}, yamlData, yamlData.page)
+                            delete yamlData.page
+
+                            if (Array.isArray(yamlData)) {
+                                result[locale] = Object.assign({}, defaultContent, this.globalData[locale], yamlData)
+                            } else {
+                                result[locale] = [Object.assign({}, defaultContent, this.globalData[locale], yamlData)]
+                            }
+                        } catch (e) {
+                            console.log(e)
+                        }
+                    } else {
+                        result[locale] = [Object.assign({}, defaultContent, this.globalData[locale])]
+                    }
+
+                    async.each(result[locale], (data, callback) => {
+                        if (!data.data) { return callback(null) }
+
+                        data.locale = locale
+                        data.path = data.path ? `/${data.locale}/${data.path}` : `/${data.locale}`
+
+                        async.eachOf(data.data, (file, key, callback) => {
+                            if(file.substr(0, 1) === '/') {
+                                file = path.join(this.sourceDir, file)
+                            } else {
+                                file = path.join(folder, file)
+                            }
+
+                            fs.readFile(file, 'utf8', (err, fileData) => {
+                                if (!err) {
+                                    try {
+                                        data.data[key] = yaml.safeLoad(fileData)
+                                    } catch (e) {
+                                        console.log(e)
+                                    }
+                                }
+                                callback(null)
+                            })
+                        }, callback)
+                    }, callback)
+                })
+            })
+        }, err => {
             if (err) { return callback(err) }
 
-            callback(null, outputFiles)
+            callback(null, result)
         })
-
-    } catch (e) {
-        callback(e)
     }
-}
-exports.makeJS = makeJS
-
-
-// Open config.yaml and set config variables
-exports.openConfFile = (appConfFile, callback) => {
-    try {
-        appConf = Object.assign({
-            locales: [''],
-            defaultLocale: null,
-            source: path.join(__dirname, 'source'),
-            build: path.join(__dirname, 'build'),
-            assets: path.join(__dirname, 'assets'),
-            pug: {
-                basedir: path.join(__dirname, 'source')
-            },
-            server: {
-                assets: '/assets',
-                port: 0
-            },
-            dev: {
-                aliases: true,
-                paths: []
-            },
-            protectedFromCleanup: []
-        }, yaml.safeLoad(fs.readFileSync(appConfFile, 'utf8')))
-
-
-        if (appConf.source.substr(0, 1) === '.') {
-            appConf.source = path.resolve(path.join(path.dirname(appConfFile), appConf.source))
-        }
-        if (appConf.build.substr(0, 1) === '.') {
-            appConf.build = path.resolve(path.join(path.dirname(appConfFile), appConf.build))
-        }
-        if (appConf.assets.substr(0, 1) === '.') {
-            appConf.assets = path.resolve(path.join(path.dirname(appConfFile), appConf.assets))
-        }
-        if (appConf.pug.basedir.substr(0, 1) === '.') {
-            appConf.pug.basedir = path.resolve(path.join(path.dirname(appConfFile), appConf.pug.basedir))
-        }
-
-        if (!appConf.dev.paths) { appConf.dev.paths = [] }
-
-        // Printout configuration
-        // var c = {}
-        // c[appConfFile] = appConf
-        // console.log(yaml.safeDump(c))
-
-        // Load global data
-        for (let i in appConf.locales) {
-            if (!appConf.locales.hasOwnProperty(i)) { continue }
-
-            var locale = appConf.locales[i]
-            _.set(appConf, ['data', locale], getYamlFile(appConf.source, 'global.yaml', locale, {}))
-        }
-
-        callback(null, appConf)
-    } catch (e) {
-        callback(e)
-    }
-}
-
-
-// Start web server
-exports.startServer = callback => {
-    try {
-        var server = http.createServer((request, response) => {
-            var filePath = request.url.split('?')[0]
-            if (filePath.substr(0, appConf.server.assets.length) === appConf.server.assets) {
-                filePath = path.join(appConf.assets, filePath.substr(appConf.server.assets.length - 1))
-            } else {
-                filePath = path.join(appConf.build, filePath)
-            }
-
-            if (filePath.indexOf('.') === -1) {
-                filePath = path.join(filePath, 'index.html')
-            }
-
-            var contentType = mime.lookup(path.extname(filePath)) || 'application/octet-stream'
-
-            fs.readFile(filePath, (err, content) => {
-                if (err) {
-                    response.writeHead(404, { 'Content-Type': 'text/plain' })
-                    response.end('404\n')
-                    callback({
-                        event: err.code,
-                        source: filePath.replace(appConf.build, '').replace(appConf.assets, appConf.server.assets),
-                        error: err.message.replace(`${err.code}: `, '')
-                    })
-                } else {
-                    response.writeHead(200, { 'Content-Type': contentType })
-                    response.end(content, 'utf-8')
-                }
-            })
-        })
-        server.listen(appConf.server.port)
-        server.on('listening', () => {
-            appConf.server.port = server.address().port
-
-            callback(null)
-        })
-    } catch (e) {
-        callback(e)
-    }
-}
-
-
-// Watch source files
-var dependenciesWatcher
-exports.watchFiles = callback => {
-    // Start to watch Pug files
-    let pugFolders = []
-    chokidar.watch(appConf.source + '/**/index*.pug').on('all', (fileEvent, filePath) => {
-        if (fileEvent !== 'add' || pugFolders.indexOf(path.dirname(filePath)) === -1) {
-            if (pugFolders.indexOf(path.dirname(filePath)) === -1) {
-                pugFolders.push(path.dirname(filePath))
-            }
-            makeHTML(path.dirname(filePath), true, (err, file) => {
-                if (err) {
-                    callback({
-                        event: fileEvent.toUpperCase(),
-                        source: filePath.replace(appConf.source, ''),
-                        error: err
-                    })
-                } else {
-                    callback(null, {
-                        event: fileEvent.toUpperCase(),
-                        source: filePath.replace(appConf.source, ''),
-                        build: file
-                    })
-                }
-            })
-        }
-    })
-
-    // Start to watch Yaml files
-    chokidar.watch(appConf.source + '/**/data*.yaml', { ignored: '*/_*.yaml', ignoreInitial: true }).on('all', (fileEvent, filePath) => {
-        makeHTML(path.dirname(filePath), true, (err, file) => {
-            if (err) {
-                callback({
-                    event: fileEvent.toUpperCase(),
-                    source: filePath.replace(appConf.source, ''),
-                    error: err
-                })
-            } else {
-                callback(null, {
-                    event: fileEvent.toUpperCase(),
-                    source: filePath.replace(appConf.source, ''),
-                    build: file
-                })
-            }
-        })
-    })
-
-    // Start to watch style files changes
-    chokidar.watch(appConf.source + '/**/*.styl', { ignored: '*/_*.styl' }).on('all', (fileEvent, filePath) => {
-        makeCSS(filePath, (err, file) => {
-            if (err) {
-                callback({
-                    event: fileEvent.toUpperCase(),
-                    source: filePath.replace(appConf.source, ''),
-                    error: err
-                })
-            } else {
-                callback(null, {
-                    event: fileEvent.toUpperCase(),
-                    source: filePath.replace(appConf.source, ''),
-                    build: file
-                })
-            }
-        })
-    })
-
-    // Start to watch javascript files changes
-    chokidar.watch(appConf.source + '/**/*.js', { ignored: '*/_*.js' }).on('all', (fileEvent, filePath) => {
-        makeJS(filePath, (err, file) => {
-            if (err) {
-                callback({
-                    event: fileEvent.toUpperCase(),
-                    source: filePath.replace(appConf.source, ''),
-                    error: err
-                })
-            } else {
-                callback(null, {
-                    event: fileEvent.toUpperCase(),
-                    source: filePath.replace(appConf.source, ''),
-                    build: file
-                })
-            }
-        })
-    })
-
-    // Start to watch all dependencies
-    dependenciesWatcher = chokidar.watch([], { ignoreInitial: true }).on('all', (fileEvent, filePath) => {
-        var files = _.get(pugDependencies, getDependentFileKey(filePath))
-        for (let i in files) {
-            if (!files.hasOwnProperty(i)) { continue }
-
-            makeHTML(files[i], true, (err, file) => {
-                if (err) {
-                    callback({
-                        event: fileEvent.toUpperCase(),
-                        source: filePath.replace(appConf.source, ''),
-                        error: err
-                    })
-                } else {
-                    callback(null, {
-                        event: fileEvent.toUpperCase(),
-                        source: filePath.replace(appConf.source, ''),
-                        build: file
-                    })
-                }
-            })
-        }
-    })
 }

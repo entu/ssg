@@ -28,31 +28,28 @@
     "start": "electron main.js"
   },
   "dependencies": {
-    "async": "2.*",
-    "chokidar": "1.*",
-    "electron-installer-dmg": "0.*",
+    "async": "^2.6.0",
     "electron-pug": "1.*",
     "electron-stylus": "0.*",
-    "fs-extra": "4.*",
-    "html-minifier": "3.*",
+    "fs-extra": "^5.0.0",
+    "html-minifier": "^3.5.9",
     "js-yaml": "3.*",
-    "jstransformer-markdown-it": "2.*",
-    "jstransformer-uglify-js": "1.*",
-    "klaw": "2.*",
-    "lodash": "4.*",
-    "markdown-it": "8.*",
-    "markdown-it-attrs": "1.*",
+    "klaw": "^2.1.1",
+    "lodash": "^4.17.5",
+    "markdown-it": "^8.4.1",
+    "markdown-it-attrs": "^1.2.1",
     "markdown-it-sup": "1.*",
-    "mime-types": "2.*",
+    "mime-types": "^2.1.18",
     "pug": "^2.0.0-rc.4",
     "request": "2.*",
-    "simple-git": "1.*",
+    "simple-git": "^1.91.0",
     "stylus": "0.*",
-    "uglify-js": "2.*"
+    "uglify-js": "^3.3.12"
   },
   "devDependencies": {
-    "electron": "1.*",
-    "electron-packager": "9.*",
+    "electron": "^1.8.2",
+    "electron-packager": "11.*",
+    "electron-installer-dmg": "0.*",
     "html2jade": "0.*"
   }
 }
