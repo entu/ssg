@@ -278,7 +278,7 @@ module.exports = class {
         async.each(this.locales, (locale, callback) => {
             var fileName = `data.${locale}.yaml`
 
-            result[locale] = [{}]
+            result[locale] = []
 
             fs.access(path.join(folder, fileName), fs.constants.R_OK, err => {
                 if (err) {
@@ -286,28 +286,26 @@ module.exports = class {
                 }
 
                 fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
+                    var yamlData = [{}]
+
                     if (!err) {
                         try {
-                            let yamlData = yaml.safeLoad(data)
+                            yamlData = yaml.safeLoad(data)
 
-                            // Move old .page to root
-                            yamlData = Object.assign({}, yamlData, yamlData.page)
-                            delete yamlData.page
-
-                            if (Array.isArray(yamlData)) {
-                                result[locale] = Object.assign({}, defaultContent, this.globalData[locale], yamlData)
-                            } else {
-                                result[locale] = [Object.assign({}, defaultContent, this.globalData[locale], yamlData)]
+                            if (!Array.isArray(yamlData)) {
+                                yamlData = [yamlData]
                             }
                         } catch (e) {
                             console.log(e)
                         }
-                    } else {
-                        result[locale] = [Object.assign({}, defaultContent, this.globalData[locale])]
                     }
 
-                    async.each(result[locale], (data, callback) => {
-                        if (!data.data) { return callback(null) }
+                    async.each(yamlData, (data, callback) => {
+                        data = Object.assign({}, defaultContent, this.globalData[locale], data)
+
+                        // Move old .page to root
+                        data = Object.assign({}, data, data.page)
+                        delete data.page
 
                         data.locale = locale
                         data.path = data.path ? `/${data.locale}/${data.path}` : `/${data.locale}`
@@ -329,7 +327,12 @@ module.exports = class {
                                 }
                                 callback(null)
                             })
-                        }, callback)
+                        }, err => {
+                            if (err) { return callback(err) }
+
+                            result[locale].push(data)
+                            callback(null)
+                        })
                     }, callback)
                 })
             })
