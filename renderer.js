@@ -71,9 +71,9 @@ module.exports = class {
                     data.filename = template.filename
 
                     let otherLocalePaths = {}
-                    Object.keys(page.template).forEach(otherLocale => {
+                    this.locales.forEach(otherLocale => {
+                        if (!page.template[locale]) { return }
                         if (otherLocale === data.locale) { return }
-
                         otherLocalePaths[otherLocale] = page.data[otherLocale][idx].path
                     })
                     data.otherLocalePaths = otherLocalePaths
