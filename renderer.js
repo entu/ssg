@@ -179,21 +179,21 @@ module.exports = class {
 
 
     makeJS (sourceFiles, callback) {
-        var jsComponents = []
+        var jsComponents = {}
         var outputFiles = []
 
         async.each(sourceFiles, (scriptFile, callback) => {
             fs.readFile(scriptFile, 'utf8', (err, data) => {
                 if (err) { return callback(err) }
 
-                jsComponents.push(data)
+                jsComponents[path.basename(scriptFile)] = data
                 callback(null)
             })
         }, err => {
             if (err) { return callback(err) }
 
             const jsFile = path.join(this.buildDir, 'script.js')
-            const script = uglify.minify(jsComponents.join('\n\n'), { fromString: true, outSourceMap: true })
+            const script = uglify.minify(jsComponents, { sourceMap: { filename: 'script.js', url: 'script.js.map' } })
 
             async.parallel([
                 function (callback) {
