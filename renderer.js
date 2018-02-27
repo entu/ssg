@@ -262,6 +262,7 @@ module.exports = class {
             basedir: this.sourceDir,
             disabled: false,
             locale: null,
+            defaultLocale: this.defaultLocale,
             path: folder.replace(this.sourceDir, '').substr(1).replace(/\\/, '/'),
             otherLocalePaths: {},
             data: {},
@@ -308,7 +309,11 @@ module.exports = class {
                         delete data.page
 
                         data.locale = locale
-                        data.path = data.path ? `/${data.locale}/${data.path}` : `/${data.locale}`
+                        if (locale === this.defaultLocale) {
+                            data.path = `/${data.path}`
+                        } else {
+                            data.path = data.path ? `/${data.locale}/${data.path}` : `/${data.locale}`
+                        }
 
                         async.eachOf(data.data, (file, key, callback) => {
                             if(file.substr(0, 1) === '/') {

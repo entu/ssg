@@ -27,6 +27,7 @@ Download [latest build](https://github.com/entu/entu-ssg/releases/latest), unzip
 Sites build process is configurable by Yaml file and its path must be first argument for entu-ssg.js. Required parameters are:
 
 - __locales__ - List of locale folders to generate. You can put locale identificator to filename (like index.en.pug or data.et.yaml) for locale speciffic content.
+- __defaultLocale__ - If set, page paths in this locale will not get locale prefix (_/en/about_ will be just _/about_).
 - __source__ - Folder with source files (realtive to build config.yaml). Folders beginning with underscore are ignored.
 - __build__ - Folder to put generated HTML (realtive to build config.yaml).
 - __assets__ - Folder with static assets (JS, images, ...).
