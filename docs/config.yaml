@@ -1,9 +1,2 @@
 source: ./
 build: ./
-assets: ./
-
-pug.basedir: ./_templates
-
-markdown:
-    html: true
-    breaks: true
