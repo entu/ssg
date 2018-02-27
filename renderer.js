@@ -19,12 +19,12 @@ module.exports = class {
     constructor (confFile) {
         const conf = yaml.safeLoad(fs.readFileSync(confFile, 'utf8'))
 
-        this.locales = _.get(conf, 'locales', [''])
-        this.defaultLocale = _.get(conf, 'defaultLocale', null)
-        this.sourceDir = _.get(conf, 'source', './')
-        this.buildDir = _.get(conf, 'build', './')
-        this.aliases = _.get(conf, 'dev.aliases', true)
-        this.paths = _.get(conf, 'dev.paths', [])
+        this.locales = _.get(conf, 'locales') || ['']
+        this.defaultLocale = _.get(conf, 'defaultLocale') || null
+        this.sourceDir = _.get(conf, 'source') || './'
+        this.buildDir = _.get(conf, 'build') || './'
+        this.aliases = _.get(conf, 'dev.aliases') || true
+        this.paths = _.get(conf, 'dev.paths') || []
         this.globalData = {}
 
         // Paths are relative to config file path
