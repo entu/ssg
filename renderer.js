@@ -42,9 +42,11 @@ module.exports = class {
             try {
                 this.globalData[locale] = yaml.safeLoad(fs.readFileSync(path.join(this.sourceDir, `global.${locale}.yaml`), 'utf8'))
             } catch (e) {
-                this.globalData[locale] = yaml.safeLoad(fs.readFileSync(path.join(this.sourceDir, `global.yaml`), 'utf8'))
-            } finally {
-                // No global data
+                try {
+                    this.globalData[locale] = yaml.safeLoad(fs.readFileSync(path.join(this.sourceDir, `global.yaml`), 'utf8'))
+                } catch (e) {
+                    // No global data
+                }
             }
         })
     }
