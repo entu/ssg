@@ -148,7 +148,11 @@ module.exports = class {
             if (err) { return callback(err) }
 
             const cssFile = path.join(this.buildDir, 'style.css')
-            const styl = stylus(styleComponents.join('\n\n')).set('warn', false).set('compress', true).set('sourcemap', {})
+            const styl = stylus(styleComponents.join('\n\n'))
+                .set('warn', false)
+                .set('compress', true)
+                .set('filename', 'style.css')
+                .set('sourcemap', {})
 
             styl.render((err, css) => {
                 if (err) { return callback(err) }
