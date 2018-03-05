@@ -1,7 +1,5 @@
 # Entu SSG
 
-![Screenshot](https://ssg.entu.eu/screenshot.png)
-
 ## Benefits
 
 - Simple Pug (Jade), Markdown, Yaml static site generator.
@@ -15,11 +13,11 @@
 
 ## Installation and usage
 
-Download [latest build](https://github.com/entu/entu-ssg/releases/latest), unzip and run. Choose config.yaml file and it will:
-
-1. generate HTML/CSS files
-2. start server on localhost
-3. monitor source folder for changes and (re)generate necessary HTML/CSS.
+1. Download [latest build](https://github.com/entu/entu-ssg/releases/latest)
+2. Run:
+```
+    ./build.js ./my-page/entu-ssg-config.yaml
+```
 
 
 ### Configuration
