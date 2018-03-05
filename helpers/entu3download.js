@@ -17,19 +17,19 @@ request({
     url: 'https://api.entu.ee/auth',
     method: 'GET',
     json: true,
-    'auth': {
-        'bearer': ENTU_KEY
+    auth: {
+        bearer: ENTU_KEY
     }
 }, (error, res, body) => {
     if (error) { console.error(error) }
     if (res.statusCode !== 200) { console.error(body) }
 
-    let token = _.get(body, [ENTU_DB, 'token'], '')
+    const token = _.get(body, [ENTU_DB, 'token'], '')
 
-    let options = {
-        url: 'https://api.entu.ee/property/' + ENTU_FILE_ID + '?download',
+    const options = {
+        url: `https://api.entu.ee/property/${ENTU_FILE_ID}?download`,
         method: 'GET',
-        auth: { 'bearer': token }
+        auth: { bearer: token }
     }
     let r = request(options)
     r.on('response',  function (res) {

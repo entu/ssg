@@ -3,7 +3,6 @@
 'use strict'
 
 const _ = require('lodash')
-const async = require('async')
 const fs = require('fs-extra')
 const request = require('request')
 const yaml = require('js-yaml')
@@ -15,7 +14,7 @@ const ENTU_QUERY = process.env.ENTU_QUERY || ''
 const DATA_YAML = process.argv[2]
 
 
-const getPropertyValue = property => {
+const getPropertyValue = (property) => {
     if (property.string) { return property.string }
     if (property.date) { return property.date }
     if (property.integer) { return property.integer }
@@ -30,8 +29,8 @@ request({
     url: 'https://api.entu.ee/auth',
     method: 'GET',
     json: true,
-    'auth': {
-        'bearer': ENTU_KEY
+    auth: {
+        bearer: ENTU_KEY
     }
 }, (error, response, body) => {
     if (error) { console.error(error) }
@@ -46,8 +45,8 @@ request({
         url: 'https://api.entu.ee/entity' + '?' + ENTU_QUERY,
         method: 'GET',
         json: true,
-        'auth': {
-            'bearer': token
+        auth: {
+            bearer: token
         }
     }, (error, response, body) => {
         if (error) { console.error(error) }

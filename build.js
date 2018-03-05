@@ -1,16 +1,8 @@
 #!/usr/bin/env node
 
 
+
 'use strict'
-
-const async = require('async')
-const fs = require('fs-extra')
-const klaw = require('klaw')
-const path = require('path')
-
-const renderer = require('./renderer.js')
-
-
 
 if (process.argv.length <= 2) {
     throw new Error('Give config Yaml file as 1st parameter!')
@@ -18,7 +10,21 @@ if (process.argv.length <= 2) {
 
 
 
+const async = require('async')
+const fs = require('fs-extra')
+const klaw = require('klaw')
+const path = require('path')
+
+const renderer = require('./renderer.js')
 const render = new renderer(process.argv[2])
+
+
+
+var sourcePugFiles = []
+var sourceStylusFiles = []
+var sourceJsFiles = []
+
+
 
 // const theEnd = () => {
 //     let endDate = new Date()
@@ -39,7 +45,7 @@ const render = new renderer(process.argv[2])
 //         buildErrors = buildErrors + sourceFiles.length
 //         if (buildErrors === 0) {
 //
-//             klaw(appConf.build).on('data', item => {
+//             klaw(appConf.build).on('data', (item) => {
 //                 if (files.indexOf(item.path.replace(/\\/g, '/')) === -1 && item.path.replace(/\\/g, '/') !== appConf.build.replace(/\\/g, '/')) {
 //                     filesForDelete.push(item.path)
 //                 }
@@ -83,14 +89,7 @@ const render = new renderer(process.argv[2])
 
 
 
-var sourcePugFiles = []
-var sourceStylusFiles = []
-var sourceJsFiles = []
-var filesToRender = 0
-var buildErrors = 0
-
-
-klaw(render.sourceDir).on('data', item => {
+klaw(render.sourceDir).on('data', (item) => {
     if (!fs.lstatSync(item.path).isFile()) { return }
 
     const dirName = path.dirname(item.path)
@@ -130,7 +129,7 @@ klaw(render.sourceDir).on('data', item => {
     console.log(sourceStylusFiles.length + ' .styl files to render')
 
     async.parallel({
-        html: callback => {
+        html: (callback) => {
             let buildFiles = []
             async.each(sourcePugFiles, (source, callback) => {
                 render.makeHTML(source, (err, files) => {
@@ -138,14 +137,14 @@ klaw(render.sourceDir).on('data', item => {
 
                     callback(null)
                 })
-            }, err => {
+            }, (err) => {
                 const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
                 console.log(`${buildFiles.length} .html files created - ${duration.toFixed(2)}s - ${(buildFiles.length / duration).toFixed(2)}fps`)
 
                 callback(null, buildFiles)
             })
         },
-        css: callback => {
+        css: (callback) => {
             render.makeCSS(sourceStylusFiles, (err, files) => {
                 const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
                 console.log(`${files.length} .css files created - ${duration.toFixed(2)}s - ${(files.length / duration).toFixed(2)}fps`)
@@ -153,7 +152,7 @@ klaw(render.sourceDir).on('data', item => {
                 callback(null, files)
             })
         },
-        js: callback => {
+        js: (callback) => {
             render.makeJS(sourceJsFiles, (err, files) => {
                 const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
                 console.log(`${files.length} .js files created - ${duration.toFixed(2)}s - ${(files.length / duration).toFixed(2)}fps`)

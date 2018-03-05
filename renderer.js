@@ -36,7 +36,7 @@ module.exports = class {
         }
 
         // Load global data
-        this.locales.forEach(locale => {
+        this.locales.forEach((locale) => {
             this.globalData[locale] = {}
 
             try {
@@ -57,10 +57,10 @@ module.exports = class {
         var outputFiles = []
 
         async.parallel({
-            template: callback => {
+            template: (callback) => {
                 this.loadTemplate(sourcePath, callback)
             },
-            data: callback => {
+            data: (callback) => {
                 this.loadData(sourcePath, callback)
             }
         }, (err, page) => {
@@ -73,7 +73,7 @@ module.exports = class {
                     data.filename = template.filename
 
                     let otherLocalePaths = {}
-                    this.locales.forEach(otherLocale => {
+                    this.locales.forEach((otherLocale) => {
                         if (!page.template[locale]) { return }
                         if (otherLocale === data.locale) { return }
                         otherLocalePaths[otherLocale] = page.data[otherLocale][idx].path
@@ -105,7 +105,7 @@ module.exports = class {
                             const dependencies = compiledPug.dependencies
                             const html = compiledPug(data)
 
-                            fs.outputFile(buildFile, minify(html, htmlMinifyConf), err => {
+                            fs.outputFile(buildFile, minify(html, htmlMinifyConf), (err) => {
                                 if (err) {
                                     callback(err)
                                 } else {
@@ -124,7 +124,7 @@ module.exports = class {
                         }
                     }, callback)
                 }, callback)
-            }, err => {
+            }, (err) => {
 
                 callback(null, outputFiles)
             })
@@ -144,7 +144,7 @@ module.exports = class {
                 styleComponents.push(data)
                 callback(null)
             })
-        }, err => {
+        }, (err) => {
             if (err) { return callback(err) }
 
             const cssFile = path.join(this.buildDir, 'style.css')
@@ -174,7 +174,7 @@ module.exports = class {
                             callback(null)
                         })
                     }
-                ], err => {
+                ], (err) => {
                     if (err) { return callback(err) }
                     callback(null, outputFiles)
                 })
@@ -195,7 +195,7 @@ module.exports = class {
                 jsComponents[path.basename(scriptFile)] = data
                 callback(null)
             })
-        }, err => {
+        }, (err) => {
             if (err) { return callback(err) }
 
             const jsFile = path.join(this.buildDir, 'script.js')
@@ -218,7 +218,7 @@ module.exports = class {
                         callback(null)
                     })
                 }
-            ], err => {
+            ], (err) => {
                 if (err) { return callback(err) }
                 callback(null, outputFiles)
             })
@@ -233,7 +233,7 @@ module.exports = class {
         async.each(this.locales, (locale, callback) => {
             var fileName = `index.${locale}.pug`
 
-            fs.access(path.join(folder, fileName), fs.constants.R_OK, err => {
+            fs.access(path.join(folder, fileName), fs.constants.R_OK, (err) => {
                 if (err) {
                     fileName = 'index.pug'
                 }
@@ -249,7 +249,7 @@ module.exports = class {
                     callback(null)
                 })
             })
-        }, err => {
+        }, (err) => {
             if (err) {
                 return callback(err)
             } else {
@@ -272,7 +272,7 @@ module.exports = class {
             path: folder.replace(this.sourceDir, '').substr(1).replace(/\\/, '/'),
             otherLocalePaths: {},
             data: {},
-            md: text => {
+            md: (text) => {
                 if (text) {
                     return md({ breaks: true, html: true }).use(mdSup).use(mdAttrs).render(text).replace(/\r?\n|\r/g, '')
                 } else {
@@ -287,7 +287,7 @@ module.exports = class {
 
             result[locale] = []
 
-            fs.access(path.join(folder, fileName), fs.constants.R_OK, err => {
+            fs.access(path.join(folder, fileName), fs.constants.R_OK, (err) => {
                 if (err) {
                     fileName = 'data.yaml'
                 }
@@ -338,7 +338,7 @@ module.exports = class {
                                 }
                                 callback(null)
                             })
-                        }, err => {
+                        }, (err) => {
                             if (err) { return callback(err) }
 
                             result[locale].push(data)
@@ -347,7 +347,7 @@ module.exports = class {
                     }, callback)
                 })
             })
-        }, err => {
+        }, (err) => {
             if (err) { return callback(err) }
 
             callback(null, result)
