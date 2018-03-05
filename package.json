@@ -1,7 +1,7 @@
 {
   "name": "entu-ssg",
   "productName": "Entu SSG",
-  "version": "4.1.5",
+  "version": "4.1.6",
   "author": "Argo Roots <argo@roots.ee>",
   "description": "Simple Pug (Jade), Markdown, Yaml static site generator",
   "keywords": [
@@ -14,14 +14,14 @@
     "markdown",
     "yaml"
   ],
-  "homepage": "https://github.com/argoroots/entu-ssg",
+  "homepage": "https://ssg.entu.eu",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/argoroots/entu-ssg.git"
+    "url": "git+https://github.com/entu/entu-ssg.git"
   },
   "bugs": {
-    "url": "https://github.com/argoroots/entu-ssg/issues"
+    "url": "https://github.com/entu/entu-ssg/issues"
   },
   "main": "build.js",
   "scripts": {
