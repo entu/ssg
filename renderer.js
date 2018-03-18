@@ -10,6 +10,7 @@ const mdSup = require('markdown-it-sup')
 const path = require('path')
 const pug = require('pug')
 const stylus = require('stylus')
+const stylusAutoprefixer = require('autoprefixer-stylus')
 const uglify = require('uglify-js')
 const yaml = require('js-yaml')
 
@@ -151,6 +152,7 @@ module.exports = class {
 
             const cssFile = path.join(this.buildDir, 'style.css')
             const styl = stylus(styleComponents.join('\n\n'))
+                .use(stylusAutoprefixer())
                 .set('warn', false)
                 .set('compress', true)
                 .set('paths', [this.sourceDir])
