@@ -17,6 +17,7 @@ const path = require('path')
 
 const renderer = require('./renderer.js')
 const render = new renderer(process.argv[2])
+const startDate = new Date()
 
 
 
@@ -89,12 +90,56 @@ var sourceJsFiles = []
 
 
 
+var puildPugPaths = []
+var ignorePuildPugPaths = false
+var buildPug = false
+var buildStyle = false
+var buildJs = false
+
+try {
+    const lastBuild = JSON.parse(fs.readFileSync(path.join(render.buildDir, 'build.json'), 'utf8'))
+
+    if (lastBuild.commit) {
+        const gitPath = require('child_process').execSync(`git -C "${render.sourceDir}" rev-parse --show-toplevel`).toString().trim()
+        const changes = require('child_process').execSync(`git -C "${render.sourceDir}" diff --name-only ${lastBuild.commit}`).toString().trim()
+
+        changes.split('\n').forEach(f => {
+            let file = path.join(gitPath, f)
+
+            if (file.startsWith(render.sourceDir) && (file.endsWith('.pug') || file.endsWith('.yaml'))) {
+                let pathname = path.dirname(path.join(gitPath, f))
+                if (puildPugPaths.indexOf(pathname) === -1) {
+                    puildPugPaths.push(path.dirname(file))
+                }
+                buildPug = true
+            }
+
+            if (file.startsWith(render.sourceDir) && file.endsWith('.styl')) {
+                buildStyle = true
+            }
+
+            if (file.startsWith(render.sourceDir) && file.endsWith('.js')) {
+                buildJs = true
+            }
+        })
+
+    }
+} catch (e) {
+    console.error(e.message)
+
+    ignorePuildPugPaths = true
+    buildPug = true
+    buildStyle = true
+    buildJs = true
+}
+
+
+
 klaw(render.sourceDir).on('data', (item) => {
     if (!fs.lstatSync(item.path).isFile()) { return }
 
     const dirName = path.dirname(item.path)
     const fileName = path.basename(item.path)
-
 
     if (fileName.startsWith('_')) { return }
     if (!fileName.endsWith('.pug') && !fileName.endsWith('.js') && !fileName.endsWith('.styl')) { return }
@@ -110,19 +155,17 @@ klaw(render.sourceDir).on('data', (item) => {
         if (ignore) { return }
     }
 
-    if (fileName.startsWith('index.') && fileName.endsWith('.pug') && sourcePugFiles.indexOf(dirName) === -1) {
+    if (buildPug && fileName.startsWith('index.') && fileName.endsWith('.pug') && sourcePugFiles.indexOf(dirName) === -1 && (ignorePuildPugPaths || puildPugPaths.indexOf(dirName) !== -1)) {
         sourcePugFiles.push(dirName)
     }
-    if (fileName.endsWith('.js') && sourceJsFiles.indexOf(dirName) === -1) {
+    if (buildJs && fileName.endsWith('.js') && sourceJsFiles.indexOf(dirName) === -1) {
         sourceJsFiles.push(item.path)
     }
-    if (fileName.endsWith('.styl') && sourceStylusFiles.indexOf(dirName) === -1) {
+    if (buildStyle && fileName.endsWith('.styl') && sourceStylusFiles.indexOf(dirName) === -1) {
         sourceStylusFiles.push(item.path)
     }
 }).on('end', function () {
     sourcePugFiles.sort()
-
-    const startDate = new Date()
 
     console.log(sourcePugFiles.length + ' .pug files to render')
     console.log(sourceJsFiles.length + ' .js files to render')
@@ -162,5 +205,13 @@ klaw(render.sourceDir).on('data', (item) => {
         }
     }, (err, build) => {
         if (err) { console.log(err) }
+
+        const state = {
+            time: startDate.getTime(),
+            commit: require('child_process').execSync(`git -C "${render.sourceDir}" rev-parse HEAD`).toString().trim(),
+            ms: (new Date()).getTime() - startDate.getTime()
+        }
+
+        fs.outputFileSync(path.join(render.buildDir, 'build.json'), JSON.stringify(state))
     })
 })

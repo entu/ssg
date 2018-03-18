@@ -134,6 +134,8 @@ module.exports = class {
 
 
     makeCSS (sourceFiles, callback) {
+        if (sourceFiles.length === 0) { return callback(null, []) }
+
         var styleComponents = []
         var outputFiles = []
 
@@ -185,6 +187,8 @@ module.exports = class {
 
 
     makeJS (sourceFiles, callback) {
+        if (sourceFiles.length === 0) { return callback(null, []) }
+
         var jsComponents = {}
         var outputFiles = []
 
