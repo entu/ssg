@@ -153,6 +153,7 @@ module.exports = class {
             const styl = stylus(styleComponents.join('\n\n'))
                 .set('warn', false)
                 .set('compress', true)
+                .set('paths', [this.sourceDir])
                 .set('filename', 'style.css')
                 .set('sourcemap', {})
 

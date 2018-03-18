@@ -101,12 +101,15 @@ try {
 
     if (lastBuild.commit) {
         const gitPath = require('child_process').execSync(`git -C "${render.sourceDir}" rev-parse --show-toplevel`).toString().trim()
-        const changes = require('child_process').execSync(`git -C "${render.sourceDir}" diff --name-only ${lastBuild.commit}`).toString().trim()
+        const changedFiles = require('child_process').execSync(`git -C "${render.sourceDir}" diff --name-only ${lastBuild.commit}`).toString().trim().split('\n')
+        const addedFiles = require('child_process').execSync(`git -C "${render.sourceDir}" ls-files -o --exclude-standard --full-name`).toString().trim().split('\n')
 
-        changes.split('\n').forEach(f => {
+        changedFiles.concat(addedFiles).forEach(f => {
             let file = path.join(gitPath, f)
 
-            if (file.startsWith(render.sourceDir) && (file.endsWith('.pug') || file.endsWith('.yaml'))) {
+            if (!f || !file.startsWith(render.sourceDir)) { return }
+
+            if (file.endsWith('.pug') || file.endsWith('.yaml')) {
                 let pathname = path.dirname(path.join(gitPath, f))
                 if (puildPugPaths.indexOf(pathname) === -1) {
                     puildPugPaths.push(path.dirname(file))
@@ -114,15 +117,14 @@ try {
                 buildPug = true
             }
 
-            if (file.startsWith(render.sourceDir) && file.endsWith('.styl')) {
+            if (file.endsWith('.styl')) {
                 buildStyle = true
             }
 
-            if (file.startsWith(render.sourceDir) && file.endsWith('.js')) {
+            if (file.endsWith('.js')) {
                 buildJs = true
             }
         })
-
     }
 } catch (e) {
     console.error(e.message)
@@ -158,10 +160,10 @@ klaw(render.sourceDir).on('data', (item) => {
     if (buildPug && fileName.startsWith('index.') && fileName.endsWith('.pug') && sourcePugFiles.indexOf(dirName) === -1 && (ignorePuildPugPaths || puildPugPaths.indexOf(dirName) !== -1)) {
         sourcePugFiles.push(dirName)
     }
-    if (buildJs && fileName.endsWith('.js') && sourceJsFiles.indexOf(dirName) === -1) {
+    if (buildJs && !fileName.startsWith('_') && fileName.endsWith('.js') && sourceJsFiles.indexOf(dirName) === -1) {
         sourceJsFiles.push(item.path)
     }
-    if (buildStyle && fileName.endsWith('.styl') && sourceStylusFiles.indexOf(dirName) === -1) {
+    if (buildStyle && !fileName.startsWith('_') && fileName.endsWith('.styl') && sourceStylusFiles.indexOf(dirName) === -1) {
         sourceStylusFiles.push(item.path)
     }
 }).on('end', function () {
@@ -189,18 +191,26 @@ klaw(render.sourceDir).on('data', (item) => {
         },
         css: (callback) => {
             render.makeCSS(sourceStylusFiles, (err, files) => {
-                const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
-                console.log(`${files.length} .css files created - ${duration.toFixed(2)}s - ${(files.length / duration).toFixed(2)}fps`)
+                if (err) {
+                    console.log(err.message)
+                } else {
+                    const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
+                    console.log(`${files.length} .css files created - ${duration.toFixed(2)}s - ${(files.length / duration).toFixed(2)}fps`)
+                }
 
-                callback(null, files)
+                callback(null, files || [])
             })
         },
         js: (callback) => {
             render.makeJS(sourceJsFiles, (err, files) => {
-                const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
-                console.log(`${files.length} .js files created - ${duration.toFixed(2)}s - ${(files.length / duration).toFixed(2)}fps`)
+                if (err) {
+                    console.log(err.message)
+                } else {
+                    const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
+                    console.log(`${files.length} .js files created - ${duration.toFixed(2)}s - ${(files.length / duration).toFixed(2)}fps`)
+                }
 
-                callback(null, files)
+                callback(null, files || [])
             })
         }
     }, (err, build) => {
