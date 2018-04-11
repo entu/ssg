@@ -176,7 +176,7 @@ klaw(render.sourceDir).on('data', (item) => {
     async.parallel({
         html: (callback) => {
             let buildFiles = []
-            async.eachLimit(sourcePugFiles, 1, (source, callback) => {
+            async.eachSeries(sourcePugFiles, (source, callback) => {
                 render.makeHTML(source, (err, files) => {
                     if (files && files.length) { buildFiles = buildFiles.concat(files) }
 
