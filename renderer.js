@@ -120,7 +120,7 @@ module.exports = class {
                                 }
                             })
                         } catch (e) {
-                            console.log(e)
+                            console.log(`\n${sourcePath}\n${e.message}\n`)
                             callback(e)
                         }
                     }, callback)

@@ -127,7 +127,7 @@ try {
         })
     }
 } catch (e) {
-    console.error(e.message)
+    console.error(`Can\'t get last commit. Will run full build.`)
 
     ignorePuildPugPaths = true
     buildPug = true
@@ -176,7 +176,7 @@ klaw(render.sourceDir).on('data', (item) => {
     async.parallel({
         html: (callback) => {
             let buildFiles = []
-            async.each(sourcePugFiles, (source, callback) => {
+            async.eachLimit(sourcePugFiles, 1, (source, callback) => {
                 render.makeHTML(source, (err, files) => {
                     if (files && files.length) { buildFiles = buildFiles.concat(files) }
 
@@ -216,9 +216,17 @@ klaw(render.sourceDir).on('data', (item) => {
     }, (err, build) => {
         if (err) { console.log(err) }
 
+        let commit = null
+
+        try {
+            commit = require('child_process').execSync(`git -C "${render.sourceDir}" rev-parse HEAD`).toString().trim()
+        } catch (e) {
+            console.error(`Can\'t get last commit.`)
+        }
+
         const state = {
             time: startDate.getTime(),
-            commit: require('child_process').execSync(`git -C "${render.sourceDir}" rev-parse HEAD`).toString().trim(),
+            commit: commit,
             ms: (new Date()).getTime() - startDate.getTime()
         }
 
