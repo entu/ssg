@@ -26,7 +26,7 @@ const getPropertyValue = (property) => {
 
 
 request({
-    url: 'https://api.entu.ee/auth',
+    url: 'https://api.entu.app/auth',
     method: 'GET',
     json: true,
     auth: {
@@ -42,7 +42,7 @@ request({
     }
 
     request({
-        url: 'https://api.entu.ee/entity' + '?' + ENTU_QUERY,
+        url: 'https://api.entu.app/entity' + '?' + ENTU_QUERY,
         method: 'GET',
         json: true,
         auth: {

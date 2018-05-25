@@ -14,7 +14,7 @@ const OUTFILE = process.argv[2]
 
 
 request({
-    url: 'https://api.entu.ee/auth',
+    url: 'https://api.entu.app/auth',
     method: 'GET',
     json: true,
     auth: {
@@ -27,7 +27,7 @@ request({
     const token = _.get(body, [ENTU_DB, 'token'], '')
 
     const options = {
-        url: `https://api.entu.ee/property/${ENTU_FILE_ID}?download`,
+        url: `https://api.entu.app/property/${ENTU_FILE_ID}?download`,
         method: 'GET',
         auth: { bearer: token }
     }
