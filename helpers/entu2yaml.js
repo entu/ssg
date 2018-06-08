@@ -61,7 +61,7 @@ request({
                 for (var e in body.entities[i]) {
                     if (!body.entities[i].hasOwnProperty(e)) { continue }
 
-                    if (e === '_id') {
+                    if (e === '_id' || e === '_thumbnail') {
                         entity[e] = body.entities[i][e]
                     } else if (body.entities[i][e].length === 1) {
                         entity[e] = getPropertyValue(body.entities[i][e][0])
