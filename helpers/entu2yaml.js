@@ -15,11 +15,11 @@ const DATA_YAML = process.argv[2]
 
 
 const getPropertyValue = (property) => {
+    if (property.reference) { return property.reference }
     if (property.string) { return property.string }
     if (property.date) { return property.date }
     if (property.integer) { return property.integer }
     if (property.boolean) { return property.boolean }
-    if (property.reference) { return property.reference }
 
     return property
 }
