@@ -156,6 +156,7 @@ module.exports = class {
         }, (err) => {
             if (err) { return callback(err) }
 
+            const sourceDir = this.sourceDir
             const buildDir = this.buildDir
             const cssFile = path.join(this.buildDir, 'style.css')
             const styl = stylus(styleComponents.join('\n\n'))
@@ -174,7 +175,8 @@ module.exports = class {
                         fs.outputFile(cssFile, css, {}, function (err) {
                             if (err) { return callback(err) }
                             outputFiles.push({
-                                build: cssFile.replace(buildDir, '')
+                                build: cssFile.replace(buildDir, ''),
+                                dependencies: sourceFiles.map(v => v.replace(sourceDir, ''))
                             })
                             callback(null)
                         })
@@ -185,6 +187,7 @@ module.exports = class {
 
                             outputFiles.push({
                                 build: cssFile.replace(buildDir, '') + '.map',
+                                dependencies: sourceFiles.map(v => v.replace(sourceDir, '')),
                                 alias: true
                             })
                             callback(null)
@@ -216,6 +219,7 @@ module.exports = class {
         }, (err) => {
             if (err) { return callback(err) }
 
+            const sourceDir = this.sourceDir
             const buildDir = this.buildDir
             const jsFile = path.join(buildDir, 'script.js')
             const script = uglify.minify(jsComponents, { sourceMap: { filename: 'script.js', url: 'script.js.map' } })
@@ -226,7 +230,8 @@ module.exports = class {
                         if (err) { return callback(err) }
 
                         outputFiles.push({
-                            build: jsFile.replace(buildDir, '')
+                            build: jsFile.replace(buildDir, ''),
+                            dependencies: sourceFiles.map(v => v.replace(sourceDir, ''))
                         })
                         callback(null)
                     })
@@ -237,6 +242,7 @@ module.exports = class {
 
                         outputFiles.push({
                             build: jsFile.replace(buildDir, '') + '.map',
+                            dependencies: sourceFiles.map(v => v.replace(sourceDir, '')),
                             alias: true
                         })
                         callback(null)
