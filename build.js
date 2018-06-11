@@ -227,6 +227,7 @@ klaw(render.sourceDir).on('data', (item) => {
         const state = {
             time: startDate.getTime(),
             commit: commit,
+            build: build,
             ms: (new Date()).getTime() - startDate.getTime()
         }
 

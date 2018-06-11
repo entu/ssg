@@ -103,19 +103,25 @@ module.exports = class {
                             let buildFile = path.join(this.buildDir, buildPath, 'index.html')
 
                             const compiledPug = pug.compile(template.template, data)
-                            const dependencies = compiledPug.dependencies
+                            const dependencies = compiledPug.dependencies.concat(data.dependencies)
                             const html = compiledPug(data)
 
                             fs.outputFile(buildFile, minify(html, htmlMinifyConf), (err) => {
                                 if (err) {
                                     callback(err)
                                 } else {
-                                    outputFiles.push({
-                                        source: template.filename,
-                                        build: buildFile,
-                                        alias: data.path !== buildPath,
-                                        dependencies: dependencies
-                                    })
+                                    let result = {
+                                        source: template.filename.replace(this.sourceDir, ''),
+                                        build: buildFile.replace(this.buildDir, ''),
+                                    }
+                                    if (data.path !== buildPath) {
+                                        result.alias = true
+                                    }
+                                    if (dependencies.length > 0) {
+                                        result.dependencies = dependencies.map(v => v.replace(this.sourceDir, ''))
+                                    }
+                                    outputFiles.push(result)
+
                                     callback(null)
                                 }
                             })
@@ -150,6 +156,7 @@ module.exports = class {
         }, (err) => {
             if (err) { return callback(err) }
 
+            const buildDir = this.buildDir
             const cssFile = path.join(this.buildDir, 'style.css')
             const styl = stylus(styleComponents.join('\n\n'))
                 .use(stylusAutoprefixer())
@@ -166,8 +173,9 @@ module.exports = class {
                     function (callback) {
                         fs.outputFile(cssFile, css, {}, function (err) {
                             if (err) { return callback(err) }
-
-                            outputFiles.push({ path: cssFile })
+                            outputFiles.push({
+                                build: cssFile.replace(buildDir, '')
+                            })
                             callback(null)
                         })
                     },
@@ -175,7 +183,10 @@ module.exports = class {
                         fs.outputFile(cssFile + '.map', JSON.stringify(styl.sourcemap), {}, function (err) {
                             if (err) { return callback(err) }
 
-                            outputFiles.push({ path: cssFile + '.map', alias: true })
+                            outputFiles.push({
+                                build: cssFile.replace(buildDir, '') + '.map',
+                                alias: true
+                            })
                             callback(null)
                         })
                     }
@@ -205,7 +216,8 @@ module.exports = class {
         }, (err) => {
             if (err) { return callback(err) }
 
-            const jsFile = path.join(this.buildDir, 'script.js')
+            const buildDir = this.buildDir
+            const jsFile = path.join(buildDir, 'script.js')
             const script = uglify.minify(jsComponents, { sourceMap: { filename: 'script.js', url: 'script.js.map' } })
 
             async.parallel([
@@ -213,7 +225,9 @@ module.exports = class {
                     fs.outputFile(jsFile, script.code, {}, function (err) {
                         if (err) { return callback(err) }
 
-                        outputFiles.push({ path: jsFile })
+                        outputFiles.push({
+                            build: jsFile.replace(buildDir, '')
+                        })
                         callback(null)
                     })
                 },
@@ -221,7 +235,10 @@ module.exports = class {
                     fs.outputFile(jsFile + '.map', script.map, {}, function (err) {
                         if (err) { return callback(err) }
 
-                        outputFiles.push({ path: jsFile + '.map', alias: true })
+                        outputFiles.push({
+                            build: jsFile.replace(buildDir, '') + '.map',
+                            alias: true
+                        })
                         callback(null)
                     })
                 }
@@ -279,6 +296,7 @@ module.exports = class {
             path: folder.replace(this.sourceDir, '').substr(1).replace(/\\/, '/'),
             otherLocalePaths: {},
             data: {},
+            dependencies: [],
             md: (text) => {
                 if (text) {
                     return md({ breaks: true, html: true }).use(mdSup).use(mdAttrs).render(text).replace(/\r?\n|\r/g, '')
@@ -339,6 +357,7 @@ module.exports = class {
                                 if (!err) {
                                     try {
                                         data.data[key] = yaml.safeLoad(fileData)
+                                        data.dependencies.push(file)
                                     } catch (e) {
                                         console.log(e)
                                     }
