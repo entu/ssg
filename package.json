@@ -1,7 +1,7 @@
 {
   "name": "entu-ssg",
   "productName": "Entu SSG",
-  "version": "4.2.9",
+  "version": "4.2.10",
   "author": "Argo Roots <argo@roots.ee>",
   "description": "Simple Pug (Jade), Markdown, Yaml static site generator",
   "keywords": [
@@ -38,7 +38,7 @@
     "klaw": "2.1.1",
     "lodash": "4.17.10",
     "markdown-it": "8.4.1",
-    "markdown-it-attrs": "2.1.0",
+    "markdown-it-attrs": "2.2.0",
     "markdown-it-sup": "1.0.0",
     "pug": "2.0.3",
     "request": "2.87.0",
