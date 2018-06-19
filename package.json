@@ -23,9 +23,11 @@
   "bugs": {
     "url": "https://github.com/entu/entu-ssg/issues"
   },
-  "main": "build.js",
+  "main": "electron/main.js",
   "scripts": {
-    "start": "node build.js"
+    "build": "node build.js",
+    "start": "electron electron/main.js",
+    "pack": "electron-packager . --overwrite --asar"
   },
   "dependencies": {
     "async": "2.6.1",
@@ -42,7 +44,11 @@
     "markdown-it-sup": "1.0.0",
     "pug": "2.0.3",
     "request": "2.87.0",
+    "simple-git": "1.96.0",
     "stylus": "0.54.5",
     "uglify-js": "3.4.0"
+  },
+  "devDependencies": {
+    "electron": "2.0.2"
   }
 }
