@@ -20,6 +20,9 @@ var serverPort
 var errors = {}
 
 
+document.getElementById('version').innerHTML = app.getVersion()
+
+
 var openConf = () => {
     render = new renderer(confFile)
 
@@ -44,24 +47,24 @@ var openConf = () => {
             }
             document.getElementById('branch').innerHTML = select.join('')
 
-            git(gitRepo).log({splitter: 'commit', '--max-count': '30'}, callback)
-        },
-        (log, callback) => {
-            for (let i = 0; i < log.all.length; i++) {
-                let dt = new Date(log.all[i].date)
-
-                document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
-                    <tr class="log">
-                        <td>${log.all[i].message}</td>
-                        <td class="nowrap">${log.all[i].author_name}</td>
-                        <td class="nowrap" style="text-align:right;">${dt.toLocaleDateString('de-DE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
-                    </tr>
-                `
-            }
-
-            git(gitRepo).show({'--name-only': null, '0da5fc637ea889d8ca5c3ca9b4fcaed78d077458': null}, callback)
-        },
-        (diff, callback) => {
+        //     git(gitRepo).log({splitter: 'commit', '--max-count': '30'}, callback)
+        // },
+        // (log, callback) => {
+        //     for (let i = 0; i < log.all.length; i++) {
+        //         let dt = new Date(log.all[i].date)
+        //
+        //         document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
+        //             <tr class="log">
+        //                 <td>${log.all[i].message}</td>
+        //                 <td class="nowrap">${log.all[i].author_name}</td>
+        //                 <td class="nowrap" style="text-align:right;">${dt.toLocaleDateString('de-DE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+        //             </tr>
+        //         `
+        //     }
+        //
+        //     git(gitRepo).show({'--name-only': null, '0da5fc637ea889d8ca5c3ca9b4fcaed78d077458': null}, callback)
+        // },
+        // (diff, callback) => {
             callback(null)
         }
     ], err => {
@@ -93,14 +96,10 @@ var openConf = () => {
             document.getElementById('build').innerHTML = render.buildDir.replace(gitRepo, '.')
             document.getElementById('build').setAttribute('title', render.buildDir)
 
-            document.getElementById('preview').innerHTML = serverUrl
-            document.getElementById('preview').setAttribute('title', serverUrl)
-            document.getElementById('preview').setAttribute('href', `javascript:shell.openExternal('${serverUrl}');`)
-
             document.getElementById('log').style.left = document.getElementById('tools').offsetWidth + 'px'
 
             // startRendering()
-            // startServer()
+            startServer()
         }
     })
 }
@@ -151,7 +150,6 @@ var startRendering = () => {
             })
         } else {
             appConf = conf
-            serverUrl = `http://localhost:${appConf.server.port}`
 
             clearLog()
 
@@ -182,7 +180,7 @@ var startRendering = () => {
 
 
 var startServer = () => {
-    renderer.startServer((err) => {
+    render.serve((err) => {
         if (err) {
             addLogError(
                 err.event,
@@ -194,8 +192,9 @@ var startServer = () => {
         } else {
             serverStarted = true
 
-            serverUrl = `http://localhost:${appConf.server.port}`
+            serverUrl = `http://localhost:${render.serverPort}`
             document.getElementById('preview').innerHTML = serverUrl
+            document.getElementById('preview').setAttribute('href', `javascript:shell.openExternal('${serverUrl}');`)
 
             let myNotification = new Notification('Server started', { body: serverUrl })
             myNotification.onclick = () => {

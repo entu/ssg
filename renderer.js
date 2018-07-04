@@ -4,6 +4,7 @@ const _ = require('lodash')
 const {minify} = require('html-minifier')
 const async = require('async')
 const fs = require('fs-extra')
+const http = require('http')
 const md = require('markdown-it')
 const mdAttrs = require('markdown-it-attrs')
 const mdSup = require('markdown-it-sup')
@@ -13,6 +14,7 @@ const stylus = require('stylus')
 const stylusAutoprefixer = require('autoprefixer-stylus')
 const uglify = require('uglify-js')
 const yaml = require('js-yaml')
+const mime = require('mime-types')
 
 
 
@@ -24,8 +26,11 @@ module.exports = class {
         this.defaultLocale = _.get(conf, 'defaultLocale') || null
         this.sourceDir = _.get(conf, 'source') || './'
         this.buildDir = _.get(conf, 'build') || './'
+        this.assetsDir = _.get(conf, 'assets') || './'
         this.aliases = _.get(conf, 'dev.aliases') || true
         this.paths = _.get(conf, 'dev.paths') || []
+        this.serverPort = _.get(conf, 'server.port') || null
+        this.serverAssets = _.get(conf, 'server.assets') || '/'
         this.globalData = {}
 
         // Paths are relative to config file path
@@ -34,6 +39,9 @@ module.exports = class {
         }
         if (this.buildDir.substr(0, 1) === '.') {
             this.buildDir = path.resolve(path.join(path.dirname(confFile), this.buildDir))
+        }
+        if (this.assetsDir.substr(0, 1) === '.') {
+            this.assetsDir = path.resolve(path.join(path.dirname(confFile), this.assetsDir))
         }
 
         // Load global data
@@ -384,5 +392,50 @@ module.exports = class {
 
             callback(null, result)
         })
+    }
+
+
+
+    serve (callback) {
+        try {
+            var server = http.createServer((request, response) => {
+                var filePath = request.url.split('?')[0]
+                if (filePath.startsWith(this.serverAssets)) {
+                    filePath = path.join(this.assetsDir, filePath.substr(this.serverAssets.length - 1))
+                } else {
+                    filePath = path.join(this.buildDir, filePath)
+                }
+
+                if (filePath.indexOf('.') === -1) {
+                    filePath = path.join(filePath, 'index.html')
+                }
+
+                var contentType = mime.lookup(path.extname(filePath)) || 'application/octet-stream'
+
+                fs.readFile(filePath, (err, content) => {
+                    if (err) {
+                        response.writeHead(404, { 'Content-Type': 'text/plain' })
+                        response.end('404\n')
+                        callback({
+                            event: err.code,
+                            source: filePath.replace(this.buildDir, '').replace(this.assetsDir, this.serverAssets),
+                            error: err.message.replace(`${err.code}: `, '')
+                        })
+                    } else {
+                        response.writeHead(200, { 'Content-Type': contentType })
+                        response.end(content, 'utf-8')
+                    }
+                })
+            })
+
+            server.listen(this.serverPort)
+            server.on('listening', () => {
+                this.serverPort = server.address().port
+
+                callback(null)
+            })
+        } catch (e) {
+            callback(e)
+        }
     }
 }
