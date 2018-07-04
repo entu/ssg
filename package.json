@@ -27,7 +27,7 @@
   "scripts": {
     "build": "node build.js",
     "start": "electron electron/main.js",
-    "pack": "electron-packager . --overwrite --asar"
+    "pack": "electron-packager . --overwrite --asar --out=release"
   },
   "dependencies": {
     "async": "2.6.1",
