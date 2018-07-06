@@ -50,10 +50,10 @@ module.exports = class {
 
             try {
                 this.globalData[locale] = yaml.safeLoad(fs.readFileSync(path.join(this.sourceDir, `global.${locale}.yaml`), 'utf8'))
-            } catch (e) {
+            } catch (err) {
                 try {
                     this.globalData[locale] = yaml.safeLoad(fs.readFileSync(path.join(this.sourceDir, `global.yaml`), 'utf8'))
-                } catch (e) {
+                } catch (err) {
                     // No global data
                 }
             }
@@ -115,31 +115,29 @@ module.exports = class {
                             const html = compiledPug(data)
 
                             fs.outputFile(buildFile, minify(html, htmlMinifyConf), (err) => {
-                                if (err) {
-                                    callback(err)
-                                } else {
-                                    let result = {
-                                        source: template.filename.replace(this.sourceDir, ''),
-                                        build: buildFile.replace(this.buildDir, ''),
-                                    }
-                                    if (data.path !== buildPath) {
-                                        result.alias = true
-                                    }
-                                    if (dependencies.length > 0) {
-                                        result.dependencies = dependencies.map(v => v.replace(this.sourceDir, ''))
-                                    }
-                                    outputFiles.push(result)
+                                if (err) { return callback(this.parseErr(err, data.filename)) }
 
-                                    callback(null)
+                                let result = {
+                                    source: template.filename.replace(this.sourceDir, ''),
+                                    build: buildFile.replace(this.buildDir, ''),
                                 }
+                                if (data.path !== buildPath) {
+                                    result.alias = true
+                                }
+                                if (dependencies.length > 0) {
+                                    result.dependencies = dependencies.map(v => v.replace(this.sourceDir, ''))
+                                }
+                                outputFiles.push(result)
+
+                                callback(null)
                             })
-                        } catch (e) {
-                            console.log(`\n${sourcePath}\n${e.message}\n`)
-                            callback(e)
+                        } catch (err) {
+                            callback(this.parseErr(err, data.filename))
                         }
                     }, callback)
                 }, callback)
             }, (err) => {
+                if (err) { return callback(err) }
 
                 callback(null, outputFiles)
             })
@@ -156,9 +154,10 @@ module.exports = class {
 
         async.each(sourceFiles, (stylusFile, callback) => {
             fs.readFile(stylusFile, 'utf8', (err, data) => {
-                if (err) { return callback(err) }
+                if (err) { return callback([err, stylusFile]) }
 
                 styleComponents.push(data)
+
                 callback(null)
             })
         }, (err) => {
@@ -181,28 +180,32 @@ module.exports = class {
                 async.parallel([
                     function (callback) {
                         fs.outputFile(cssFile, css, {}, function (err) {
-                            if (err) { return callback(err) }
+                            if (err) { return callback([err, cssFile]) }
+
                             outputFiles.push({
                                 build: cssFile.replace(buildDir, ''),
                                 dependencies: sourceFiles.map(v => v.replace(sourceDir, ''))
                             })
+
                             callback(null)
                         })
                     },
                     function (callback) {
                         fs.outputFile(cssFile + '.map', JSON.stringify(styl.sourcemap), {}, function (err) {
-                            if (err) { return callback(err) }
+                            if (err) { return callback([err, cssFile + '.map']) }
 
                             outputFiles.push({
                                 build: cssFile.replace(buildDir, '') + '.map',
                                 dependencies: sourceFiles.map(v => v.replace(sourceDir, '')),
                                 alias: true
                             })
+
                             callback(null)
                         })
                     }
                 ], (err) => {
                     if (err) { return callback(err) }
+
                     callback(null, outputFiles)
                 })
             })
@@ -219,9 +222,10 @@ module.exports = class {
 
         async.each(sourceFiles, (scriptFile, callback) => {
             fs.readFile(scriptFile, 'utf8', (err, data) => {
-                if (err) { return callback(err) }
+                if (err) { return callback([err, scriptFile]) }
 
                 jsComponents[path.basename(scriptFile)] = data
+
                 callback(null)
             })
         }, (err) => {
@@ -235,29 +239,32 @@ module.exports = class {
             async.parallel([
                 function (callback) {
                     fs.outputFile(jsFile, script.code, {}, function (err) {
-                        if (err) { return callback(err) }
+                        if (err) { return callback([err, jsFile]) }
 
                         outputFiles.push({
                             build: jsFile.replace(buildDir, ''),
                             dependencies: sourceFiles.map(v => v.replace(sourceDir, ''))
                         })
+
                         callback(null)
                     })
                 },
                 function (callback) {
                     fs.outputFile(jsFile + '.map', script.map, {}, function (err) {
-                        if (err) { return callback(err) }
+                        if (err) { return callback([err, jsFile + '.map']) }
 
                         outputFiles.push({
                             build: jsFile.replace(buildDir, '') + '.map',
                             dependencies: sourceFiles.map(v => v.replace(sourceDir, '')),
                             alias: true
                         })
+
                         callback(null)
                     })
                 }
             ], (err) => {
                 if (err) { return callback(err) }
+
                 callback(null, outputFiles)
             })
         })
@@ -288,11 +295,9 @@ module.exports = class {
                 })
             })
         }, (err) => {
-            if (err) {
-                return callback(err)
-            } else {
-                return callback(null, result)
-            }
+            if (err) { return callback(err) }
+
+            callback(null, result)
         })
     }
 
@@ -341,8 +346,8 @@ module.exports = class {
                             if (!Array.isArray(yamlData)) {
                                 yamlData = [yamlData]
                             }
-                        } catch (e) {
-                            console.log(e)
+                        } catch (err) {
+                            return callback(this.parseErr(err, path.join(folder, fileName)))
                         }
                     }
 
@@ -368,14 +373,15 @@ module.exports = class {
                             }
 
                             fs.readFile(file, 'utf8', (err, fileData) => {
-                                if (!err) {
-                                    try {
-                                        data.data[key] = yaml.safeLoad(fileData)
-                                        data.dependencies.push(file)
-                                    } catch (e) {
-                                        console.log(e)
-                                    }
+                                if (err) { return callback(this.parseErr(err, file)) }
+
+                                try {
+                                    data.data[key] = yaml.safeLoad(fileData)
+                                    data.dependencies.push(file)
+                                } catch (err) {
+                                    return callback(this.parseErr(err, file))
                                 }
+
                                 callback(null)
                             })
                         }, (err) => {
@@ -434,8 +440,20 @@ module.exports = class {
 
                 callback(null)
             })
-        } catch (e) {
-            callback(e)
+        } catch (err) {
+            callback(err)
         }
+    }
+
+
+
+    parseErr (err, file) {
+        let message = (err.message || err.stack || err.toString()).replace('ENOENT: ', '').replace('\n\n', '\n').trim()
+
+        if (!message.includes(file)) {
+            message = `${file}\n${message}`
+        }
+
+        return message
     }
 }

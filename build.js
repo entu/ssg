@@ -178,43 +178,51 @@ klaw(render.sourceDir).on('data', (item) => {
             let buildFiles = []
             async.eachSeries(sourcePugFiles, (source, callback) => {
                 render.makeHTML(source, (err, files) => {
+                    if (err) { return callback(err) }
+
                     if (files && files.length) { buildFiles = buildFiles.concat(files) }
 
                     callback(null)
                 })
             }, (err) => {
+                if (err) { return callback(err) }
+
                 const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
                 console.log(`${buildFiles.length} .html files created - ${duration.toFixed(2)}s - ${(buildFiles.length / duration).toFixed(2)}fps`)
 
-                callback(null, buildFiles)
+                callback(null, buildFiles || [])
             })
         },
         css: (callback) => {
             render.makeCSS(sourceStylusFiles, (err, files) => {
-                if (err) {
-                    console.log(err.message)
-                } else {
-                    const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
-                    console.log(`${files.length} .css files created - ${duration.toFixed(2)}s - ${(files.length / duration).toFixed(2)}fps`)
-                }
+                if (err) { return callback(err) }
+
+                const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
+                console.log(`${files.length} .css files created - ${duration.toFixed(2)}s - ${(files.length / duration).toFixed(2)}fps`)
 
                 callback(null, files || [])
             })
         },
         js: (callback) => {
             render.makeJS(sourceJsFiles, (err, files) => {
-                if (err) {
-                    console.log(err.message)
-                } else {
-                    const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
-                    console.log(`${files.length} .js files created - ${duration.toFixed(2)}s - ${(files.length / duration).toFixed(2)}fps`)
-                }
+                if (err) { return callback(err) }
+
+                const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
+                console.log(`${files.length} .js files created - ${duration.toFixed(2)}s - ${(files.length / duration).toFixed(2)}fps`)
 
                 callback(null, files || [])
             })
         }
     }, (err, build) => {
-        if (err) { console.log(err) }
+        if (err) {
+            if (Array.isArray(err)) {
+                console.error(`\nERROR: ${err[1]}\n${err[0].message || err[0].stack || err[0]}\n`)
+            } else {
+                console.error(`\nERROR:\n${err.message || err.stack || err}\n`)
+            }
+
+            process.exit(1)
+        }
 
         let commit = null
 
