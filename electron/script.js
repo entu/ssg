@@ -3,9 +3,12 @@
 const {remote} = require('electron')
 const {app, dialog, shell} = remote
 const async = require('async')
-const renderer = require('../renderer.js')
-const path = require('path')
+const fs = require('fs')
 const git = require('simple-git')
+const lodash = require('lodash')
+const path = require('path')
+
+const renderer = require('../renderer.js')
 
 
 var confFile = localStorage.getItem('confFile')
@@ -16,8 +19,8 @@ var gitBranch = ''
 var appConf = {}
 var serverStarted = false
 var serverUrl = ''
-var serverPort
 var errors = {}
+var watcher
 
 
 document.getElementById('version').innerHTML = app.getVersion()
@@ -78,9 +81,6 @@ var openConf = () => {
                 openConfFile()
             })
         } else {
-            // serverUrl = `http://localhost:${serverPort}`
-            serverUrl = `http://localhost`
-
             document.getElementById('remote').innerHTML = gitRemote.replace('http://', '').replace('https://', '')
             document.getElementById('remote').setAttribute('title', gitRemote)
 
@@ -98,7 +98,7 @@ var openConf = () => {
 
             document.getElementById('log').style.left = document.getElementById('tools').offsetWidth + 'px'
 
-            // startRendering()
+            startRendering()
             startServer()
         }
     })
@@ -137,50 +137,117 @@ var setBranch = () => {
 
 
 var startRendering = () => {
-    renderer.openConfFile(confFile, (err, conf) => {
-        if (err) {
-            dialog.showMessageBox({
-                type: 'error',
-                message: err.toString(),
-                buttons: ['OK']
-            }, () => {
-                confFile = null
-                openConfFile()
-                return
-            })
-        } else {
-            appConf = conf
+    try {
+        watcher.close()
+    } catch (e) {
+        // No active watchers
+    }
 
-            clearLog()
+    watcher = fs.watch(render.sourceDir, { recursive: true }, (et, filename) => {
+        const filepath = path.join(render.sourceDir, filename)
+        const dirName = path.dirname(filepath)
+        const fileName = path.basename(filepath)
+        const eventType = et
 
-            renderer.watchFiles((err, data) => {
+        if (fileName.startsWith('_')) { return }
+        if (!fileName.endsWith('.pug') && !fileName.endsWith('.js') && !fileName.endsWith('.styl')) { return }
+
+        if (render.paths.length) {
+            var ignore = true
+            for (let i = 0; i < render.paths.length; i++) {
+                if (render.paths[i] && item.path.startsWith(path.join(render.sourceDir, render.paths[i]))) {
+                    ignore = false
+                    break
+                }
+            }
+            if (ignore) { return }
+        }
+
+        if (fileName.startsWith('index.') && fileName.endsWith('.pug')) {
+            render.makeHTML(dirName, (err, files) => {
                 if (err) {
-                    badge(err.source, true)
-                    addLogError(
-                        err.event,
-                        err.source,
-                        `javascript:shell.showItemInFolder('${appConf.source + err.source}')`,
-                        err.error.toString().trim(),
-                        true
-                    )
-                } else {
-                    if (data.build.length > 0) {
-                        badge(data.source, false)
-                        addLog(
-                            data.event,
-                            data.source,
-                            data.build
-                        )
+                    // console.error(err)
+
+                    if (Array.isArray(err)) {
+                        var error = `${err[1]}\n${err[0].message || err[0].stack || err[0]}`
+                    } else {
+                        var error = `${err.message || err.stack || err}`
                     }
+
+                    addLogError(
+                        eventType.toUpperCase(),
+                        filepath.replace(render.sourceDir, '.'),
+                        `javascript:shell.showItemInFolder('${filepath}')`,
+                        error.trim(),
+                        false
+                    )
+                } else if (files && files.length) {
+                    addLog(
+                        eventType.toUpperCase(),
+                        filepath,
+                        files
+                    )
                 }
             })
         }
+        // if (fileName.endsWith('.js')) {
+        //     sourceJsFiles.push(item.path)
+        // }
+        // if (fileName.endsWith('.styl')) {
+        //     sourceStylusFiles.push(item.path)
+        // }
+
     })
+
+
+    // renderer.openConfFile(confFile, (err, conf) => {
+    //     if (err) {
+    //         dialog.showMessageBox({
+    //             type: 'error',
+    //             message: err.toString(),
+    //             buttons: ['OK']
+    //         }, () => {
+    //             confFile = null
+    //             openConfFile()
+    //             return
+    //         })
+    //     } else {
+    //         appConf = conf
+    //
+    //         clearLog()
+    //
+    //         renderer.watchFiles((err, data) => {
+    //             if (err) {
+    //                 badge(err.source, true)
+    //                 addLogError(
+    //                     err.event,
+    //                     err.source,
+    //                     `javascript:shell.showItemInFolder('${appConf.source + err.source}')`,
+    //                     err.error.toString().trim(),
+    //                     true
+    //                 )
+    //             } else {
+    //                 if (data.build.length > 0) {
+    //                     badge(data.source, false)
+    //                     addLog(
+    //                         data.event,
+    //                         data.source,
+    //                         data.build
+    //                     )
+    //                 }
+    //             }
+    //         })
+    //     }
+    // })
 }
 
 
 var startServer = () => {
     render.serve((err) => {
+        serverUrl = `http://localhost:${render.serverPort}`
+        document.getElementById('preview').innerHTML = serverUrl
+        document.getElementById('preview').setAttribute('href', `javascript:shell.openExternal('${serverUrl}');`)
+
         if (err) {
             addLogError(
                 err.event,
@@ -192,11 +259,8 @@ var startServer = () => {
         } else {
             serverStarted = true
 
-            serverUrl = `http://localhost:${render.serverPort}`
-            document.getElementById('preview').innerHTML = serverUrl
-            document.getElementById('preview').setAttribute('href', `javascript:shell.openExternal('${serverUrl}');`)
-
             let myNotification = new Notification('Server started', { body: serverUrl })
+
             myNotification.onclick = () => {
                 shell.openExternal(serverUrl)
             }
@@ -230,15 +294,15 @@ var addLogError = (event, source, sourceLink, error, notify) => {
 
 var addLog = (event, source, build) => {
     let links = []
-    for (var i = 0; i < build.length; i++) {
-        let buildUrl = build[i].path.replace(appConf.build, '').replace(/\\/g, '/').replace('/index.html', '')
+    for (let i = 0; i < build.length; i++) {
+        let buildUrl = build[i].build.replace(render.buildDir, '').replace(/\\/g, '/').replace('/index.html', '')
         links.push(`<a class="${build[i].alias ? 'alias' : ''}" href="javascript:shell.openExternal('${serverUrl + buildUrl}')">${buildUrl || '/'}</a>`)
     }
     links.sort()
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
         <tr class="log">
             <td style="width:5%">${event}</td>
-            <td style="width:5%"><a href="javascript:shell.showItemInFolder('${appConf.source + source}')">${source}</a></td>
+            <td style="width:5%"><a href="javascript:shell.showItemInFolder('${source}')">${source.replace(render.sourceDir ,'.')}</a></td>
             <td style="width:90%">${links.join('<br>')}</td>
         </tr>
     `
