@@ -373,7 +373,7 @@ module.exports = class {
                             }
 
                             fs.readFile(file, 'utf8', (err, fileData) => {
-                                if (err) { return callback(this.parseErr(err, file)) }
+                                if (err) { return callback(this.parseErr(err, path.join(folder, fileName))) }
 
                                 try {
                                     data.data[key] = yaml.safeLoad(fileData)
