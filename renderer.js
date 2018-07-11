@@ -77,14 +77,13 @@ module.exports = class {
 
             async.eachOf(page.template, (template, locale, callback) => {
                 async.eachOf(page.data[locale], (data, idx, callback) => {
-                    if (data.disabled) { return callback(null) }
-
                     data.filename = template.filename
 
                     let otherLocalePaths = {}
                     this.locales.forEach((otherLocale) => {
                         if (!page.template[locale]) { return }
                         if (otherLocale === data.locale) { return }
+                        if (!page.data[otherLocale][idx]) { return }
                         otherLocalePaths[otherLocale] = page.data[otherLocale][idx].path
                     })
                     data.otherLocalePaths = otherLocalePaths
@@ -357,6 +356,8 @@ module.exports = class {
                         // Move old .page to root
                         data = Object.assign({}, data, data.page)
                         delete data.page
+
+                        if (data.disabled) { return callback(null) }
 
                         data.locale = locale
                         if (locale === this.defaultLocale) {
