@@ -154,4 +154,4 @@ To generate page JS use __.js__ files. Global script.js is combined from all .js
     +- style.css.map
 ```
 
-[![npm version](https://badge.fury.io/js/entu-ssg.svg)](https://badge.fury.io/js/entu-ssg) [![Dependency Status](https://david-dm.org/entu/entu-ssg/status.svg)](https://david-dm.org/entu/entu-ssg) [![Codacy Badge](https://api.codacy.com/project/badge/grade/66531026074a471897b076fb91a74601)](https://www.codacy.com/app/argoroots/entu-ssg)
+[![npm version](https://badge.fury.io/js/entu-ssg.svg)](https://badge.fury.io/js/entu-ssg) [![Dependency Status](https://david-dm.org/entu/entu-ssg/status.svg)](https://david-dm.org/entu/entu-ssg)
