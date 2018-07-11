@@ -146,17 +146,6 @@ klaw(render.sourceDir).on('data', (item) => {
     if (fileName.startsWith('_')) { return }
     if (!fileName.endsWith('.pug') && !fileName.endsWith('.js') && !fileName.endsWith('.styl')) { return }
 
-    if (render.paths.length) {
-        var ignore = true
-        for (var i = 0; i < render.paths.length; i++) {
-            if (render.paths[i] && item.path.startsWith(path.join(render.sourceDir, render.paths[i]))) {
-                ignore = false
-                break
-            }
-        }
-        if (ignore) { return }
-    }
-
     if (buildPug && fileName.startsWith('index.') && fileName.endsWith('.pug') && sourcePugFiles.indexOf(dirName) === -1 && (ignorePuildPugPaths || puildPugPaths.indexOf(dirName) !== -1)) {
         sourcePugFiles.push(dirName)
     }
