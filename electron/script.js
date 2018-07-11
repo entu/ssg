@@ -105,10 +105,9 @@ var openConf = () => {
             document.getElementById('log').style.left = document.getElementById('tools').offsetWidth + 'px'
 
             if (fs.existsSync(render.buildDir)) {
-                // startRendering('add change unlink')
-                startRendering('all')
+                startRendering({ ignoreInitial: true })
             } else {
-                startRendering('all')
+                startRendering({ ignoreInitial: false })
             }
 
             startServer()
@@ -148,14 +147,14 @@ var setBranch = () => {
 }
 
 
-var startRendering = (type) => {
+var startRendering = (conf) => {
     try {
         watcher.close()
     } catch (e) {
         // No active watchers
     }
 
-    watcher = chokidar.watch(render.sourceDir).on(type, (et, filename) => {
+    watcher = chokidar.watch(render.sourceDir, conf).on('all', (et, filename) => {
         const dirName = path.dirname(filename)
         const fileName = path.basename(filename)
         const eventType = et
