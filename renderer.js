@@ -82,6 +82,8 @@ module.exports = class {
 
             async.eachOf(page.template, (template, locale, callback) => {
                 async.eachOf(page.data[locale], (data, idx, callback) => {
+                    if (data.disabled) { return callback(null) }
+
                     data.filename = template.filename
 
                     let otherLocalePaths = {}
@@ -89,6 +91,8 @@ module.exports = class {
                         if (!page.template[locale]) { return }
                         if (otherLocale === data.locale) { return }
                         if (!page.data[otherLocale][idx]) { return }
+                        if (page.data[otherLocale][idx].disabled) { return }
+
                         otherLocalePaths[otherLocale] = page.data[otherLocale][idx].path
                     })
                     data.otherLocalePaths = otherLocalePaths
@@ -358,11 +362,11 @@ module.exports = class {
                     async.each(yamlData, (data, callback) => {
                         data = Object.assign({}, defaultContent, this.globalData[locale], data)
 
+                        data.dependencies = [path.join(folder, fileName)]
+
                         // Move old .page to root
                         data = Object.assign({}, data, data.page)
                         delete data.page
-
-                        if (data.disabled) { return callback(null) }
 
                         data.locale = locale
                         if (locale === this.defaultLocale) {
