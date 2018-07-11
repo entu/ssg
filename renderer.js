@@ -20,7 +20,12 @@ const mime = require('mime-types')
 
 module.exports = class {
     constructor (confFile) {
-        const conf = yaml.safeLoad(fs.readFileSync(confFile, 'utf8'))
+        try {
+            var conf = yaml.safeLoad(fs.readFileSync(confFile, 'utf8'))
+        } catch (e) {
+            console.error(e)
+            return
+        }
 
         this.locales = _.get(conf, 'locales') || ['']
         this.defaultLocale = _.get(conf, 'defaultLocale') || null

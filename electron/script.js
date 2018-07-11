@@ -29,6 +29,11 @@ document.getElementById('version').innerHTML = app.getVersion()
 var openConf = () => {
     render = new renderer(confFile)
 
+    if(!render.sourceDir || !render.buildDir) {
+        localStorage.removeItem('confFile')
+        remote.getCurrentWindow().reload()
+    }
+
     async.waterfall([
         (callback) => {
             git(path.dirname(confFile)).revparse(['--show-toplevel'], callback)
