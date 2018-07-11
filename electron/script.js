@@ -3,6 +3,7 @@
 const {remote} = require('electron')
 const {app, dialog, shell} = remote
 const async = require('async')
+const chokidar = require('chokidar')
 const fs = require('fs')
 const git = require('simple-git')
 const lodash = require('lodash')
@@ -103,7 +104,13 @@ var openConf = () => {
 
             document.getElementById('log').style.left = document.getElementById('tools').offsetWidth + 'px'
 
-            startRendering()
+            if (fs.existsSync(render.buildDir)) {
+                // startRendering('add change unlink')
+                startRendering('all')
+            } else {
+                startRendering('all')
+            }
+
             startServer()
         }
     })
@@ -141,17 +148,16 @@ var setBranch = () => {
 }
 
 
-var startRendering = () => {
+var startRendering = (type) => {
     try {
         watcher.close()
     } catch (e) {
         // No active watchers
     }
 
-    watcher = fs.watch(render.sourceDir, { recursive: true }, (et, filename) => {
-        const filepath = path.join(render.sourceDir, filename)
-        const dirName = path.dirname(filepath)
-        const fileName = path.basename(filepath)
+    watcher = chokidar.watch(render.sourceDir).on(type, (et, filename) => {
+        const dirName = path.dirname(filename)
+        const fileName = path.basename(filename)
         const eventType = et
 
         if (fileName.startsWith('_')) { return }
@@ -181,15 +187,15 @@ var startRendering = () => {
 
                     addLogError(
                         eventType.toUpperCase(),
-                        filepath.replace(render.sourceDir, '.'),
-                        `javascript:shell.showItemInFolder('${filepath}')`,
+                        filename.replace(render.sourceDir, '.'),
+                        `javascript:shell.showItemInFolder('${filename}')`,
                         error.trim(),
                         false
                     )
                 } else if (files && files.length) {
                     addLog(
                         eventType.toUpperCase(),
-                        filepath,
+                        filename,
                         files
                     )
                 }
