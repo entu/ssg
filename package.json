@@ -40,13 +40,13 @@
     "klaw": "2.1.1",
     "lodash": "4.17.10",
     "markdown-it": "8.4.1",
-    "markdown-it-attrs": "2.2.0",
+    "markdown-it-attrs": "2.3.1",
     "markdown-it-sup": "1.0.0",
     "pug": "2.0.3",
     "request": "2.87.0",
     "simple-git": "1.96.0",
     "stylus": "0.54.5",
-    "uglify-js": "3.4.3"
+    "uglify-js": "3.4.4"
   },
   "devDependencies": {
     "electron": "2.0.4"
