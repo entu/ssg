@@ -5,6 +5,7 @@ const {minify} = require('html-minifier')
 const async = require('async')
 const fs = require('fs-extra')
 const http = require('http')
+const klaw = require('klaw')
 const md = require('markdown-it')
 const mdAttrs = require('markdown-it-attrs')
 const mdSup = require('markdown-it-sup')
@@ -36,6 +37,8 @@ module.exports = class {
         this.paths = _.get(conf, 'dev.paths') || []
         this.serverPort = _.get(conf, 'server.port') || null
         this.serverAssets = _.get(conf, 'server.assets') || '/'
+        this.lastCommit = null
+        this.lastBuild = {}
         this.globalData = {}
 
         // Paths are relative to config file path
@@ -47,6 +50,15 @@ module.exports = class {
         }
         if (this.assetsDir.substr(0, 1) === '.') {
             this.assetsDir = path.resolve(path.join(path.dirname(confFile), this.assetsDir))
+        }
+
+        try {
+            const buildJson = JSON.parse(fs.readFileSync(path.join(this.buildDir, 'build.json'), 'utf8'))
+
+            this.lastCommit = buildJson.commit
+            this.lastBuild = buildJson.build
+        } catch (err) {
+            // No build.json
         }
 
         // Load global data
@@ -407,6 +419,140 @@ module.exports = class {
             if (err) { return callback(err) }
 
             callback(null, result)
+        })
+    }
+
+
+
+    getChangedSourceFiles (callback) {
+        var gitPath = null
+
+
+        var deletedFiles = []
+        var changedFiles = []
+
+        var sourcePugFiles= []
+        var sourceJsFiles= []
+        var sourceStylusFiles= []
+
+        // Get last commit and build log
+        try {
+            if (!this.lastCommit) { return callback('No last commit') }
+            if (!this.lastBuild) { return callback('No last build info') }
+
+            gitPath = require('child_process')
+                .execSync(`git -C "${this.sourceDir}" rev-parse --show-toplevel`)
+                .toString()
+                .trim()
+
+            const gitDiff = require('child_process')
+                .execSync(`git -C "${this.sourceDir}" diff --no-renames --name-status ${this.lastCommit}`)
+                .toString()
+                .trim()
+                .split('\n')
+
+            // deletedFiles = gitDiff
+            //     .filter(f => f.startsWith('D\t'))
+            //     .map(f => f.split('\t')[1])
+            //     .filter(f => f)
+            //     .map(f => path.join(gitPath, f))
+
+            changedFiles = gitDiff
+                .filter(f => f.startsWith('M\t') || f.startsWith('A\t'))
+                .map(f => f.split('\t')[1])
+                .filter(f => f)
+                .map(f => path.join(gitPath, f))
+
+            changedFiles = changedFiles.concat(
+                require('child_process')
+                    .execSync(`git -C "${this.sourceDir}" ls-files -o --exclude-standard --full-name`)
+                    .toString()
+                    .trim()
+                    .split('\n')
+                    .filter(f => f)
+                    .map(f => path.join(gitPath, f))
+            )
+        } catch (e) {
+            return callback(e)
+        }
+
+        changedFiles.forEach(changedFile => {
+            const dirName = path.dirname(changedFile)
+            const fileName = path.basename(changedFile)
+
+            if (!fileName.startsWith('_') && fileName.startsWith('index.') && fileName.endsWith('.pug')) {
+                sourcePugFiles.push(dirName)
+            }
+
+            if (!fileName.startsWith('_') && fileName.endsWith('.js')) {
+                sourceJsFiles.push(changedFile)
+            }
+
+            if (!fileName.startsWith('_') && fileName.endsWith('.styl')) {
+                sourceStylusFiles.push(changedFile)
+            }
+
+            this.lastBuild.html.forEach(buildFile => {
+                if (buildFile.dependencies.includes(changedFile.replace(this.sourceDir, ''))) {
+                    sourcePugFiles.push(path.dirname(path.join(this.sourceDir, buildFile.source)))
+                }
+            })
+        })
+
+        sourcePugFiles = _.uniq(sourcePugFiles)
+        sourceJsFiles = _.uniq(sourceJsFiles)
+        sourceStylusFiles = _.uniq(sourceStylusFiles)
+
+        sourcePugFiles.sort()
+        sourceJsFiles.sort()
+        sourceStylusFiles.sort()
+
+        callback(null, {
+            pug: sourcePugFiles,
+            js: sourceJsFiles,
+            styl: sourceStylusFiles
+        })
+    }
+
+
+
+    getAllSourceFiles (callback) {
+        var sourcePugFiles= []
+        var sourceJsFiles= []
+        var sourceStylusFiles= []
+
+        klaw(this.sourceDir).on('data', (item) => {
+            if (!fs.lstatSync(item.path).isFile()) { return }
+
+            const dirName = path.dirname(item.path)
+            const fileName = path.basename(item.path)
+
+            if (fileName.startsWith('_')) { return }
+            if (!fileName.endsWith('.pug') && !fileName.endsWith('.js') && !fileName.endsWith('.styl')) { return }
+
+            if (fileName.startsWith('index.') && fileName.endsWith('.pug')) {
+                sourcePugFiles.push(dirName)
+            }
+            if (fileName.endsWith('.js')) {
+                sourceJsFiles.push(item.path)
+            }
+            if (fileName.endsWith('.styl')) {
+                sourceStylusFiles.push(item.path)
+            }
+        }).on('end', () => {
+            sourcePugFiles = _.uniq(sourcePugFiles)
+            sourceJsFiles = _.uniq(sourceJsFiles)
+            sourceStylusFiles = _.uniq(sourceStylusFiles)
+
+            sourcePugFiles.sort()
+            sourceJsFiles.sort()
+            sourceStylusFiles.sort()
+
+            callback(null, {
+                pug: sourcePugFiles,
+                js: sourceJsFiles,
+                styl: sourceStylusFiles
+            })
         })
     }
 
