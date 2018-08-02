@@ -84,10 +84,10 @@ module.exports = class {
 
         async.parallel({
             template: (callback) => {
-                this.loadTemplate(sourcePath, callback)
+                this.getTemplate(sourcePath, callback)
             },
             data: (callback) => {
-                this.loadData(sourcePath, callback)
+                this.getData(sourcePath, callback)
             }
         }, (err, page) => {
             if (err) { return callback(err) }
@@ -292,7 +292,7 @@ module.exports = class {
 
 
 
-    loadTemplate (folder, callback) {
+    getTemplate (folder, callback) {
         var result = {}
 
         async.each(this.locales, (locale, callback) => {
@@ -323,7 +323,7 @@ module.exports = class {
 
 
 
-    loadData (folder, callback) {
+    getData (folder, callback) {
         const defaultContent = {
             self: true,
             buildFile: null,
