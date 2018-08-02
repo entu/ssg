@@ -79,6 +79,51 @@ module.exports = class {
 
 
 
+    serve (callback) {
+        try {
+            var server = http.createServer((request, response) => {
+                var filePath = request.url.split('?')[0]
+                if (filePath.startsWith(this.serverAssets)) {
+                    filePath = path.join(this.assetsDir, filePath.substr(this.serverAssets.length - 1))
+                } else {
+                    filePath = path.join(this.buildDir, filePath)
+                }
+
+                if (filePath.indexOf('.') === -1) {
+                    filePath = path.join(filePath, 'index.html')
+                }
+
+                var contentType = mime.lookup(path.extname(filePath)) || 'application/octet-stream'
+
+                fs.readFile(filePath, (err, content) => {
+                    if (err) {
+                        response.writeHead(404, { 'Content-Type': 'text/plain' })
+                        response.end('404\n')
+                        callback({
+                            event: err.code,
+                            source: filePath.replace(this.buildDir, '').replace(this.assetsDir, this.serverAssets),
+                            error: err.message.replace(`${err.code}: `, '')
+                        })
+                    } else {
+                        response.writeHead(200, { 'Content-Type': contentType })
+                        response.end(content, 'utf-8')
+                    }
+                })
+            })
+
+            server.listen(this.serverPort)
+            server.on('listening', () => {
+                this.serverPort = server.address().port
+
+                callback(null)
+            })
+        } catch (err) {
+            callback(err)
+        }
+    }
+
+
+
     makeHTML (sourcePath, callback) {
         var outputFiles = []
 
@@ -292,138 +337,6 @@ module.exports = class {
 
 
 
-    getTemplate (folder, callback) {
-        var result = {}
-
-        async.each(this.locales, (locale, callback) => {
-            var fileName = `index.${locale}.pug`
-
-            fs.access(path.join(folder, fileName), fs.constants.R_OK, (err) => {
-                if (err) {
-                    fileName = 'index.pug'
-                }
-
-                fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
-                    if (!err) {
-                        result[locale] = {
-                            filename: path.join(folder, fileName),
-                            template: data
-                        }
-                    }
-
-                    callback(null)
-                })
-            })
-        }, (err) => {
-            if (err) { return callback(err) }
-
-            callback(null, result)
-        })
-    }
-
-
-
-    getData (folder, callback) {
-        const defaultContent = {
-            self: true,
-            buildFile: null,
-            cache: true,
-            basedir: this.sourceDir,
-            disabled: false,
-            locale: null,
-            defaultLocale: this.defaultLocale,
-            path: folder.replace(this.sourceDir, '').substr(1).replace(/\\/, '/'),
-            otherLocalePaths: {},
-            data: {},
-            dependencies: [],
-            md: (text) => {
-                if (text) {
-                    return md({ breaks: true, html: true }).use(mdSup).use(mdAttrs).render(text).replace(/\r?\n|\r/g, '')
-                } else {
-                    return ''
-                }
-            }
-        }
-        var result = {}
-
-        async.each(this.locales, (locale, callback) => {
-            var fileName = `data.${locale}.yaml`
-
-            result[locale] = []
-
-            fs.access(path.join(folder, fileName), fs.constants.R_OK, (err) => {
-                if (err) {
-                    fileName = 'data.yaml'
-                }
-
-                fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
-                    var yamlData = [{}]
-
-                    if (!err) {
-                        try {
-                            yamlData = yaml.safeLoad(data)
-
-                            if (!Array.isArray(yamlData)) {
-                                yamlData = [yamlData]
-                            }
-                        } catch (err) {
-                            return callback(this.parseErr(err, path.join(folder, fileName)))
-                        }
-                    }
-
-                    async.each(yamlData, (data, callback) => {
-                        data = Object.assign({}, defaultContent, this.globalData[locale], data)
-
-                        data.dependencies = [path.join(folder, fileName)]
-
-                        // Move old .page to root
-                        data = Object.assign({}, data, data.page)
-                        delete data.page
-
-                        data.locale = locale
-                        if (locale === this.defaultLocale) {
-                            data.path = `/${data.path}`
-                        } else {
-                            data.path = data.path ? `/${data.locale}/${data.path}` : `/${data.locale}`
-                        }
-
-                        async.eachOf(data.data, (file, key, callback) => {
-                            if(file.substr(0, 1) === '/') {
-                                file = path.join(this.sourceDir, file)
-                            } else {
-                                file = path.join(folder, file)
-                            }
-
-                            fs.readFile(file, 'utf8', (err, fileData) => {
-                                if (err) { return callback(this.parseErr(err, path.join(folder, fileName))) }
-
-                                try {
-                                    data.data[key] = yaml.safeLoad(fileData)
-                                    data.dependencies.push(file)
-                                } catch (err) {
-                                    return callback(this.parseErr(err, file))
-                                }
-
-                                callback(null)
-                            })
-                        }, (err) => {
-                            if (err) { return callback(err) }
-
-                            result[locale].push(data)
-                            callback(null)
-                        })
-                    }, callback)
-                })
-            })
-        }, (err) => {
-            if (err) { return callback(err) }
-
-            callback(null, result)
-        })
-    }
-
-
-
     getChangedSourceFiles (callback) {
         var gitPath = null
 
@@ -558,47 +471,134 @@ module.exports = class {
 
 
 
-    serve (callback) {
-        try {
-            var server = http.createServer((request, response) => {
-                var filePath = request.url.split('?')[0]
-                if (filePath.startsWith(this.serverAssets)) {
-                    filePath = path.join(this.assetsDir, filePath.substr(this.serverAssets.length - 1))
-                } else {
-                    filePath = path.join(this.buildDir, filePath)
+    getTemplate (folder, callback) {
+        var result = {}
+
+        async.each(this.locales, (locale, callback) => {
+            var fileName = `index.${locale}.pug`
+
+            fs.access(path.join(folder, fileName), fs.constants.R_OK, (err) => {
+                if (err) {
+                    fileName = 'index.pug'
                 }
 
-                if (filePath.indexOf('.') === -1) {
-                    filePath = path.join(filePath, 'index.html')
-                }
-
-                var contentType = mime.lookup(path.extname(filePath)) || 'application/octet-stream'
-
-                fs.readFile(filePath, (err, content) => {
-                    if (err) {
-                        response.writeHead(404, { 'Content-Type': 'text/plain' })
-                        response.end('404\n')
-                        callback({
-                            event: err.code,
-                            source: filePath.replace(this.buildDir, '').replace(this.assetsDir, this.serverAssets),
-                            error: err.message.replace(`${err.code}: `, '')
-                        })
-                    } else {
-                        response.writeHead(200, { 'Content-Type': contentType })
-                        response.end(content, 'utf-8')
+                fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
+                    if (!err) {
+                        result[locale] = {
+                            filename: path.join(folder, fileName),
+                            template: data
+                        }
                     }
+
+                    callback(null)
                 })
             })
+        }, (err) => {
+            if (err) { return callback(err) }
 
-            server.listen(this.serverPort)
-            server.on('listening', () => {
-                this.serverPort = server.address().port
+            callback(null, result)
+        })
+    }
 
-                callback(null)
-            })
-        } catch (err) {
-            callback(err)
+
+
+    getData (folder, callback) {
+        const defaultContent = {
+            self: true,
+            buildFile: null,
+            cache: true,
+            basedir: this.sourceDir,
+            disabled: false,
+            locale: null,
+            defaultLocale: this.defaultLocale,
+            path: folder.replace(this.sourceDir, '').substr(1).replace(/\\/, '/'),
+            otherLocalePaths: {},
+            data: {},
+            dependencies: [],
+            md: (text) => {
+                if (text) {
+                    return md({ breaks: true, html: true }).use(mdSup).use(mdAttrs).render(text).replace(/\r?\n|\r/g, '')
+                } else {
+                    return ''
+                }
+            }
         }
+        var result = {}
+
+        async.each(this.locales, (locale, callback) => {
+            var fileName = `data.${locale}.yaml`
+
+            result[locale] = []
+
+            fs.access(path.join(folder, fileName), fs.constants.R_OK, (err) => {
+                if (err) {
+                    fileName = 'data.yaml'
+                }
+
+                fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
+                    var yamlData = [{}]
+
+                    if (!err) {
+                        try {
+                            yamlData = yaml.safeLoad(data)
+
+                            if (!Array.isArray(yamlData)) {
+                                yamlData = [yamlData]
+                            }
+                        } catch (err) {
+                            return callback(this.parseErr(err, path.join(folder, fileName)))
+                        }
+                    }
+
+                    async.each(yamlData, (data, callback) => {
+                        data = Object.assign({}, defaultContent, this.globalData[locale], data)
+
+                        data.dependencies = [path.join(folder, fileName)]
+
+                        // Move old .page to root
+                        data = Object.assign({}, data, data.page)
+                        delete data.page
+
+                        data.locale = locale
+                        if (locale === this.defaultLocale) {
+                            data.path = `/${data.path}`
+                        } else {
+                            data.path = data.path ? `/${data.locale}/${data.path}` : `/${data.locale}`
+                        }
+
+                        async.eachOf(data.data, (file, key, callback) => {
+                            if(file.substr(0, 1) === '/') {
+                                file = path.join(this.sourceDir, file)
+                            } else {
+                                file = path.join(folder, file)
+                            }
+
+                            fs.readFile(file, 'utf8', (err, fileData) => {
+                                if (err) { return callback(this.parseErr(err, path.join(folder, fileName))) }
+
+                                try {
+                                    data.data[key] = yaml.safeLoad(fileData)
+                                    data.dependencies.push(file)
+                                } catch (err) {
+                                    return callback(this.parseErr(err, file))
+                                }
+
+                                callback(null)
+                            })
+                        }, (err) => {
+                            if (err) { return callback(err) }
+
+                            result[locale].push(data)
+                            callback(null)
+                        })
+                    }, callback)
+                })
+            })
+        }, (err) => {
+            if (err) { return callback(err) }
+
+            callback(null, result)
+        })
     }
 
 
