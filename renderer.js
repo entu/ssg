@@ -79,6 +79,114 @@ module.exports = class {
 
 
 
+    build (callback) {
+        const startDate = new Date()
+        var sourceFiles
+        var buildFiles = []
+
+        async.parallel({
+            changed: (callback) => {
+                this.getChangedSourceFiles(callback)
+            },
+            all: (callback) => {
+                this.getAllSourceFiles(callback)
+            }
+        }, (err, files) => {
+            if (err) {
+                console.error(err)
+                return
+            }
+
+            if (files.changed) {
+                sourceFiles = files.changed
+
+                if (sourceFiles.js.length > 0) {
+                    sourceFiles.js = files.all.js
+                }
+                if (sourceFiles.styl.length > 0) {
+                    sourceFiles.styl = files.all.styl
+                }
+            } else {
+                sourceFiles = files.all
+            }
+
+            console.log(sourceFiles.pug.length + ' .pug folders to render')
+            console.log(sourceFiles.js.length + ' .js files to render')
+            console.log(sourceFiles.styl.length + ' .styl files to render')
+
+            async.parallel({
+                html: (callback) => {
+                    let buildFiles = []
+                    async.eachSeries(sourceFiles.pug, (source, callback) => {
+                        this.makeHTML(source, (err, files) => {
+                            if (err) { return callback(err) }
+
+                            if (files && files.length) { buildFiles = buildFiles.concat(files) }
+
+                            callback(null)
+                        })
+                    }, (err) => {
+                        if (err) { return callback(err) }
+
+                        const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
+                        console.log(`${buildFiles.length} .html files created - ${duration.toFixed(2)}s - ${(buildFiles.length / duration).toFixed(2)}fps`)
+
+                        callback(null, buildFiles || [])
+                    })
+                },
+                js: (callback) => {
+                    this.makeJS(sourceFiles.js, (err, files) => {
+                        if (err) { return callback(err) }
+
+                        const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
+                        console.log(`${files.length} .js files created - ${duration.toFixed(2)}s - ${(files.length / duration).toFixed(2)}fps`)
+
+                        callback(null, files || [])
+                    })
+                },
+                css: (callback) => {
+                    this.makeCSS(sourceFiles.styl, (err, files) => {
+                        if (err) { return callback(err) }
+
+                        const duration = ((new Date()).getTime() - startDate.getTime()) / 1000
+                        console.log(`${files.length} .css files created - ${duration.toFixed(2)}s - ${(files.length / duration).toFixed(2)}fps`)
+
+                        callback(null, files || [])
+                    })
+                }
+            }, (err, build) => {
+                if (err) {
+                    if (Array.isArray(err)) {
+                        console.error(`\nERROR: ${err[1]}\n${err[0].message || err[0].stack || err[0]}\n`)
+                    } else {
+                        console.error(`\nERROR:\n${err.message || err.stack || err}\n`)
+                    }
+
+                    process.exit(1)
+                }
+
+                let commit = null
+
+                try {
+                    commit = require('child_process').execSync(`git -C "${this.sourceDir}" rev-parse HEAD`).toString().trim()
+                } catch (e) {
+                    console.error(`Can\'t get last commit.`)
+                }
+
+                const state = {
+                    time: startDate.getTime(),
+                    commit: commit,
+                    build: build,
+                    ms: (new Date()).getTime() - startDate.getTime()
+                }
+
+                fs.outputFileSync(path.join(this.buildDir, 'build.json'), JSON.stringify(state))
+            })
+        })
+    }
+
+
+
     serve (callback) {
         try {
             var server = http.createServer((request, response) => {
@@ -338,8 +446,9 @@ module.exports = class {
 
 
     getChangedSourceFiles (callback) {
-        var gitPath = null
+        if (!this.lastCommit || !this.lastBuild) { return callback(null) }
 
+        var gitPath = null
 
         var deletedFiles = []
         var changedFiles = []
@@ -350,9 +459,6 @@ module.exports = class {
 
         // Get last commit and build log
         try {
-            if (!this.lastCommit) { return callback('No last commit') }
-            if (!this.lastBuild) { return callback('No last build info') }
-
             gitPath = require('child_process')
                 .execSync(`git -C "${this.sourceDir}" rev-parse --show-toplevel`)
                 .toString()
@@ -385,8 +491,9 @@ module.exports = class {
                     .filter(f => f)
                     .map(f => path.join(gitPath, f))
             )
-        } catch (e) {
-            return callback(e)
+        } catch (err) {
+            console.error(`\nERROR:\n${err.message || err.stack || err}\n`)
+            return callback(null)
         }
 
         changedFiles.forEach(changedFile => {
