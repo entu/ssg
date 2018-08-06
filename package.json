@@ -50,6 +50,7 @@
     "uglify-js": "3.4.6"
   },
   "devDependencies": {
-    "electron": "2.0.6"
+    "electron": "2.0.6",
+    "electron-packager": "12.1.0"
   }
 }
