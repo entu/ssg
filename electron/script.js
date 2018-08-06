@@ -9,7 +9,7 @@ const git = require('simple-git')
 const lodash = require('lodash')
 const path = require('path')
 
-const renderer = require('../renderer.js')
+const renderer = require('../index.js')
 
 
 var confFile = localStorage.getItem('confFile')

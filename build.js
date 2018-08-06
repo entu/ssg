@@ -6,7 +6,7 @@ if (process.argv.length <= 2) {
     throw new Error('Give config Yaml file as 1st parameter!')
 }
 
-const renderer = require('./renderer.js')
+const renderer = require('./index.js')
 const render = new renderer(process.argv[2])
 const fullRun = process.argv.length >= 4 && process.argv[3].toLowerCase() === 'full'
 
