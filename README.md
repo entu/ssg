@@ -71,7 +71,7 @@ To pass data to index.pug use __data.yaml__ file. This data is passed to index.p
 You can put locale identificator to filename (like data.en.yaml) for locale speciffic content.
 
 Some page parameters will change how HTML is generated. Those are:
-- __disabled__ - If true, page will not be generated nor loaded to _self.otherLocales_ object.
+- __disabled__ - If true, page will not be generated nor loaded to _self.otherLocalePaths_ object.
 - __path__ - If set, it will override folder based path.
 - __aliases__ - List of path aliases. Will make redirekt urls to original path.
 - __data__ - Files to load data from. This data is passed to index.pug in object named _self.data_. You can use relative path (./ or ../). If used, it's relative to _data.yaml_ file. Root (/) path is Your source folder (set in _config.yaml_).

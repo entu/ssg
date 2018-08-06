@@ -79,7 +79,7 @@ module.exports = class {
 
 
 
-    build (callback) {
+    build (fullRun, callback) {
         const startDate = new Date()
         var sourceFiles
         var buildFiles = []
@@ -97,7 +97,9 @@ module.exports = class {
                 return
             }
 
-            if (files.changed) {
+            if (fullRun || !files.changed) {
+                sourceFiles = files.all
+            } else {
                 sourceFiles = files.changed
 
                 if (sourceFiles.js.length > 0) {
@@ -106,8 +108,6 @@ module.exports = class {
                 if (sourceFiles.styl.length > 0) {
                     sourceFiles.styl = files.all.styl
                 }
-            } else {
-                sourceFiles = files.all
             }
 
             console.log(sourceFiles.pug.length + ' .pug folders to render')
@@ -155,15 +155,7 @@ module.exports = class {
                     })
                 }
             }, (err, build) => {
-                if (err) {
-                    if (Array.isArray(err)) {
-                        console.error(`\nERROR: ${err[1]}\n${err[0].message || err[0].stack || err[0]}\n`)
-                    } else {
-                        console.error(`\nERROR:\n${err.message || err.stack || err}\n`)
-                    }
-
-                    process.exit(1)
-                }
+                if (err) { return callback(err) }
 
                 let commit = null
 
