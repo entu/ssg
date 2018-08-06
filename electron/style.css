@@ -154,7 +154,7 @@ a:hover {
 }
 
 #log table tr td pre {
-    padding-top: 5px;
+    padding-top: 0px;
 }
 
 #header {

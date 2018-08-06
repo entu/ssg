@@ -104,13 +104,9 @@ var openConf = () => {
 
             document.getElementById('log').style.left = document.getElementById('tools').offsetWidth + 'px'
 
-            if (fs.existsSync(render.buildDir)) {
-                startRendering({ ignoreInitial: true })
-            } else {
-                startRendering({ ignoreInitial: false })
-            }
-
-            startServer()
+            startBuild()
+            startWatch()
+            startServe()
         }
     })
 }
@@ -147,112 +143,41 @@ var setBranch = () => {
 }
 
 
-var startRendering = (conf) => {
-    try {
-        watcher.close()
-    } catch (e) {
-        // No active watchers
-    }
-
-    watcher = chokidar.watch(render.sourceDir, conf).on('all', (et, filename) => {
-        const dirName = path.dirname(filename)
-        const fileName = path.basename(filename)
-        const eventType = et
-
-        if (fileName.startsWith('_')) { return }
-        if (!fileName.endsWith('.pug') && !fileName.endsWith('.js') && !fileName.endsWith('.styl')) { return }
-
-        if (render.paths.length) {
-            var ignore = true
-            for (let i = 0; i < render.paths.length; i++) {
-                if (render.paths[i] && item.path.startsWith(path.join(render.sourceDir, render.paths[i]))) {
-                    ignore = false
-                    break
-                }
-            }
-            if (ignore) { return }
+var startBuild = () => {
+    render.build(false, err => {
+        if (err) {
+            addLogError(
+                'BUILD',
+                err,
+                false
+            )
         }
-
-        if (fileName.startsWith('index.') && fileName.endsWith('.pug')) {
-            render.makeHTML(dirName, (err, files) => {
-                if (err) {
-                    // console.error(err)
-
-                    if (Array.isArray(err)) {
-                        var error = `${err[1]}\n${err[0].message || err[0].stack || err[0]}`
-                    } else {
-                        var error = `${err.message || err.stack || err}`
-                    }
-
-                    addLogError(
-                        eventType.toUpperCase(),
-                        filename.replace(render.sourceDir, '.'),
-                        `javascript:shell.showItemInFolder('${filename}')`,
-                        error.trim(),
-                        false
-                    )
-                } else if (files && files.length) {
-                    addLog(
-                        eventType.toUpperCase(),
-                        filename,
-                        files
-                    )
-                }
-            })
-        }
-        // if (fileName.endsWith('.js')) {
-        //     sourceJsFiles.push(item.path)
-        // }
-        // if (fileName.endsWith('.styl')) {
-        //     sourceStylusFiles.push(item.path)
-        // }
-
     })
-
-
-    // renderer.openConfFile(confFile, (err, conf) => {
-    //     if (err) {
-    //         dialog.showMessageBox({
-    //             type: 'error',
-    //             message: err.toString(),
-    //             buttons: ['OK']
-    //         }, () => {
-    //             confFile = null
-    //             openConfFile()
-    //             return
-    //         })
-    //     } else {
-    //         appConf = conf
-    //
-    //         clearLog()
-    //
-    //         renderer.watchFiles((err, data) => {
-    //             if (err) {
-    //                 badge(err.source, true)
-    //                 addLogError(
-    //                     err.event,
-    //                     err.source,
-    //                     `javascript:shell.showItemInFolder('${appConf.source + err.source}')`,
-    //                     err.error.toString().trim(),
-    //                     true
-    //                 )
-    //             } else {
-    //                 if (data.build.length > 0) {
-    //                     badge(data.source, false)
-    //                     addLog(
-    //                         data.event,
-    //                         data.source,
-    //                         data.build
-    //                     )
-    //                 }
-    //             }
-    //         })
-    //     }
-    // })
 }
 
 
-var startServer = () => {
+var startWatch = () => {
+    render.watch((err, log) => {
+        if (err) {
+            addLogError(
+                err.event,
+                err.error,
+                false
+            )
+        } else if (log) {
+            console.log(log);
+
+            addLog(
+                log.event,
+                log.filename,
+                log.files
+            )
+        }
+    })
+}
+
+
+var startServe = () => {
     render.serve((err) => {
         serverUrl = `http://localhost:${render.serverPort}`
         document.getElementById('preview').innerHTML = serverUrl
@@ -261,8 +186,6 @@ var startServer = () => {
         if (err) {
             addLogError(
                 err.event,
-                err.source,
-                `javascript:shell.openExternal('${serverUrl + err.source}')`,
                 err.error.toString().trim(),
                 false
             )
@@ -284,7 +207,7 @@ var clearLog = () => {
 }
 
 
-var addLogError = (event, source, sourceLink, error, notify) => {
+var addLogError = (event, error, notify) => {
     if (notify) {
         let myNotification = new Notification('Error in file', { body: source })
     }
@@ -293,11 +216,11 @@ var addLogError = (event, source, sourceLink, error, notify) => {
         <tr class="error">
             <td style="width:5%">${event}</td>
             <td style="width:95%" colspan="2">
-                <a href="${sourceLink}">${source}</a><br>
                 <pre>${error}</pre>
             </td>
         </tr>
     `
+
     document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight
 }
 
@@ -312,7 +235,7 @@ var addLog = (event, source, build) => {
     document.getElementById('log-table').innerHTML = document.getElementById('log-table').innerHTML + `
         <tr class="log">
             <td style="width:5%">${event}</td>
-            <td style="width:5%"><a href="javascript:shell.showItemInFolder('${source}')">${source.replace(render.sourceDir ,'.')}</a></td>
+            <td style="width:5%"><a href="javascript:shell.showItemInFolder('${source}')" title="${source}">${source.replace(render.sourceDir ,'.')}</a></td>
             <td style="width:90%">${links.join('<br>')}</td>
         </tr>
     `

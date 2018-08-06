@@ -40,6 +40,7 @@ module.exports = class {
         this.lastCommit = null
         this.lastBuild = {}
         this.globalData = {}
+        this.watcher
 
         // Paths are relative to config file path
         if (this.sourceDir.substr(0, 1) === '.') {
@@ -174,6 +175,101 @@ module.exports = class {
 
                 fs.outputFileSync(path.join(this.buildDir, 'build.json'), JSON.stringify(state))
             })
+        })
+    }
+
+
+
+    watch (callback) {
+        try {
+            this.watcher.close()
+        } catch (e) {
+            // No active watchers
+        }
+
+        this.watcher = chokidar.watch(render.sourceDir, { ignoreInitial: true }).on('all', (et, changedFile) => {
+            const dirName = path.dirname(changedFile)
+            const fileName = path.basename(changedFile)
+            const eventType = et
+
+            if (fileName.startsWith('_')) { return }
+            if (!fileName.endsWith('.pug') && !fileName.endsWith('.js') && !fileName.endsWith('.styl')) { return }
+
+            if (fileName.startsWith('index.') && fileName.endsWith('.pug')) {
+                render.makeHTML(dirName, (err, files) => {
+                    if (err) {
+                        if (Array.isArray(err)) {
+                            var error = `${err[1]}\n${err[0].message || err[0].stack || err[0]}`
+                        } else {
+                            var error = `${err.message || err.stack || err}`
+                        }
+
+                        callback({
+                            event: eventType.toUpperCase(),
+                            filename: changedFile,
+                            error: error.trim()
+                        })
+                    } else if (files && files.length) {
+                        callback(null, {
+                            event: eventType.toUpperCase(),
+                            filename: changedFile,
+                            files: files
+                        })
+                    }
+                })
+            }
+
+            if (fileName.endsWith('.js')) {
+                this.getAllSourceFiles((err, sourceFiles) => {
+                    this.makeJS(sourceFiles.js, (err, files) => {
+                        if (err) {
+                            if (Array.isArray(err)) {
+                                var error = `${err[1]}\n${err[0].message || err[0].stack || err[0]}`
+                            } else {
+                                var error = `${err.message || err.stack || err}`
+                            }
+
+                            callback({
+                                event: eventType.toUpperCase(),
+                                filename: changedFile,
+                                error: error.trim()
+                            })
+                        } else if (files && files.length) {
+                            callback(null, {
+                                event: eventType.toUpperCase(),
+                                filename: changedFile,
+                                files: files
+                            })
+                        }
+                    })
+                })
+            }
+
+            if (fileName.endsWith('.styl')) {
+                this.getAllSourceFiles((err, sourceFiles) => {
+                    this.makeCSS(sourceFiles.styl, (err, files) => {
+                        if (err) {
+                            if (Array.isArray(err)) {
+                                var error = `${err[1]}\n${err[0].message || err[0].stack || err[0]}`
+                            } else {
+                                var error = `${err.message || err.stack || err}`
+                            }
+
+                            callback({
+                                event: eventType.toUpperCase(),
+                                filename: changedFile,
+                                error: error.trim()
+                            })
+                        } else if (files && files.length) {
+                            callback(null, {
+                                event: eventType.toUpperCase(),
+                                filename: changedFile,
+                                files: files
+                            })
+                        }
+                    })
+                })
+            }
         })
     }
 
