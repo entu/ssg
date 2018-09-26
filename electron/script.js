@@ -165,8 +165,6 @@ var startWatch = () => {
                 false
             )
         } else if (log) {
-            console.log(log);
-
             addLog(
                 log.event,
                 log.filename,

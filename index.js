@@ -37,8 +37,8 @@ module.exports = class {
         this.paths = _.get(conf, 'dev.paths') || []
         this.serverPort = _.get(conf, 'server.port') || null
         this.serverAssets = _.get(conf, 'server.assets') || '/'
-        this.lastCommit = null
-        this.lastBuild = {}
+        this.commit = null
+        this.state = {}
         this.globalData = {}
         this.globalDataFile = {}
         this.watcher
@@ -57,8 +57,8 @@ module.exports = class {
         try {
             const buildJson = JSON.parse(fs.readFileSync(path.join(this.buildDir, 'build.json'), 'utf8'))
 
-            this.lastCommit = buildJson.commit
-            this.lastBuild = buildJson.build
+            this.commit = buildJson.commit
+            this.state = buildJson.build
         } catch (err) {
             // No build.json
         }
@@ -122,6 +122,7 @@ module.exports = class {
             async.parallel({
                 html: (callback) => {
                     let buildFiles = []
+
                     async.eachSeries(sourceFiles.pug, (source, callback) => {
                         this.makeHTML(source, (err, files) => {
                             if (err) { return callback(err) }
@@ -214,10 +215,12 @@ module.exports = class {
                             error: error.trim()
                         })
                     } else if (files && files.length) {
-                        callback(null, {
-                            event: eventType.toUpperCase(),
-                            filename: changedFile,
-                            files: files
+                        this.updateState('html', files, () => {
+                            callback(null, {
+                                event: eventType.toUpperCase(),
+                                filename: changedFile,
+                                files: files
+                            })
                         })
                     }
                 })
@@ -239,10 +242,12 @@ module.exports = class {
                                 error: error.trim()
                             })
                         } else if (files && files.length) {
-                            callback(null, {
-                                event: eventType.toUpperCase(),
-                                filename: changedFile,
-                                files: files
+                            this.updateState('js', files, () => {
+                                callback(null, {
+                                    event: eventType.toUpperCase(),
+                                    filename: changedFile,
+                                    files: files
+                                })
                             })
                         }
                     })
@@ -265,10 +270,12 @@ module.exports = class {
                                 error: error.trim()
                             })
                         } else if (files && files.length) {
-                            callback(null, {
-                                event: eventType.toUpperCase(),
-                                filename: changedFile,
-                                files: files
+                            this.updateState('css', files, () => {
+                                callback(null, {
+                                    event: eventType.toUpperCase(),
+                                    filename: changedFile,
+                                    files: files
+                                })
                             })
                         }
                     })
@@ -538,7 +545,7 @@ module.exports = class {
 
 
     getChangedSourceFiles (callback) {
-        if (!this.lastCommit || !this.lastBuild) { return callback(null) }
+        if (!this.commit || !this.state) { return callback(null) }
 
         var gitPath = null
 
@@ -557,7 +564,7 @@ module.exports = class {
                 .trim()
 
             const gitDiff = require('child_process')
-                .execSync(`git -C "${this.sourceDir}" diff --no-renames --name-status ${this.lastCommit}`)
+                .execSync(`git -C "${this.sourceDir}" diff --no-renames --name-status ${this.commit}`)
                 .toString()
                 .trim()
                 .split('\n')
@@ -604,7 +611,7 @@ module.exports = class {
                 sourceStylusFiles.push(changedFile)
             }
 
-            this.lastBuild.html.forEach(buildFile => {
+            this.state.html.forEach(buildFile => {
                 if (buildFile.dependencies.includes(changedFile.replace(this.sourceDir, ''))) {
                     sourcePugFiles.push(path.dirname(path.join(this.sourceDir, buildFile.source)))
                 }
@@ -801,6 +808,14 @@ module.exports = class {
 
             callback(null, result)
         })
+    }
+
+
+
+    updateState (type, files, callback) {
+        this.state[type] = this.state[type].map(oldFiles => files.find(x => x.source === oldFiles.source) || oldFiles)
+
+        callback(null)
     }
 
 
