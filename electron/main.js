@@ -12,7 +12,7 @@ let createWindow = () => {
         height: 777,
         // resizable: false,
         // fullscreen: false,
-        titleBarStyle: 'hidden',
+        titleBarStyle: 'hiddenInset',
         title: 'Entu SSG',
         backgroundColor: '#ffffff'
     })
