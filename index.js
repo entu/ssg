@@ -40,6 +40,7 @@ module.exports = class {
         this.lastCommit = null
         this.lastBuild = {}
         this.globalData = {}
+        this.globalDataFile = {}
         this.watcher
 
         // Paths are relative to config file path
@@ -65,12 +66,15 @@ module.exports = class {
         // Load global data
         this.locales.forEach((locale) => {
             this.globalData[locale] = {}
+            this.globalDataFile[locale] = null
 
             try {
-                this.globalData[locale] = yaml.safeLoad(fs.readFileSync(path.join(this.sourceDir, `global.${locale}.yaml`), 'utf8'))
+                this.globalDataFile[locale] = path.join(this.sourceDir, `global.${locale}.yaml`)
+                this.globalData[locale] = yaml.safeLoad(fs.readFileSync(this.globalDataFile[locale], 'utf8'))
             } catch (err) {
                 try {
-                    this.globalData[locale] = yaml.safeLoad(fs.readFileSync(path.join(this.sourceDir, `global.yaml`), 'utf8'))
+                    this.globalDataFile[locale] = path.join(this.sourceDir, `global.yaml`)
+                    this.globalData[locale] = yaml.safeLoad(fs.readFileSync(this.globalDataFile[locale], 'utf8'))
                 } catch (err) {
                     // No global data
                 }
@@ -749,6 +753,9 @@ module.exports = class {
                         data = Object.assign({}, defaultContent, this.globalData[locale], data)
 
                         data.dependencies = [path.join(folder, fileName)]
+                        if (this.globalDataFile[locale]) {
+                            data.dependencies.push(this.globalDataFile[locale])
+                        }
 
                         // Move old .page to root
                         data = Object.assign({}, data, data.page)
