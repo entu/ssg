@@ -159,8 +159,11 @@ module.exports = class {
             }, (err, build) => {
                 if (err) { return callback(err) }
 
-                this.updateState(fullRun ? null : build, () => {
-                })
+                if (fullRun) {
+                    this.state = {}
+                }
+
+                this.updateState(build, () => callback)
             })
         })
     }
@@ -551,14 +554,8 @@ module.exports = class {
                 .trim()
                 .split('\n')
 
-            // deletedFiles = gitDiff
-            //     .filter(f => f.startsWith('D\t'))
-            //     .map(f => f.split('\t')[1])
-            //     .filter(f => f)
-            //     .map(f => path.join(gitPath, f))
-
             changedFiles = gitDiff
-                .filter(f => f.startsWith('M\t') || f.startsWith('A\t'))
+                .filter(f => f.startsWith('D\t') || f.startsWith('M\t') || f.startsWith('A\t'))
                 .map(f => f.split('\t')[1])
                 .filter(f => f)
                 .map(f => path.join(gitPath, f))
@@ -797,12 +794,10 @@ module.exports = class {
     updateState (updatedFiles, callback) {
         if (!updatedFiles) { return callback(null) }
 
-        console.log(this.state);
-
         async.eachOf(updatedFiles, (files, type, callback) => {
-            if (type === 'html' && this.state[type]) {
+            if (type === 'html' && this.state[type] && files && files.length > 0) {
                 this.state[type] = this.state[type].map(oldFiles => files.find(x => x.source === oldFiles.source) || oldFiles)
-            } else {
+            } else if (files && files.length > 0) {
                 this.state[type] = files
             }
 
