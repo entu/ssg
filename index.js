@@ -163,22 +163,24 @@ module.exports = class {
             }, (err, build) => {
                 if (err) { return callback(err) }
 
-                let commit = null
+                this.updateState(fullRun ? null : build, () => {
+                    let commit = null
 
-                try {
-                    commit = require('child_process').execSync(`git -C "${this.sourceDir}" rev-parse HEAD`).toString().trim()
-                } catch (e) {
-                    console.error(`Can\'t get last commit.`)
-                }
+                    try {
+                        commit = require('child_process').execSync(`git -C "${this.sourceDir}" rev-parse HEAD`).toString().trim()
+                    } catch (e) {
+                        console.error(`Can\'t get last commit.`)
+                    }
 
-                const state = {
-                    time: startDate.getTime(),
-                    commit: commit,
-                    build: build,
-                    ms: (new Date()).getTime() - startDate.getTime()
-                }
+                    const state = {
+                        time: startDate.getTime(),
+                        commit: commit,
+                        build: build,
+                        ms: (new Date()).getTime() - startDate.getTime()
+                    }
 
-                fs.outputFileSync(path.join(this.buildDir, 'build.json'), JSON.stringify(state))
+                    fs.outputFileSync(path.join(this.buildDir, 'build.json'), JSON.stringify(state))
+                })
             })
         })
     }
@@ -215,7 +217,7 @@ module.exports = class {
                             error: error.trim()
                         })
                     } else if (files && files.length) {
-                        this.updateState('html', files, () => {
+                        this.updateState({ html: files }, () => {
                             callback(null, {
                                 event: eventType.toUpperCase(),
                                 filename: changedFile,
@@ -242,7 +244,7 @@ module.exports = class {
                                 error: error.trim()
                             })
                         } else if (files && files.length) {
-                            this.updateState('js', files, () => {
+                            this.updateState({ js: files }, () => {
                                 callback(null, {
                                     event: eventType.toUpperCase(),
                                     filename: changedFile,
@@ -270,7 +272,7 @@ module.exports = class {
                                 error: error.trim()
                             })
                         } else if (files && files.length) {
-                            this.updateState('css', files, () => {
+                            this.updateState({ css: files }, () => {
                                 callback(null, {
                                     event: eventType.toUpperCase(),
                                     filename: changedFile,
@@ -812,10 +814,14 @@ module.exports = class {
 
 
 
-    updateState (type, files, callback) {
-        this.state[type] = this.state[type].map(oldFiles => files.find(x => x.source === oldFiles.source) || oldFiles)
+    updateState (updatedFiles, callback) {
+        if (!updatedFiles) { return callback(null) }
 
-        callback(null)
+        async.eachOf(updatedFiles, (files, type, callback) => {
+            this.state[type] = this.state[type].map(oldFiles => files.find(x => x.source === oldFiles.source) || oldFiles)
+
+            callback(null)
+        }, callback)
     }
 
 
