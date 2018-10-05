@@ -37,7 +37,6 @@ module.exports = class {
         this.paths = _.get(conf, 'dev.paths') || []
         this.serverPort = _.get(conf, 'server.port') || null
         this.serverAssets = _.get(conf, 'server.assets') || '/'
-        this.commit = null
         this.state = {}
         this.globalData = {}
         this.globalDataFile = {}
@@ -55,10 +54,7 @@ module.exports = class {
         }
 
         try {
-            const buildJson = JSON.parse(fs.readFileSync(path.join(this.buildDir, 'build.json'), 'utf8'))
-
-            this.commit = buildJson.commit
-            this.state = buildJson.build
+            this.state = JSON.parse(fs.readFileSync(path.join(this.buildDir, 'build.json'), 'utf8'))
         } catch (err) {
             // No build.json
         }
@@ -164,22 +160,6 @@ module.exports = class {
                 if (err) { return callback(err) }
 
                 this.updateState(fullRun ? null : build, () => {
-                    let commit = null
-
-                    try {
-                        commit = require('child_process').execSync(`git -C "${this.sourceDir}" rev-parse HEAD`).toString().trim()
-                    } catch (e) {
-                        console.error(`Can\'t get last commit.`)
-                    }
-
-                    const state = {
-                        time: startDate.getTime(),
-                        commit: commit,
-                        build: build,
-                        ms: (new Date()).getTime() - startDate.getTime()
-                    }
-
-                    fs.outputFileSync(path.join(this.buildDir, 'build.json'), JSON.stringify(state))
                 })
             })
         })
@@ -547,7 +527,7 @@ module.exports = class {
 
 
     getChangedSourceFiles (callback) {
-        if (!this.commit || !this.state) { return callback(null) }
+        if (!this.state.commit || !this.state) { return callback(null) }
 
         var gitPath = null
 
@@ -566,7 +546,7 @@ module.exports = class {
                 .trim()
 
             const gitDiff = require('child_process')
-                .execSync(`git -C "${this.sourceDir}" diff --no-renames --name-status ${this.commit}`)
+                .execSync(`git -C "${this.sourceDir}" diff --no-renames --name-status ${this.state.commit}`)
                 .toString()
                 .trim()
                 .split('\n')
@@ -613,7 +593,7 @@ module.exports = class {
                 sourceStylusFiles.push(changedFile)
             }
 
-            this.state.html.forEach(buildFile => {
+            _.get(this, 'state.html', []).forEach(buildFile => {
                 if (buildFile.dependencies.includes(changedFile.replace(this.sourceDir, ''))) {
                     sourcePugFiles.push(path.dirname(path.join(this.sourceDir, buildFile.source)))
                 }
@@ -817,11 +797,27 @@ module.exports = class {
     updateState (updatedFiles, callback) {
         if (!updatedFiles) { return callback(null) }
 
+        console.log(this.state);
+
         async.eachOf(updatedFiles, (files, type, callback) => {
-            this.state[type] = this.state[type].map(oldFiles => files.find(x => x.source === oldFiles.source) || oldFiles)
+            if (type === 'html' && this.state[type]) {
+                this.state[type] = this.state[type].map(oldFiles => files.find(x => x.source === oldFiles.source) || oldFiles)
+            } else {
+                this.state[type] = files
+            }
 
             callback(null)
-        }, callback)
+        }, err => {
+            this.state.date = (new Date()).toISOString()
+
+            try {
+                this.state.commit = require('child_process').execSync(`git -C "${this.sourceDir}" rev-parse HEAD`).toString().trim()
+            } catch (e) {
+                console.error(`Can\'t get last commit.`)
+            }
+
+            fs.outputFile(path.join(this.buildDir, 'build.json'), JSON.stringify(this.state), callback)
+        })
     }
 
 
