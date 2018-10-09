@@ -177,16 +177,13 @@ module.exports = class {
             // No active watchers
         }
 
-        this.watcher = chokidar.watch(render.sourceDir, { ignoreInitial: true }).on('all', (et, changedFile) => {
+        this.watcher = chokidar.watch(this.sourceDir, { ignoreInitial: true }).on('all', (et, changedFile) => {
             const dirName = path.dirname(changedFile)
             const fileName = path.basename(changedFile)
             const eventType = et
 
-            if (fileName.startsWith('_')) { return }
-            if (!fileName.endsWith('.pug') && !fileName.endsWith('.js') && !fileName.endsWith('.styl')) { return }
-
-            if (fileName.startsWith('index.') && fileName.endsWith('.pug')) {
-                render.makeHTML(dirName, (err, files) => {
+            this.getSourceFromDependenct(changedFile).forEach((source) => {
+                this.makeHTML(source, (err, files) => {
                     if (err) {
                         if (Array.isArray(err)) {
                             var error = `${err[1]}\n${err[0].message || err[0].stack || err[0]}`
@@ -209,9 +206,9 @@ module.exports = class {
                         })
                     }
                 })
-            }
+            })
 
-            if (fileName.endsWith('.js')) {
+            if (!fileName.startsWith('_') && fileName.endsWith('.js')) {
                 this.getAllSourceFiles((err, sourceFiles) => {
                     this.makeJS(sourceFiles.js, (err, files) => {
                         if (err) {
@@ -239,7 +236,7 @@ module.exports = class {
                 })
             }
 
-            if (fileName.endsWith('.styl')) {
+            if (!fileName.startsWith('_') && fileName.endsWith('.styl')) {
                 this.getAllSourceFiles((err, sourceFiles) => {
                     this.makeCSS(sourceFiles.styl, (err, files) => {
                         if (err) {
@@ -590,11 +587,7 @@ module.exports = class {
                 sourceStylusFiles.push(changedFile)
             }
 
-            _.get(this, 'state.html', []).forEach(buildFile => {
-                if (buildFile.dependencies.includes(changedFile.replace(this.sourceDir, ''))) {
-                    sourcePugFiles.push(path.dirname(path.join(this.sourceDir, buildFile.source)))
-                }
-            })
+            sourcePugFiles = sourcePugFiles.concat(this.getSourceFromDependenct(changedFile))
         })
 
         sourcePugFiles = _.uniq(sourcePugFiles)
@@ -652,6 +645,17 @@ module.exports = class {
                 styl: sourceStylusFiles
             })
         })
+    }
+
+
+
+    getSourceFromDependenct (file) {
+        const dependency = file.replace(this.sourceDir, '')
+        const source = _.get(this, 'state.html', [])
+            .filter(x => x.dependencies.includes(dependency) || x.source === dependency)
+            .map(x => path.dirname(path.join(this.sourceDir, x.source)))
+
+        return _.uniq(source)
     }
 
 
@@ -796,7 +800,7 @@ module.exports = class {
 
         async.eachOf(updatedFiles, (files, type, callback) => {
             if (type === 'html' && this.state[type] && files && files.length > 0) {
-                this.state[type] = this.state[type].map(oldFiles => files.find(x => x.source === oldFiles.source) || oldFiles)
+                this.state[type] = this.state[type].map(oldFiles => files.find(x => x.source === oldFiles.source && x.build === oldFiles.build) || oldFiles)
             } else if (files && files.length > 0) {
                 this.state[type] = files
             }
