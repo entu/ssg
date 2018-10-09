@@ -278,7 +278,7 @@ module.exports = class {
                     filePath = path.join(this.buildDir, filePath)
                 }
 
-                if (filePath.indexOf('.') === -1) {
+                if (!path.basename(filePath).includes('.')) {
                     filePath = path.join(filePath, 'index.html')
                 }
 
