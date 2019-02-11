@@ -1,12 +1,9 @@
 'use strict'
 
-const {remote} = require('electron')
-const {app, dialog, shell} = remote
+const { remote } = require('electron')
+const { app, dialog, shell } = remote
 const async = require('async')
-const chokidar = require('chokidar')
-const fs = require('fs')
 const git = require('simple-git')
-const lodash = require('lodash')
 const path = require('path')
 
 const renderer = require('../index.js')

@@ -1,21 +1,22 @@
 'use strict'
 
 const _ = require('lodash')
-const {minify} = require('html-minifier')
+const { minify } = require('html-minifier')
 const async = require('async')
+const chokidar = require('chokidar')
 const fs = require('fs-extra')
 const http = require('http')
 const klaw = require('klaw')
 const md = require('markdown-it')
 const mdAttrs = require('markdown-it-attrs')
 const mdSup = require('markdown-it-sup')
+const mime = require('mime-types')
 const path = require('path')
 const pug = require('pug')
 const stylus = require('stylus')
 const stylusAutoprefixer = require('autoprefixer-stylus')
 const uglify = require('uglify-js')
 const yaml = require('js-yaml')
-const mime = require('mime-types')
 
 
 
@@ -177,7 +178,7 @@ module.exports = class {
             // No active watchers
         }
 
-        this.watcher = chokidar.watch(this.sourceDir, { ignoreInitial: true }).on('all', (et, changedFile) => {
+        this.watcher = chokidar.watch(this.sourceDir, { ignoreInitial: true, usePolling: false, awaitWriteFinish: true }).on('all', (et, changedFile) => {
             const dirName = path.dirname(changedFile)
             const fileName = path.basename(changedFile)
             const eventType = et

@@ -14,7 +14,7 @@ let createWindow = () => {
         // fullscreen: false,
         titleBarStyle: 'hiddenInset',
         title: 'Entu SSG',
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
     })
 
     // and load the index.html of the app.
