@@ -2,13 +2,13 @@
 
 ## Benefits
 
-- Simple Pug (Jade), Markdown, Yaml static site generator.
-- Use Your favorite tools/editors.
+- Simple Pug (former Jade), Markdown, Yaml static site generator.
 - Generate static HTML files from [Pug](https://pugjs.org) templates or [Markdown](https://en.wikipedia.org/wiki/Markdown).
-- Generate site CSS from [Stylus](http://stylus-lang.com) files.
 - Pass data to templates with [Yaml](http://yaml.org) files.
-- Use locale identificator in filenames to generate locale specific content.
-- ...
+- Use locale identificator in filenames to generate locale specific content and paths.
+- Generate site CSS from [Stylus](http://stylus-lang.com) files.
+- Use Your favorite tools/editors.
+- Host it on Your own server, on [Netlify](https://www.netlify.com), on [S3](https://aws.amazon.com/s3/), on ...
 
 
 ## Installation and usage
