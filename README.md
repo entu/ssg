@@ -1,4 +1,4 @@
-# Entu SSG
+# Entu Static Site Generator
 
 ## Benefits
 
