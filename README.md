@@ -153,5 +153,3 @@ To generate page JS use __.js__ files. Global script.js is combined from all .js
     |- style.css
     +- style.css.map
 ```
-
-[![npm version](https://badge.fury.io/js/entu-ssg.svg)](https://badge.fury.io/js/entu-ssg) [![Dependency Status](https://david-dm.org/entu/entu-ssg/status.svg)](https://david-dm.org/entu/entu-ssg)
