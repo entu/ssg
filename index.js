@@ -116,7 +116,7 @@ module.exports = class {
             console.log(sourceFiles.js.length + ' .js files to render')
             console.log(sourceFiles.styl.length + ' .styl files to render\n')
 
-            async.series({
+            async.parallel({
                 html: (callback) => {
                     let buildFiles = []
                     let filesCount = sourceFiles.pug.length
