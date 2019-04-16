@@ -117,7 +117,7 @@ let template = [{
     submenu: [{
         label: 'Learn More',
         click: () => {
-            electron.shell.openExternal('http://ssg.entu.eu')
+            electron.shell.openExternal('https://entu.site')
         }
     }]
 }]

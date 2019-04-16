@@ -14,14 +14,14 @@
     "markdown",
     "yaml"
   ],
-  "homepage": "https://ssg.entu.eu",
+  "homepage": "https://entu.site",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/entu/entu-ssg.git"
+    "url": "git+https://github.com/entu/ssg.git"
   },
   "bugs": {
-    "url": "https://github.com/entu/entu-ssg/issues"
+    "url": "https://github.com/entu/ssg/issues"
   },
   "main": "electron/main.js",
   "scripts": {
