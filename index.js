@@ -112,9 +112,9 @@ module.exports = class {
                 }
             }
 
-            console.log(sourceFiles.pug.length + ' .pug folders to render')
-            console.log(sourceFiles.js.length + ' .js files to render')
-            console.log(sourceFiles.styl.length + ' .styl files to render\n')
+            console.log(`${(new Date()).toISOString()} - ${sourceFiles.pug.length} .pug folders to render`)
+            console.log(`${(new Date()).toISOString()} - ${sourceFiles.js.length} .js files to render`)
+            console.log(`${(new Date()).toISOString()} - ${sourceFiles.styl.length} .styl files to render\n`)
 
             async.parallel({
                 html: (callback) => {
