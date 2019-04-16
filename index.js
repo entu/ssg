@@ -130,7 +130,7 @@ module.exports = class {
                         const ms = Math.round(duration / filesBuilt)
                         const msToGo = (filesCount - filesBuilt) * ms
 
-                        console.log(`${filesBuilt}/${filesCount - filesBuilt} - ${Math.round(ms/10)/100}s avg (${Math.round(msToGo/10)/100}s to go) - ${source.replace(this.sourceDir, '')}`)
+                        console.log(`${(new Date()).toISOString()} - ${filesBuilt}/${filesCount - filesBuilt} - ${Math.round(ms/10)/100}s avg (${Math.round(msToGo/10)/100}s to go) - ${source.replace(this.sourceDir, '')}`)
 
                         this.makeHTML(source, (err, files) => {
                             if (err) { return callback(err) }
@@ -330,10 +330,18 @@ module.exports = class {
 
         async.parallel({
             template: (callback) => {
-                this.getTemplate(sourcePath, callback)
+                console.log(`${(new Date()).toISOString()} - getTemplate start`)
+                this.getTemplate(sourcePath, (e, d) => {
+                    console.log(`${(new Date()).toISOString()} - getTemplate end`)
+                    callback(e, d)
+                })
             },
             data: (callback) => {
-                this.getData(sourcePath, callback)
+                console.log(`${(new Date()).toISOString()} - getData start`)
+                this.getData(sourcePath, (e, d) => {
+                    console.log(`${(new Date()).toISOString()} - getData end`)
+                    callback(e, d)
+                })
             }
         }, (err, page) => {
             if (err) { return callback(err) }
@@ -376,9 +384,13 @@ module.exports = class {
                         try {
                             let buildFile = path.join(this.buildDir, buildPath, 'index.html')
 
+                            console.log(`${(new Date()).toISOString()} - compiledPug start - ${buildPath.replace(this.buildDir, '')}`)
+
                             const compiledPug = pug.compile(template.template, data)
                             const dependencies = compiledPug.dependencies.concat(data.dependencies)
                             const html = compiledPug(data)
+
+                            console.log(`${(new Date()).toISOString()} - compiledPug end - ${buildPath.replace(this.buildDir, '')}`)
 
                             fs.outputFile(buildFile, minify(html, htmlMinifyConf), (err) => {
                                 if (err) { return callback(this.parseErr(err, data.filename)) }
@@ -394,6 +406,8 @@ module.exports = class {
                                     result.dependencies = dependencies.map(v => v.replace(this.sourceDir, ''))
                                 }
                                 outputFiles.push(result)
+
+                                console.log(`${(new Date()).toISOString()} - file write end - ${buildPath.replace(this.buildDir, '')}`)
 
                                 callback(null)
                             })
@@ -707,7 +721,7 @@ module.exports = class {
         const defaultContent = {
             self: true,
             buildFile: null,
-            cache: true,
+            cache: false,
             basedir: this.sourceDir,
             disabled: false,
             locale: null,
