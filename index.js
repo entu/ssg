@@ -119,14 +119,23 @@ module.exports = class {
             async.parallel({
                 html: (callback) => {
                     let buildFiles = []
+                    let filesCount = sourceFiles.pug.length
+                    let filesBuilt = 0
+                    const startDt = new Date()
 
                     async.eachSeries(sourceFiles.pug, (source, callback) => {
-                        console.log(source)
+                        filesBuilt = filesBuilt + 1
+                        const duration = (new Date()) - startDt
+                        const ms = duration / filesBuilt
+                        const msToGo = (filesCount - filesBuilt) * ms
+                        console.log(`${filesBuilt}/${filesCount} - ${ms}ms (${Math.round(msToGo/1000)}s to go) - ${source}`)
 
                         this.makeHTML(source, (err, files) => {
                             if (err) { return callback(err) }
 
                             if (files && files.length) { buildFiles = buildFiles.concat(files) }
+
+
 
                             callback(null)
                         })
