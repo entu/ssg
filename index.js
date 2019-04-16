@@ -389,10 +389,11 @@ module.exports = class {
                             const compiledPug = pug.compile(template.template, data)
                             const dependencies = compiledPug.dependencies.concat(data.dependencies)
                             const html = compiledPug(data)
+                            const fileContent = minify(html, htmlMinifyConf)
 
                             console.log(`${(new Date()).toISOString()} - compiledPug end - ${buildPath.replace(this.buildDir, '')}`)
 
-                            fs.outputFile(buildFile, minify(html, htmlMinifyConf), (err) => {
+                            fs.outputFile(buildFile, fileContent, (err) => {
                                 if (err) { return callback(this.parseErr(err, data.filename)) }
 
                                 let result = {
