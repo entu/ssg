@@ -121,6 +121,8 @@ module.exports = class {
                     let buildFiles = []
 
                     async.eachSeries(sourceFiles.pug, (source, callback) => {
+                        console.log(source)
+
                         this.makeHTML(source, (err, files) => {
                             if (err) { return callback(err) }
 
