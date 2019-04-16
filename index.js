@@ -116,7 +116,7 @@ module.exports = class {
             console.log(sourceFiles.js.length + ' .js files to render')
             console.log(sourceFiles.styl.length + ' .styl files to render')
 
-            async.parallel({
+            async.series({
                 html: (callback) => {
                     let buildFiles = []
                     let filesCount = sourceFiles.pug.length
@@ -346,8 +346,8 @@ module.exports = class {
         }, (err, page) => {
             if (err) { return callback(err) }
 
-            async.eachOf(page.template, (template, locale, callback) => {
-                async.eachOf(page.data[locale], (data, idx, callback) => {
+            async.eachOfSeries(page.template, (template, locale, callback) => {
+                async.eachOfSeries(page.data[locale], (data, idx, callback) => {
                     if (data.disabled) { return callback(null) }
 
                     data.filename = template.filename
@@ -378,7 +378,7 @@ module.exports = class {
                         removeEmptyAttributes: true
                     }
 
-                    async.each([data.path].concat(data.aliases || []), (buildPath, callback) => {
+                    async.eachSeries([data.path].concat(data.aliases || []), (buildPath, callback) => {
                         data.alias = data.path !== buildPath ? buildPath : null
 
                         try {
@@ -432,7 +432,7 @@ module.exports = class {
         var styleComponents = []
         var outputFiles = []
 
-        async.each(sourceFiles, (stylusFile, callback) => {
+        async.eachSeries(sourceFiles, (stylusFile, callback) => {
             fs.readFile(stylusFile, 'utf8', (err, data) => {
                 if (err) { return callback([err, stylusFile]) }
 
@@ -500,7 +500,7 @@ module.exports = class {
         var jsComponents = {}
         var outputFiles = []
 
-        async.each(sourceFiles, (scriptFile, callback) => {
+        async.eachSeries(sourceFiles, (scriptFile, callback) => {
             fs.readFile(scriptFile, 'utf8', (err, data) => {
                 if (err) { return callback([err, scriptFile]) }
 
@@ -689,7 +689,7 @@ module.exports = class {
     getTemplate (folder, callback) {
         var result = {}
 
-        async.each(this.locales, (locale, callback) => {
+        async.eachSeries(this.locales, (locale, callback) => {
             var fileName = `index.${locale}.pug`
 
             fs.access(path.join(folder, fileName), fs.constants.R_OK, (err) => {
@@ -740,7 +740,7 @@ module.exports = class {
         }
         var result = {}
 
-        async.each(this.locales, (locale, callback) => {
+        async.eachSeries(this.locales, (locale, callback) => {
             var fileName = `data.${locale}.yaml`
 
             result[locale] = []
@@ -765,7 +765,7 @@ module.exports = class {
                         }
                     }
 
-                    async.each(yamlData, (data, callback) => {
+                    async.eachSeries(yamlData, (data, callback) => {
                         data = Object.assign({}, defaultContent, this.globalData[locale], data)
 
                         data.dependencies = [path.join(folder, fileName)]
@@ -784,7 +784,7 @@ module.exports = class {
                             data.path = data.path ? `/${data.locale}/${data.path}` : `/${data.locale}`
                         }
 
-                        async.eachOf(data.data, (file, key, callback) => {
+                        async.eachOfSeries(data.data, (file, key, callback) => {
                             if(file.substr(0, 1) === '/') {
                                 file = path.join(this.sourceDir, file)
                             } else {
@@ -824,7 +824,7 @@ module.exports = class {
     updateState (updatedFiles, callback) {
         if (!updatedFiles) { return callback(null) }
 
-        async.eachOf(updatedFiles, (files, type, callback) => {
+        async.eachOfSeries(updatedFiles, (files, type, callback) => {
             if (type === 'html' && this.state[type] && files && files.length > 0) {
                 this.state[type] = this.state[type].map(oldFiles => files.find(x => x.source === oldFiles.source && x.build === oldFiles.build) || oldFiles)
             } else if (files && files.length > 0) {
