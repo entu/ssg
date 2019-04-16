@@ -125,17 +125,17 @@ module.exports = class {
 
                     async.eachSeries(sourceFiles.pug, (source, callback) => {
                         filesBuilt = filesBuilt + 1
+
                         const duration = (new Date()) - startDt
-                        const ms = duration / filesBuilt
+                        const ms = Math.round(duration / filesBuilt)
                         const msToGo = (filesCount - filesBuilt) * ms
-                        console.log(`${filesBuilt}/${filesCount} - ${ms}ms (${Math.round(msToGo/1000)}s to go) - ${source}`)
+
+                        console.log(`${filesBuilt}/${filesCount - filesBuilt} - ${Math.round(ms/10)/100}s avg (${Math.round(msToGo/10)/100}s to go) - ${source.replace(this.sourceDir, '')}`)
 
                         this.makeHTML(source, (err, files) => {
                             if (err) { return callback(err) }
 
                             if (files && files.length) { buildFiles = buildFiles.concat(files) }
-
-
 
                             callback(null)
                         })
