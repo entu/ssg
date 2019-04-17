@@ -34,8 +34,9 @@ module.exports = class {
         this.sourceDir = _.get(conf, 'source') || './'
         this.buildDir = _.get(conf, 'build') || './'
         this.assetsDir = _.get(conf, 'assets') || './'
-        this.aliases = _.get(conf, 'dev.aliases') || true
+        this.aliases = _.get(conf, 'dev.aliases', true)
         this.paths = _.get(conf, 'dev.paths') || []
+        this.ignorePaths = _.get(conf, 'dev.ignorePaths') || []
         this.serverPort = _.get(conf, 'server.port') || null
         this.serverAssets = _.get(conf, 'server.assets') || '/'
         this.state = {}
@@ -53,6 +54,9 @@ module.exports = class {
         if (this.assetsDir.substr(0, 1) === '.') {
             this.assetsDir = path.resolve(path.join(path.dirname(confFile), this.assetsDir))
         }
+
+        this.paths = this.paths.map(p => path.resolve(path.join(this.sourceDir, p)))
+        this.ignorePaths = this.ignorePaths.map(p => path.resolve(path.join(this.sourceDir, p)))
 
         try {
             this.state = JSON.parse(fs.readFileSync(path.join(this.buildDir, 'build.json'), 'utf8'))
@@ -114,7 +118,7 @@ module.exports = class {
 
             console.log(`${(new Date()).toISOString()} - ${sourceFiles.pug.length} .pug folders to render`)
             console.log(`${(new Date()).toISOString()} - ${sourceFiles.js.length} .js files to render`)
-            console.log(`${(new Date()).toISOString()} - ${sourceFiles.styl.length} .styl files to render\n`)
+            console.log(`${(new Date()).toISOString()} - ${sourceFiles.styl.length} .styl files to render`)
 
             async.parallel({
                 html: (callback) => {
@@ -370,8 +374,9 @@ module.exports = class {
                         removeComments: true,
                         removeEmptyAttributes: true
                     }
+                    const paths = this.aliases ? [data.path].concat(data.aliases || []) : [data.path]
 
-                    async.eachSeries([data.path].concat(data.aliases || []), (buildPath, callback) => {
+                    async.eachSeries(paths, (buildPath, callback) => {
                         data.alias = data.path !== buildPath ? buildPath : null
 
                         try {
@@ -586,6 +591,8 @@ module.exports = class {
         }
 
         changedFiles.forEach(changedFile => {
+            if (this.isIgnoredPath(changedFile)) { return }
+
             const dirName = path.dirname(changedFile)
             const fileName = path.basename(changedFile)
 
@@ -628,6 +635,8 @@ module.exports = class {
 
         klaw(this.sourceDir).on('data', (item) => {
             if (!fs.lstatSync(item.path).isFile()) { return }
+
+            if (this.isIgnoredPath(item.path)) { return }
 
             const dirName = path.dirname(item.path)
             const fileName = path.basename(item.path)
@@ -847,5 +856,11 @@ module.exports = class {
         }
 
         return message
+    }
+
+
+
+    isIgnoredPath (path) {
+        return this.paths.length > 0 && this.paths.filter(p => path.startsWith(p)).length === 0 || this.ignorePaths.length > 0 && this.ignorePaths.filter(p => path.startsWith(p)).length !== 0
     }
 }

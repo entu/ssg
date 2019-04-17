@@ -34,6 +34,7 @@ Sites build process is configurable by Yaml file and its path must be first argu
 - __server.assets__ - Serving page in localhost will map this url to folder specified in _assets_ parameter.
 - __dev.aliases__ - Build pages aliases.
 - __dev.paths__ - List of (source) paths to build. Relative to _source_ path.
+- __dev.ignorePaths__ - List of (source) paths to ignore on build. Relative to _source_ path.
 
 ### Example build configuration file:
 
@@ -55,6 +56,8 @@ dev:
   paths:
     - test/page1
     - test/page2
+  ignorePaths:
+    - test/page3
 ```
 
 
