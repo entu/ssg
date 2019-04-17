@@ -34,13 +34,21 @@ var openConf = () => {
 
     async.waterfall([
         (callback) => {
-            git(path.dirname(confFile)).revparse(['--show-toplevel'], callback)
+            git(path.dirname(confFile)).revparse(['--show-toplevel'], (err, repo) => {
+                if(!repo) { return callback('NOGIT') }
+
+                callback(null, repo)
+            })
         },
         (repo, callback) => {
+            if(!repo) { return callback('NOGIT') }
+
             gitRepo = repo.trim()
             git(gitRepo).raw(['config', '--get', 'remote.origin.url'], callback)
         },
         (remote, callback) => {
+            if(!remote) { return callback('NOGIT') }
+
             gitRemote = remote.trim()
             git(gitRepo).branchLocal(callback)
         },
@@ -74,7 +82,7 @@ var openConf = () => {
             callback(null)
         }
     ], err => {
-        if (err) {
+        if (err && err !== 'NOGIT') {
             dialog.showMessageBox({
                 type: 'error',
                 message: err.toString(),
@@ -83,28 +91,34 @@ var openConf = () => {
                 confFile = null
                 openConfFile()
             })
+
+            return
+        } else if (err === 'NOGIT') {
+            document.getElementById('remote').innerHTML = 'No Git'
+
+            gitRepo = path.dirname(confFile)
         } else {
             document.getElementById('remote').innerHTML = gitRemote.replace('http://', '').replace('https://', '')
             document.getElementById('remote').setAttribute('title', gitRemote)
-
-            document.getElementById('repo').innerHTML = gitRepo.replace(app.getPath('home'), '~')
-            document.getElementById('repo').setAttribute('title', gitRepo)
-
-            document.getElementById('conf').innerHTML = confFile.replace(gitRepo, '.')
-            document.getElementById('conf').setAttribute('title', confFile)
-
-            document.getElementById('source').innerHTML = render.sourceDir.replace(gitRepo, '.')
-            document.getElementById('source').setAttribute('title', render.sourceDir)
-
-            document.getElementById('build').innerHTML = render.buildDir.replace(gitRepo, '.')
-            document.getElementById('build').setAttribute('title', render.buildDir)
-
-            document.getElementById('log').style.left = document.getElementById('tools').offsetWidth + 'px'
-
-            startBuild()
-            startWatch()
-            startServe()
         }
+
+        document.getElementById('repo').innerHTML = gitRepo.replace(app.getPath('home'), '~')
+        document.getElementById('repo').setAttribute('title', gitRepo)
+
+        document.getElementById('conf').innerHTML = confFile.replace(gitRepo, '.')
+        document.getElementById('conf').setAttribute('title', confFile)
+
+        document.getElementById('source').innerHTML = render.sourceDir.replace(gitRepo, '.')
+        document.getElementById('source').setAttribute('title', render.sourceDir)
+
+        document.getElementById('build').innerHTML = render.buildDir.replace(gitRepo, '.')
+        document.getElementById('build').setAttribute('title', render.buildDir)
+
+        document.getElementById('log').style.left = document.getElementById('tools').offsetWidth + 'px'
+
+        startBuild()
+        startWatch()
+        startServe()
     })
 }
 
