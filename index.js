@@ -143,8 +143,8 @@ module.exports = class {
                     }, (err) => {
                         if (err) { return callback(err) }
 
-                        const duration = (new Date()).getTime() - startDate.getTime()
-                        console.log(`${(new Date()).toISOString()} - ${(new Date(duration)).toISOString().substr(11, 8)} - ${buildFiles.length} .html files created - ${(buildFiles.length / duration).toFixed(2)}fps`)
+                        const duration = (new Date()) - startDate
+                        console.log(`${(new Date()).toISOString()} - ${(new Date(duration)).toISOString().substr(11, 8)} - ${buildFiles.length} .html files created - ${(buildFiles.length / (duration / 1000)).toFixed(2)}fps`)
 
                         callback(null, buildFiles || [])
                     })
@@ -153,8 +153,8 @@ module.exports = class {
                     this.makeJS(sourceFiles.js, (err, files) => {
                         if (err) { return callback(err) }
 
-                        const duration = (new Date()).getTime() - startDate.getTime()
-                        console.log(`${(new Date()).toISOString()} - ${(new Date(duration)).toISOString().substr(11, 8)} - ${files.length} .js files created - ${(files.length / duration).toFixed(2)}fps`)
+                        const duration = (new Date()) - startDate
+                        console.log(`${(new Date()).toISOString()} - ${(new Date(duration)).toISOString().substr(11, 8)} - ${files.length} .js files created - ${(files.length / (duration / 1000)).toFixed(2)}fps`)
 
                         callback(null, files || [])
                     })
@@ -163,8 +163,8 @@ module.exports = class {
                     this.makeCSS(sourceFiles.styl, (err, files) => {
                         if (err) { return callback(err) }
 
-                        const duration = (new Date()).getTime() - startDate.getTime()
-                        console.log(`${(new Date()).toISOString()} - ${(new Date(duration)).toISOString().substr(11, 8)} - ${files.length} .css files created - ${(files.length / duration).toFixed(2)}fps`)
+                        const duration = (new Date()) - startDate
+                        console.log(`${(new Date()).toISOString()} - ${(new Date(duration)).toISOString().substr(11, 8)} - ${files.length} .css files created - ${(files.length / (duration / 1000)).toFixed(2)}fps`)
 
                         callback(null, files || [])
                     })
