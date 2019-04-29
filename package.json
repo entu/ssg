@@ -29,6 +29,9 @@
     "start": "electron electron/main.js",
     "pack": "electron-packager . --overwrite --asar --out=release"
   },
+  "bin": {
+    "ssg": "build.js"
+  },
   "dependencies": {
     "async": "2.6.2",
     "autoprefixer-stylus": "0.14.0",
