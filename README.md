@@ -24,6 +24,9 @@
     $ ./build.js ./my-page/entu-ssg-config.yaml full
     ```
 
+### Local development
+
+MacOS and Windows applications for local development are downloadable from [github.com/entu/ssg-app](https://github.com/entu/ssg-app/releases/latest).
 
 ### Configuration
 
