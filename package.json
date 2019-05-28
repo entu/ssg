@@ -1,7 +1,7 @@
 {
   "name": "entu-ssg",
   "productName": "Entu SSG",
-  "version": "4.5.1",
+  "version": "5.0.0",
   "author": "Argo Roots <argo@roots.ee>",
   "description": "Simple Pug (Jade), Markdown, Yaml static site generator",
   "keywords": [
@@ -23,11 +23,9 @@
   "bugs": {
     "url": "https://github.com/entu/ssg/issues"
   },
-  "main": "electron/main.js",
+  "main": "index.js",
   "scripts": {
-    "build": "node build.js",
-    "start": "electron electron/main.js",
-    "pack": "electron-packager . --overwrite --asar --out=release"
+    "build": "node build.js"
   },
   "bin": {
     "ssg": "build.js"
@@ -49,12 +47,7 @@
     "markdown-it-sup": "1.0.0",
     "pug": "2.0.3",
     "request": "2.88.0",
-    "simple-git": "1.113.0",
     "stylus": "0.54.5",
     "uglify-js": "3.5.15"
-  },
-  "devDependencies": {
-    "electron": "4.1.4",
-    "electron-packager": "13.1.1"
   }
 }
