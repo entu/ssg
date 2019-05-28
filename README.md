@@ -15,9 +15,14 @@
 
 1. Download [latest build](https://github.com/entu/entu-ssg/releases/latest)
 2. Run:
-```
-    ./build.js ./my-page/entu-ssg-config.yaml
-```
+    ```shell
+    $ ./build.js ./my-page/entu-ssg-config.yaml
+    ```
+
+    If source folder is Git repository Entu SSG runs incremental build (based on Git changes since last commit). To run full build use **full** as second parameter.
+    ```shell
+    $ ./build.js ./my-page/entu-ssg-config.yaml
+    ```
 
 
 ### Configuration
@@ -38,7 +43,7 @@ Sites build process is configurable by Yaml file and its path must be first argu
 
 ### Example build configuration file:
 
-```
+```yaml
 locales:
   - en
   - et
@@ -81,7 +86,7 @@ Some page parameters will change how HTML is generated. Those are:
 
 ### Example page data.yaml:
 
-```
+```yaml
 path: /testpage1
 aliases:
   - /test
