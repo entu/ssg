@@ -19,9 +19,9 @@
     $ ./build.js ./my-page/entu-ssg-config.yaml
     ```
 
-    If source folder is Git repository Entu SSG runs incremental build (based on Git changes since last commit). To run full build use **full** as second parameter.
+    If source folder is Git repository Entu SSG runs incremental build (based on Git changes since last commit). To run full build use **full** as second parameter:
     ```shell
-    $ ./build.js ./my-page/entu-ssg-config.yaml
+    $ ./build.js ./my-page/entu-ssg-config.yaml full
     ```
 
 
