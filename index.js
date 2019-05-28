@@ -10,6 +10,7 @@ const klaw = require('klaw')
 const md = require('markdown-it')
 const mdAttrs = require('markdown-it-attrs')
 const mdSup = require('markdown-it-sup')
+const mdTable = require('markdown-it-multimd-table')
 const mime = require('mime-types')
 const path = require('path')
 const pug = require('pug')
@@ -733,7 +734,12 @@ module.exports = class {
             dependencies: [],
             md: (text) => {
                 if (text) {
-                    return md({ breaks: true, html: true }).use(mdSup).use(mdAttrs).render(text).replace(/\r?\n|\r/g, '')
+                    return md({ breaks: true, html: true })
+                        .use(mdTable, { enableMultilineRows: true, enableRowspan: true })
+                        .use(mdSup)
+                        .use(mdAttrs)
+                        .render(text)
+                        .replace(/\r?\n|\r/g, '')
                 } else {
                     return ''
                 }
