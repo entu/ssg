@@ -354,6 +354,7 @@ module.exports = class {
                     this.locales.forEach((otherLocale) => {
                         if (!page.template[locale]) { return }
                         if (otherLocale === data.locale) { return }
+                        if (!page.data[otherLocale]) { return }
                         if (!page.data[otherLocale][idx]) { return }
                         if (page.data[otherLocale][idx].disabled) { return }
 
@@ -760,16 +761,19 @@ module.exports = class {
                 fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
                     var yamlData = [{}]
 
-                    if (!err) {
-                        try {
-                            yamlData = yaml.safeLoad(data)
+                    if (err) {
+                        delete result[locale]
+                        return callback(null)
+                    }
 
-                            if (!Array.isArray(yamlData)) {
-                                yamlData = [yamlData]
-                            }
-                        } catch (err) {
-                            return callback(this.parseErr(err, path.join(folder, fileName)))
+                    try {
+                        yamlData = yaml.safeLoad(data)
+
+                        if (!Array.isArray(yamlData)) {
+                            yamlData = [yamlData]
                         }
+                    } catch (err) {
+                        return callback(this.parseErr(err, path.join(folder, fileName)))
                     }
 
                     async.eachSeries(yamlData, (data, callback) => {
