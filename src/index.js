@@ -383,20 +383,21 @@ module.exports = class {
 
                         try {
                             let buildFile = path.join(this.buildDir, buildPath, 'index.html')
+                            const dataToTemplate = Object.create(data)
 
-                            const compiledPug = pug.compile(template.template, data)
-                            const dependencies = compiledPug.dependencies.concat(data.dependencies)
-                            const html = compiledPug(data)
+                            const compiledPug = pug.compile(template.template, dataToTemplate)
+                            const dependencies = compiledPug.dependencies.concat(dataToTemplate.dependencies)
+                            const html = compiledPug(dataToTemplate)
                             const fileContent = minify(html, htmlMinifyConf)
 
                             fs.outputFile(buildFile, fileContent, (err) => {
-                                if (err) { return callback(this.parseErr(err, data.filename)) }
+                                if (err) { return callback(this.parseErr(err, dataToTemplate.filename)) }
 
                                 let result = {
                                     source: template.filename.replace(this.sourceDir, ''),
                                     build: buildFile.replace(this.buildDir, ''),
                                 }
-                                if (data.path !== buildPath) {
+                                if (dataToTemplate.path !== buildPath) {
                                     result.alias = true
                                 }
                                 if (dependencies.length > 0) {
