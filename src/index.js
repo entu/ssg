@@ -352,7 +352,7 @@ module.exports = class {
 
                     let otherLocalePaths = {}
                     this.locales.forEach((otherLocale) => {
-                        if (!page.template[locale]) { return }
+                        if (!page.template[otherLocale]) { return }
                         if (otherLocale === data.locale) { return }
                         if (!page.data[otherLocale]) { return }
                         if (!page.data[otherLocale][idx]) { return }
