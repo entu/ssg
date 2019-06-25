@@ -836,25 +836,36 @@ module.exports = class {
     updateState (updatedFiles, callback) {
         if (!updatedFiles) { return callback(null) }
 
-        async.eachOfSeries(updatedFiles, (files, type, callback) => {
-            if (type === 'html' && this.state[type] && files && files.length > 0) {
-                this.state[type] = this.state[type].map(oldFiles => files.find(x => x.source === oldFiles.source && x.build === oldFiles.build) || oldFiles)
-            } else if (files && files.length > 0) {
-                this.state[type] = files
+        if (updatedFiles.css && updatedFiles.css.length > 0) {
+            this.state.css = updatedFiles.css
+        }
+
+        if (updatedFiles.js && updatedFiles.js.length > 0) {
+            this.state.js = updatedFiles.js
+        }
+
+        if (updatedFiles.html && updatedFiles.html.length > 0) {
+            if (!this.state.html) {
+                this.state.html = []
             }
+            updatedFiles.html.forEach(newFile => {
+                if (this.state.html.find(oldFile => oldFile.source === newFile.source && oldFile.build === newFile.build)) {
+                    this.state.html = this.state.html.map(oldFile => (oldFile.source === newFile.source && oldFile.build === newFile.build) ? newFile : oldFile)
+                } else {
+                    this.state.html.push(newFile)
+                }
+            })
+        }
 
-            callback(null)
-        }, err => {
-            this.state.date = (new Date()).toISOString()
+        this.state.date = (new Date()).toISOString()
 
-            try {
-                this.state.commit = require('child_process').execSync(`git -C "${this.sourceDir}" rev-parse HEAD`).toString().trim()
-            } catch (e) {
-                console.error(`Can\'t get last commit.`)
-            }
+        try {
+            this.state.commit = require('child_process').execSync(`git -C "${this.sourceDir}" rev-parse HEAD`).toString().trim()
+        } catch (e) {
+            console.error(`Can\'t get last commit.`)
+        }
 
-            fs.outputFile(path.join(this.buildDir, 'build.json'), JSON.stringify(this.state), callback)
-        })
+        fs.outputFile(path.join(this.buildDir, 'build.json'), JSON.stringify(this.state), callback)
     }
 
 
