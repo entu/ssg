@@ -41,7 +41,7 @@
     "jstransformer-markdown-it": "2.1.0",
     "jstransformer-stylus": "1.5.0",
     "klaw": "3.0.0",
-    "lodash": "4.17.11",
+    "lodash": "4.17.13",
     "markdown-it": "8.4.2",
     "markdown-it-attrs": "2.4.1",
     "markdown-it-multimd-table": "3.2.0-rc.1",
