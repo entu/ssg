@@ -78,7 +78,7 @@ module.exports = class {
                     this.globalDataFile[locale] = path.join(this.sourceDir, `global.yaml`)
                     this.globalData[locale] = yaml.safeLoad(fs.readFileSync(this.globalDataFile[locale], 'utf8'))
                 } catch (err) {
-                    // No global data
+                    this.globalDataFile[locale] = null
                 }
             }
         })
