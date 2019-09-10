@@ -105,13 +105,17 @@ someOtherData:
   - B
 ```
 
-### Page style - style.styl
+### Page inline style - style.styl
 
-To generate page CSS use __.styl__ files. Global style.css is combined from all .styl files (from source folder) and saved to build's root folder (like /style.css).
+For inserting inline CSS to individual pages use __style.styl__ file in page's folder. Generated style is inserted just before `</head>` tag.
 
-### Page scripts - script.js
+You can put locale identificator to filename (like __style.en.styl__) for locale speciffic style.
 
-To generate page JS use __.js__ files. Global script.js is combined from all .js files (from source folder) and saved to build's root folder (like /script.js).
+### Page inline scripts - script.js
+
+For inserting inline JS to individual pages use __.js__ file in page's folder. Generated script is inserted just before `</body>` tag.
+
+You can put locale identificator to filename (like script.en.js) for locale speciffic script.
 
 ## On build ...
 
@@ -139,10 +143,12 @@ To generate page JS use __.js__ files. Global script.js is combined from all .js
     |   |- data.yaml
     |   |- index.en.pug
     |   |- index.et.pug
+    |   |- style.styl
     |   |
     |   +- testpage2en
     |       |- data.en.yaml
-    |       +- index.en.pug
+    |       |- index.en.pug
+    |       +- script.en.js
     |
     |- data.yaml
     |- global.yaml

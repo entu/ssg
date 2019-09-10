@@ -348,6 +348,12 @@ module.exports = class {
             },
             data: (callback) => {
                 this.getData(sourcePath, callback)
+            },
+            js: (callback) => {
+                this.getJs(sourcePath, callback)
+            },
+            styl: (callback) => {
+                this.getStyl(sourcePath, callback)
             }
         }, (err, page) => {
             if (err) { return callback(err) }
@@ -395,7 +401,18 @@ module.exports = class {
 
                             const compiledPug = pug.compile(template.template, dataToTemplate)
                             const dependencies = compiledPug.dependencies.concat(dataToTemplate.dependencies)
-                            const html = compiledPug(dataToTemplate)
+                            let html = compiledPug(dataToTemplate)
+
+                            if (_.has(page, ['js', locale, 'filename'])) {
+                                html = html.replace('</body>', `<script>${_.get(page, ['js', locale, 'js'])}</script></body>`)
+                                dependencies.push(_.get(page, ['js', locale, 'filename']))
+                            }
+                            if (_.has(page, ['styl', locale, 'filename'])) {
+                                const styl = stylus(_.get(page, ['styl', locale, 'styl'])).use(stylusAutoprefixer()).render()
+                                html = html.replace('</head>', `<style>${styl}</style></head>`)
+                                dependencies.push(_.get(page, ['styl', locale, 'filename']))
+                            }
+
                             const fileContent = minify(html, htmlMinifyConf)
 
                             fs.outputFile(buildFile, fileContent, (err) => {
@@ -452,7 +469,6 @@ module.exports = class {
             const cssFile = path.join(this.buildDir, 'style.css')
             const styl = stylus(styleComponents.join('\n\n'))
                 .use(stylusAutoprefixer())
-                .set('warn', false)
                 .set('compress', true)
                 .set('paths', [this.sourceDir])
                 .set('filename', 'style.css')
@@ -853,6 +869,68 @@ module.exports = class {
                             callback(null)
                         })
                     }, callback)
+                })
+            })
+        }, (err) => {
+            if (err) { return callback(err) }
+
+            callback(null, result)
+        })
+    }
+
+
+
+    getJs (folder, callback) {
+        var result = {}
+
+        async.eachSeries(this.locales, (locale, callback) => {
+            var fileName = `script.${locale}.js`
+
+            fs.access(path.join(folder, fileName), fs.constants.R_OK, (err) => {
+                if (err) {
+                    fileName = 'script.js'
+                }
+
+                fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
+                    if (!err) {
+                        result[locale] = {
+                            filename: path.join(folder, fileName),
+                            js: data
+                        }
+                    }
+
+                    callback(null)
+                })
+            })
+        }, (err) => {
+            if (err) { return callback(err) }
+
+            callback(null, result)
+        })
+    }
+
+
+
+    getStyl (folder, callback) {
+        var result = {}
+
+        async.eachSeries(this.locales, (locale, callback) => {
+            var fileName = `style.${locale}.styl`
+
+            fs.access(path.join(folder, fileName), fs.constants.R_OK, (err) => {
+                if (err) {
+                    fileName = 'style.styl'
+                }
+
+                fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
+                    if (!err) {
+                        result[locale] = {
+                            filename: path.join(folder, fileName),
+                            styl: data
+                        }
+                    }
+
+                    callback(null)
                 })
             })
         }, (err) => {
