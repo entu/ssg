@@ -33,6 +33,8 @@ module.exports = class {
         this.locales = _.get(conf, 'locales') || ['']
         this.defaultLocale = _.get(conf, 'defaultLocale') || null
         this.sourceDir = _.get(conf, 'source') || './'
+        this.sourceDirJs = _.get(conf, 'js') || './'
+        this.sourceDirStyl = _.get(conf, 'styl') || './'
         this.buildDir = _.get(conf, 'build') || './'
         this.assetsDir = _.get(conf, 'assets') || './'
         this.aliases = _.get(conf, 'dev.aliases', true)
@@ -48,6 +50,12 @@ module.exports = class {
         // Paths are relative to config file path
         if (this.sourceDir.substr(0, 1) === '.') {
             this.sourceDir = path.resolve(path.join(path.dirname(confFile), this.sourceDir))
+        }
+        if (this.sourceDirJs.substr(0, 1) === '.') {
+            this.sourceDirJs = path.resolve(path.join(path.dirname(confFile), this.sourceDirJs))
+        }
+        if (this.sourceDirStyl.substr(0, 1) === '.') {
+            this.sourceDirStyl = path.resolve(path.join(path.dirname(confFile), this.sourceDirStyl))
         }
         if (this.buildDir.substr(0, 1) === '.') {
             this.buildDir = path.resolve(path.join(path.dirname(confFile), this.buildDir))
@@ -632,45 +640,68 @@ module.exports = class {
 
 
     getAllSourceFiles (callback) {
-        var sourcePugFiles= []
-        var sourceJsFiles= []
-        var sourceStylusFiles= []
+        async.parallel({
+            pug: (callback) => {
+                var sourcePugFiles= []
 
-        klaw(this.sourceDir).on('data', (item) => {
-            if (!fs.lstatSync(item.path).isFile()) { return }
+                klaw(this.sourceDir).on('data', (item) => {
+                    if (!fs.lstatSync(item.path).isFile()) { return }
+                    if (this.isIgnoredPath(item.path)) { return }
 
-            if (this.isIgnoredPath(item.path)) { return }
+                    const dirName = path.dirname(item.path)
+                    const fileName = path.basename(item.path)
 
-            const dirName = path.dirname(item.path)
-            const fileName = path.basename(item.path)
+                    if (!fileName.startsWith('index.') || !fileName.endsWith('.pug')) { return }
 
-            if (fileName.startsWith('_')) { return }
-            if (!fileName.endsWith('.pug') && !fileName.endsWith('.js') && !fileName.endsWith('.styl')) { return }
+                    sourcePugFiles.push(dirName)
+                }).on('end', () => {
+                    sourcePugFiles = _.uniq(sourcePugFiles)
+                    sourcePugFiles.sort()
 
-            if (fileName.startsWith('index.') && fileName.endsWith('.pug')) {
-                sourcePugFiles.push(dirName)
+                    callback(null, sourcePugFiles)
+                })
+            },
+            js: (callback) => {
+                var sourceJsFiles= []
+
+                klaw(this.sourceDirJs).on('data', (item) => {
+                    if (!fs.lstatSync(item.path).isFile()) { return }
+                    if (this.isIgnoredPath(item.path)) { return }
+
+                    const dirName = path.dirname(item.path)
+                    const fileName = path.basename(item.path)
+
+                    if (fileName.startsWith('_') || !fileName.endsWith('.js')) { return }
+
+                    sourceJsFiles.push(item.path)
+                }).on('end', () => {
+                    sourceJsFiles = _.uniq(sourceJsFiles)
+                    sourceJsFiles.sort()
+
+                    callback(null, sourceJsFiles)
+                })
+            },
+            styl: (callback) => {
+                var sourceStylusFiles= []
+
+                klaw(this.sourceDirStyl).on('data', (item) => {
+                    if (!fs.lstatSync(item.path).isFile()) { return }
+                    if (this.isIgnoredPath(item.path)) { return }
+
+                    const dirName = path.dirname(item.path)
+                    const fileName = path.basename(item.path)
+
+                    if (fileName.startsWith('_') || !fileName.endsWith('.styl')) { return }
+
+                    sourceStylusFiles.push(item.path)
+                }).on('end', () => {
+                    sourceStylusFiles = _.uniq(sourceStylusFiles)
+                    sourceStylusFiles.sort()
+
+                    callback(null, sourceStylusFiles)
+                })
             }
-            if (fileName.endsWith('.js')) {
-                sourceJsFiles.push(item.path)
-            }
-            if (fileName.endsWith('.styl')) {
-                sourceStylusFiles.push(item.path)
-            }
-        }).on('end', () => {
-            sourcePugFiles = _.uniq(sourcePugFiles)
-            sourceJsFiles = _.uniq(sourceJsFiles)
-            sourceStylusFiles = _.uniq(sourceStylusFiles)
-
-            sourcePugFiles.sort()
-            sourceJsFiles.sort()
-            sourceStylusFiles.sort()
-
-            callback(null, {
-                pug: sourcePugFiles,
-                js: sourceJsFiles,
-                styl: sourceStylusFiles
-            })
-        })
+        }, callback)
     }
 
 

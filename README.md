@@ -34,7 +34,9 @@ Sites build process is configurable by Yaml file and its path must be first argu
 
 - __locales__ - List of locale folders to generate. You can put locale identificator to filename (like index.en.pug or data.et.yaml) for locale speciffic content.
 - __defaultLocale__ - If set, page paths in this locale will not get locale prefix (_/en/about_ will be just _/about_).
-- __source__ - Folder with source files (realtive to build config.yaml). Folders beginning with underscore are ignored.
+- __source__ - Folder with source files (realtive to build config.yaml).
+- __js__ - Folder with source JavaScript files (realtive to build config.yaml). Files will be combined to _script.js_ file in build folder.
+- __styl__ - Folder with Stylus files (realtive to build config.yaml). Files will be converted and combined to _style.css_ file in build folder.
 - __build__ - Folder to put generated HTML (realtive to build config.yaml).
 - __assets__ - Folder with static assets (JS, images, ...).
 - __protectedFromCleanup__ - List of paths what is not deleted if _build.sh_ is ran with _cleanup_ parameter. Relative to _build_ path.
@@ -51,6 +53,8 @@ locales:
   - en
   - et
 source: ./source
+js: ./source/_scripts
+styl: ./source/_styles
 build: ./build
 assets: ./assets
 protectedFromCleanup:
@@ -115,27 +119,34 @@ To generate page JS use __.js__ files. Global script.js is combined from all .js
 
 ```
 - source
+    |- _scripts
+    |   |- somescript.js
+    |   +- somescript2.js
+    |
+    |- _styles
+    |   +- style.styl
+    |
     |- _templates
     |   |- layout.pug
-    |   |- mixins.pug
-    |   +- somescripts.js
+    |   +- mixins.pug
     |
     |- testpage1
     |   |- data.en.yaml
     |   |- data.et.yaml
-    |   |- index.pug
-    |   +- style.et.styl
+    |   +- index.pug
     |
     |- testpage2
+    |   |- data.yaml
     |   |- index.en.pug
     |   |- index.et.pug
-    |   |- data.yaml
+    |   |
     |   +- testpage2en
-    |       |- index.en.pug
-    |       +- data.en.yaml
+    |       |- data.en.yaml
+    |       +- index.en.pug
     |
-    |- index.pug
-    +- style.styl
+    |- data.yaml
+    |- global.yaml
+    +- index.pug
 ```
 
 ### ... will be converted to build folder like this
@@ -159,6 +170,7 @@ To generate page JS use __.js__ files. Global script.js is combined from all .js
     |   |
     |   +- testpage2
     |       +- index.html
+    |
     |- script.js
     |- script.js.map
     |- style.css
