@@ -1,1 +1,1 @@
-{"css":[{"build":"/style.css","dependencies":["/style.styl"]},{"build":"/style.css.map","dependencies":["/style.styl"],"alias":true}],"html":[{"source":"/index.pug","build":"/index.html","dependencies":["/Users/argo/Git/entu/ssg/README.md","/data.yaml","/global.yaml"]}],"date":"2019-05-29T08:33:23.831Z","commit":"3a3eb767fb4fe818e89706f044dca6f30b316edf"}
+{"html":[{"source":"/index.pug","build":"/index.html","dependencies":["/Users/argo/Git/entu/ssg/README.md","/data.yaml","/style.styl"]}],"date":"2019-09-10T11:35:09.652Z","commit":"ab23ce65f6e0d9c8d3059719db973ccd91c49a83"}

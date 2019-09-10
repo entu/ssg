@@ -10,7 +10,6 @@ html(lang='en')
         link(href='https://cdn.jsdelivr.net/gh/twbs/bootstrap@3/dist/css/bootstrap.min.css', rel='stylesheet', type='text/css')
         link(href='https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v0/dist/bootstrap-toc.min.css', rel='stylesheet', type='text/css')
         link(href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9/build/styles/monokai-sublime.min.css', rel='stylesheet', type='text/css')
-        link(href='style.css', rel='stylesheet', type='text/css')
 
     body(data-spy='scroll', data-target='#toc')
         .container-fluid
@@ -26,4 +25,4 @@ html(lang='en')
         script(src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9/build/highlight.min.js')
         script(src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9/build/languages/yaml.min.js')
         script.
-          hljs.initHighlightingOnLoad();
+            hljs.initHighlightingOnLoad()
