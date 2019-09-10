@@ -33,8 +33,8 @@ module.exports = class {
         this.locales = _.get(conf, 'locales') || ['']
         this.defaultLocale = _.get(conf, 'defaultLocale') || null
         this.sourceDir = _.get(conf, 'source') || './'
-        this.sourceDirJs = _.get(conf, 'js') || './'
-        this.sourceDirStyl = _.get(conf, 'styl') || './'
+        this.sourceDirJs = _.get(conf, 'js')
+        this.sourceDirStyl = _.get(conf, 'styl')
         this.buildDir = _.get(conf, 'build') || './'
         this.assetsDir = _.get(conf, 'assets') || './'
         this.aliases = _.get(conf, 'dev.aliases', true)
@@ -51,10 +51,10 @@ module.exports = class {
         if (this.sourceDir.substr(0, 1) === '.') {
             this.sourceDir = path.resolve(path.join(path.dirname(confFile), this.sourceDir))
         }
-        if (this.sourceDirJs.substr(0, 1) === '.') {
+        if (this.sourceDirJs && this.sourceDirJs.substr(0, 1) === '.') {
             this.sourceDirJs = path.resolve(path.join(path.dirname(confFile), this.sourceDirJs))
         }
-        if (this.sourceDirStyl.substr(0, 1) === '.') {
+        if (this.sourceDirStyl && this.sourceDirStyl.substr(0, 1) === '.') {
             this.sourceDirStyl = path.resolve(path.join(path.dirname(confFile), this.sourceDirStyl))
         }
         if (this.buildDir.substr(0, 1) === '.') {
@@ -658,7 +658,7 @@ module.exports = class {
     getAllSourceFiles (callback) {
         async.parallel({
             pug: (callback) => {
-                var sourcePugFiles= []
+                var sourcePugFiles = []
 
                 klaw(this.sourceDir).on('data', (item) => {
                     if (!fs.lstatSync(item.path).isFile()) { return }
@@ -678,7 +678,9 @@ module.exports = class {
                 })
             },
             js: (callback) => {
-                var sourceJsFiles= []
+                var sourceJsFiles = []
+
+                if (!this.sourceDirJs) { return callback(null, sourceJsFiles) }
 
                 klaw(this.sourceDirJs).on('data', (item) => {
                     if (!fs.lstatSync(item.path).isFile()) { return }
@@ -698,7 +700,9 @@ module.exports = class {
                 })
             },
             styl: (callback) => {
-                var sourceStylusFiles= []
+                var sourceStylusFiles = []
+
+                if (!this.sourceDirStyl) { return callback(null, sourceStylusFiles) }
 
                 klaw(this.sourceDirStyl).on('data', (item) => {
                     if (!fs.lstatSync(item.path).isFile()) { return }
