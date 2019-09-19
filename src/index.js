@@ -796,7 +796,8 @@ module.exports = class {
                 } else {
                     return ''
                 }
-            }
+            },
+            env: process.env
         }
         var result = {}
 
