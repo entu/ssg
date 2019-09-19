@@ -1,7 +1,7 @@
 {
   "name": "entu-ssg",
   "productName": "Entu SSG",
-  "version": "5.1.0",
+  "version": "5.2.0",
   "author": "Argo Roots <argo@roots.ee>",
   "description": "Simple Pug (Jade), Markdown, Yaml static site generator",
   "keywords": [
@@ -26,6 +26,7 @@
   "main": "src/index.js",
   "scripts": {
     "build": "node src/build.js",
+    "serve": "node src/serve.js",
     "docs": "node src/build.js docs/source/config.yaml full"
   },
   "bin": {

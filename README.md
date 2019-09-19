@@ -16,17 +16,20 @@
 1. Download [latest build](https://github.com/entu/entu-ssg/releases/latest)
 2. Run:
     ```shell
-    $ ./build.js ./my-page/entu-ssg-config.yaml
+    $ npm run build /path-to-my-page/entu-ssg-config.yaml
     ```
 
     If source folder is Git repository Entu SSG runs incremental build (based on Git changes since last commit). To run full build use **full** as second parameter:
     ```shell
-    $ ./build.js ./my-page/entu-ssg-config.yaml full
+    $ npm run build /path-to-my-page/entu-ssg-config.yaml full
     ```
 
 ### Local development
 
-MacOS and Windows applications for local development are downloadable from [github.com/entu/ssg-app](https://github.com/entu/ssg-app/releases/latest).
+MacOS and Windows GUI for local development are downloadable from [github.com/entu/ssg-app](https://github.com/entu/ssg-app/releases/latest). Or run (for full build use **full** as second parameter):
+```shell
+$ npm run serve /path-to-my-page/entu-ssg-config.yaml
+```
 
 ### Configuration
 
