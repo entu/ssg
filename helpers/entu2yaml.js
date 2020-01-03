@@ -36,7 +36,7 @@ request({
     if (error) { console.error(error) }
     if (response.statusCode !== 200) { console.error(body) }
 
-    let token = _.get(body, [ENTU_DB, 'token'], '')
+    let token = body.find(x => x.account === ENTU_DB).token
     let qs = {
         limit: 1000
     }
