@@ -25,7 +25,6 @@ render.build(fullRun, err => {
 render.serve((err) => {
     if (err) {
         console.error(`\nERROR:\n${err.message || err.stack || err}\n`)
-        process.exit(1)
     } else {
         console.log(`Server started - http://localhost:${render.serverPort}`)
     }
