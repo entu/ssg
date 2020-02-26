@@ -792,7 +792,6 @@ module.exports = class {
                         .use(mdSup)
                         .use(mdAttrs)
                         .render(text)
-                        .replace(/\r?\n|\r/g, '')
                 } else {
                     return ''
                 }

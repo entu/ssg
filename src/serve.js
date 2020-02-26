@@ -24,7 +24,7 @@ render.build(fullRun, err => {
 
 render.serve((err) => {
     if (err) {
-        console.error(`\nERROR:\n${err.message || err.stack || err}\n`)
+        console.error(`\nERROR: ${JSON.stringify(err, null, 2)}\n`)
     } else {
         console.log(`Server started - http://localhost:${render.serverPort}`)
     }
