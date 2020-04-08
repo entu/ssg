@@ -788,7 +788,7 @@ module.exports = class {
             md: (text) => {
                 if (text) {
                     return md({ breaks: true, html: true })
-                        .use(mdTable, { enableMultilineRows: true, enableRowspan: true })
+                        .use(mdTable, { multiline: true, rowspan: true, headerless: true })
                         .use(mdSup)
                         .use(mdAttrs)
                         .render(text)
