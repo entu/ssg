@@ -1,7 +1,7 @@
 {
   "name": "entu-ssg",
   "productName": "Entu SSG",
-  "version": "5.2.4",
+  "version": "5.2.5",
   "author": "Argo Roots <argo@roots.ee>",
   "description": "Simple Pug (Jade), Markdown, Yaml static site generator",
   "keywords": [
@@ -35,7 +35,7 @@
   "dependencies": {
     "async": "3.2.0",
     "autoprefixer-stylus": "1.0.0",
-    "chokidar": "3.3.1",
+    "chokidar": "3.4.0",
     "fs-extra": "9.0.0",
     "html-minifier": "4.0.0",
     "js-yaml": "3.13.1",
@@ -50,6 +50,6 @@
     "pug": "2.0.4",
     "request": "2.88.2",
     "stylus": "0.54.7",
-    "uglify-js": "3.8.1"
+    "uglify-js": "3.9.1"
   }
 }
