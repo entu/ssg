@@ -94,6 +94,15 @@ Some page parameters will change how HTML is generated. Those are:
 - __aliases__ - List of path aliases. Will make redirekt urls to original path.
 - __data__ - Files to load data from. This data is passed to index.pug in object named _self.data_. You can use relative path (./ or ../). If used, it's relative to _data.yaml_ file. Root (/) path is Your source folder (set in _config.yaml_).
 
+Some additional parameters are passed to template in _self_ object. Those are:
+- __locale__ - Page's locale.
+- __defaultLocale__ - Default locale from config Yaml file.
+- __path__ - Page's path. If alias is generated, then this is page's path and not alias.
+- __alias__ - Returns true if page is alias.
+- __otherLocalePaths__ - Object of links to same page in other locales.
+- __md__ - Function to render [Markdown](https://en.wikipedia.org/wiki/Markdown). Expects string as input.
+- __env__ - Object of environment parameters.
+
 ### Example page data.yaml:
 
 ```yaml
