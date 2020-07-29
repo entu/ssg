@@ -13,16 +13,15 @@
 
 ## Installation and usage
 
-1. Download [latest build](https://github.com/entu/entu-ssg/releases/latest)
-2. Run:
-    ```shell
-    $ npm run build /path-to-my-page/entu-ssg-config.yaml
-    ```
+Download [latest build](https://github.com/entu/entu-ssg/releases/latest) and run:
+```shell
+$ npm run build /path-to-my-page/entu-ssg-config.yaml
+```
 
-    If source folder is Git repository Entu SSG runs incremental build (based on Git changes since last commit). To run full build use **full** as second parameter:
-    ```shell
-    $ npm run build /path-to-my-page/entu-ssg-config.yaml full
-    ```
+If source folder is Git repository Entu SSG runs incremental build (based on Git changes since last commit). To run full build use **full** as second parameter:
+```shell
+$ npm run build /path-to-my-page/entu-ssg-config.yaml full
+```
 
 ### Local development
 
@@ -31,11 +30,11 @@ MacOS and Windows GUI for local development are downloadable from [github.com/en
 $ npm run serve /path-to-my-page/entu-ssg-config.yaml
 ```
 
-### Configuration
+## Configuration
 
 Sites build process is configurable by Yaml file and its path must be first argument for entu-ssg.js. Required parameters are:
 
-- __locales__ - List of locale folders to generate. You can put locale identificator to filename (like index.en.pug or data.et.yaml) for locale speciffic content.
+- __locales__ - List of locale folders to generate. You can put locale identificator to filename (like index.en.pug or data.et.yaml) for locale specific content.
 - __defaultLocale__ - If set, page paths in this locale will not get locale prefix (_/en/about_ will be just _/about_).
 - __source__ - Folder with source files (realtive to build config.yaml).
 - __js__ - Folder with source JavaScript files (realtive to build config.yaml). Files will be combined to _script.js_ file in build folder.
@@ -76,17 +75,17 @@ dev:
 ```
 
 
-## Content
+## Page template and content
 
-### Page content - index.pug
+### Page template - index.pug
 
-Page content is generated from __index.pug__ file. All other files are ignored, but You can use those files for Pug [include](https://pugjs.org/language/includes.html)/[extends](https://pugjs.org/language/inheritance.html). You can put locale identificator to filename (like index.en.pug) for locale speciffic content.
+Page is generated from __index.pug__ file. All other .pug files are ignored, but You can use those files for [include](https://pugjs.org/language/includes.html)/[extends](https://pugjs.org/language/inheritance.html). You can put locale identificator to filename (like index.en.pug) for locale specific content.
 
-### Page data and configuration - data.yaml
+### Page content - data.yaml
 
-To pass data to index.pug use __data.yaml__ file. This data is passed to index.pug in object named _self_ (To get property _text_ from data.yaml use _self.text_ in index.pug).
+To pass content and configuration to index.pug use __data.yaml__ file. This data is passed to index.pug in object named _self_ (To get property _text_ from data.yaml use _self.text_ in index.pug).
 
-You can put locale identificator to filename (like data.en.yaml) for locale speciffic content.
+You can put locale identificator to filename (like data.en.yaml) for locale specific content. This way You can use index.pug as a template and pass all locale specific texts from "data" files.
 
 Some page parameters will change how HTML is generated. Those are:
 - __disabled__ - If true, page will not be generated nor loaded to _self.otherLocalePaths_ object.
@@ -117,17 +116,25 @@ someOtherData:
   - B
 ```
 
+### Global content - global.yaml
+
+To pass same content to all index.pug files use __global.yaml__ file. This data is passed to index.pug in object named _self_ (To get property _footer_ from global.yaml use _self.footer_ in index.pug). Data what is set in pages's own data.yaml will expand/overwrite global.yaml.
+
+You can put locale identificator to filename (like global.en.yaml) for locale specific content.
+
+## Page CSS and JS
+
 ### Page inline style - style.styl
 
 For inserting inline CSS to individual pages use __style.styl__ file in page's folder. Generated style is inserted just before `</head>` tag.
 
-You can put locale identificator to filename (like __style.en.styl__) for locale speciffic style.
+You can put locale identificator to filename (like __style.en.styl__) for locale specific style.
 
 ### Page inline scripts - script.js
 
 For inserting inline JS to individual pages use __.js__ file in page's folder. Generated script is inserted just before `</body>` tag.
 
-You can put locale identificator to filename (like script.en.js) for locale speciffic script.
+You can put locale identificator to filename (like script.en.js) for locale specific script.
 
 ## On build ...
 
