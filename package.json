@@ -47,7 +47,7 @@
     "markdown-it-attrs": "3.0.3",
     "markdown-it-multimd-table": "4.0.3",
     "markdown-it-sup": "1.0.0",
-    "pug": "3.0.0",
+    "pug": "3.0.1",
     "request": "2.88.2",
     "stylus": "0.54.8",
     "uglify-js": "3.12.0"
