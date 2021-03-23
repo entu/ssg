@@ -24,7 +24,7 @@ const yaml = require('js-yaml')
 module.exports = class {
     constructor (confFile) {
         try {
-            var conf = yaml.safeLoad(fs.readFileSync(confFile, 'utf8'))
+            var conf = yaml.load(fs.readFileSync(confFile, 'utf8'))
         } catch (e) {
             console.error(e)
             return
@@ -80,11 +80,11 @@ module.exports = class {
 
             try {
                 this.globalDataFile[locale] = path.join(this.sourceDir, `global.${locale}.yaml`)
-                this.globalData[locale] = yaml.safeLoad(fs.readFileSync(this.globalDataFile[locale], 'utf8'))
+                this.globalData[locale] = yaml.load(fs.readFileSync(this.globalDataFile[locale], 'utf8'))
             } catch (err) {
                 try {
                     this.globalDataFile[locale] = path.join(this.sourceDir, `global.yaml`)
-                    this.globalData[locale] = yaml.safeLoad(fs.readFileSync(this.globalDataFile[locale], 'utf8'))
+                    this.globalData[locale] = yaml.load(fs.readFileSync(this.globalDataFile[locale], 'utf8'))
                 } catch (err) {
                     this.globalDataFile[locale] = null
                 }
@@ -819,7 +819,7 @@ module.exports = class {
                     }
 
                     try {
-                        yamlData = yaml.safeLoad(data)
+                        yamlData = yaml.load(data)
 
                         if (!Array.isArray(yamlData)) {
                             yamlData = [yamlData]
@@ -858,7 +858,7 @@ module.exports = class {
                                 if (err) { return callback(this.parseErr(err, path.join(folder, fileName))) }
 
                                 try {
-                                    data.data[key] = yaml.safeLoad(fileData)
+                                    data.data[key] = yaml.load(fileData)
                                     data.dependencies.push(file)
                                 } catch (err) {
                                     return callback(this.parseErr(err, file))
