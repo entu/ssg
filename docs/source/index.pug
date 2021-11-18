@@ -11,6 +11,8 @@ html(lang='en')
         link(href='https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v0/dist/bootstrap-toc.min.css', rel='stylesheet', type='text/css')
         link(href='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9/build/styles/monokai-sublime.min.css', rel='stylesheet', type='text/css')
 
+        script(defer, data-domain='entu.site', src='https://plausible.io/js/plausible.js')
+
     body(data-spy='scroll', data-target='#toc')
         .container-fluid
             .row
@@ -26,5 +28,3 @@ html(lang='en')
         script(src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9/build/languages/yaml.min.js')
         script.
             hljs.initHighlightingOnLoad()
-
-        script(defer, data-domain='entu.site', src='https://plausible.io/js/plausible.js')
