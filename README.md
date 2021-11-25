@@ -116,6 +116,43 @@ someOtherData:
   - B
 ```
 
+### Multipage content
+
+To use same template for multiple pages (blog posts for example) you can put array of objects into __data.yaml__ file. Each object must describe page as explained above.
+
+If You need to use keys do distinct each page there is option to use object in __data.yaml__ file with parameter *multipage: true*. In this case You can use page path as key.
+
+### Example multipage data.yaml as array:
+
+```yaml
+-
+  path: /testpage1
+  someOtherData:
+    - A
+    - B
+-
+  path: /testpage2
+  someOtherData:
+    - C
+    - D
+```
+
+### Example multipage data.yaml as object:
+
+```yaml
+multipage: true
+page1:
+  path: /testpage1
+  someOtherData:
+    - A
+    - B
+page2:
+  path: /testpage2
+  someOtherData:
+    - C
+    - D
+```
+
 ### Global content - global.yaml
 
 To pass same content to all index.pug files use __global.yaml__ file. This data is passed to index.pug in object named _self_ (To get property _footer_ from global.yaml use _self.footer_ in index.pug). Data what is set in pages's own data.yaml will expand/overwrite global.yaml.

@@ -810,25 +810,33 @@ module.exports = class {
                     fileName = 'data.yaml'
                 }
 
-                fs.readFile(path.join(folder, fileName), 'utf8', (err, data) => {
-                    var yamlData = [{}]
-
+                fs.readFile(path.join(folder, fileName), 'utf8', (err, fileData) => {
                     if (err) {
                         delete result[locale]
                         return callback(null)
                     }
 
-                    try {
-                        yamlData = yaml.load(data)
+                    var dataArray = []
 
-                        if (!Array.isArray(yamlData)) {
-                            yamlData = [yamlData]
+                    try {
+                        const yamlData = yaml.load(fileData)
+
+                        if (yamlData?.multipage) {
+                            delete yamlData.multipage
+
+                            for (const key in yamlData) {
+                                dataArray.push({ path: key, ...yamlData[key] })
+                            }
+                        } else if (!Array.isArray(yamlData)) {
+                            dataArray = [yamlData]
+                        } else {
+                            dataArray = yamlData
                         }
                     } catch (err) {
                         return callback(this.parseErr(err, path.join(folder, fileName)))
                     }
 
-                    async.eachSeries(yamlData, (data, callback) => {
+                    async.eachSeries(dataArray, (data, callback) => {
                         data = Object.assign({}, defaultContent, this.globalData[locale], data)
 
                         data.dependencies = [path.join(folder, fileName)]

@@ -31,6 +31,27 @@ data:
 someOtherData:
   - A
   - B
+</code></pre><h3>Multipage content</h3><p>To use same template for multiple pages (blog posts for example) you can put array of objects into <strong>data.yaml</strong> file. Each object must describe page as explained above.</p><p>If You need to use keys do distinct each page there is option to use object in <strong>data.yaml</strong> file with parameter <em>multipage: true</em>. In this case You can use page path as key.</p><h3>Example multipage data.yaml as array:</h3><pre><code class="language-yaml">-
+  path: /testpage1
+  someOtherData:
+    - A
+    - B
+-
+  path: /testpage2
+  someOtherData:
+    - C
+    - D
+</code></pre><h3>Example multipage data.yaml as object:</h3><pre><code class="language-yaml">multipage: true
+page1:
+  path: /testpage1
+  someOtherData:
+    - A
+    - B
+page2:
+  path: /testpage2
+  someOtherData:
+    - C
+    - D
 </code></pre><h3>Global content - global.yaml</h3><p>To pass same content to all index.pug files use <strong>global.yaml</strong> file. This data is passed to index.pug in object named <em>self</em> (To get property <em>footer</em> from global.yaml use <em>self.footer</em> in index.pug). Data what is set in pages's own data.yaml will expand/overwrite global.yaml.</p><p>You can put locale identificator to filename (like global.en.yaml) for locale specific content.</p><h2>Page CSS and JS</h2><h3>Page inline style - style.styl</h3><p>For inserting inline CSS to individual pages use <strong>style.styl</strong> file in page's folder. Generated style is inserted just before <code>&lt;/head&gt;</code> tag.</p><p>You can put locale identificator to filename (like <strong>style.en.styl</strong>) for locale specific style.</p><h3>Page inline scripts - script.js</h3><p>For inserting inline JS to individual pages use <strong>.js</strong> file in page's folder. Generated script is inserted just before <code>&lt;/body&gt;</code> tag.</p><p>You can put locale identificator to filename (like script.en.js) for locale specific script.</p><h2>On build ...</h2><h3>... source folder like this ...</h3><pre><code>- source
     |- _scripts
     |   |- somescript.js
