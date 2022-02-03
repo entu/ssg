@@ -20,19 +20,19 @@ $ npm install entu-ssg
 
 To build Your site run:
 ```shell
-$ npm run entu-ssg build /path-to-my-page/entu-ssg-config.yaml
+$ npx entu-ssg build /path-to-my-page/entu-ssg-config.yaml
 ```
 
 If source folder is Git repository Entu SSG runs incremental build (based on Git changes since last commit). To run full build use **full** as second parameter:
 ```shell
-$ npm run entu-ssg build /path-to-my-page/entu-ssg-config.yaml full
+$ npx entu-ssg build /path-to-my-page/entu-ssg-config.yaml full
 ```
 
 ### Local development
 
 MacOS and Windows GUI for local development are downloadable from [github.com/entu/ssg-app](https://github.com/entu/ssg-app/releases/latest). Or run (for full build use **full** as second parameter):
 ```shell
-$ npm run entu-ssg serve /path-to-my-page/entu-ssg-config.yaml
+$ npx entu-ssg serve /path-to-my-page/entu-ssg-config.yaml
 ```
 
 ## Configuration
