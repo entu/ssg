@@ -781,7 +781,7 @@ module.exports = class {
             disabled: false,
             locale: null,
             defaultLocale: this.defaultLocale,
-            path: folder.replace(this.sourceDir, '').substr(1).replace(/\\/, '/'),
+            path: folder.replace(this.sourceDir, ''),
             otherLocalePaths: {},
             data: {},
             dependencies: [],
@@ -849,7 +849,13 @@ module.exports = class {
                         delete data.page
 
                         data.locale = locale
-                        if (locale === this.defaultLocale) {
+
+                        data.path = data.path.replace(/\\/g, '/').split('/').filter(x => x.trim() !== '').join('/')
+                        if (data.path.startsWith(data.locale + '/')) {
+                            data.path = data.path.replace(data.locale + '/', '')
+                        }
+
+                        if (data.locale === this.defaultLocale) {
                             data.path = `/${data.path}`
                         } else {
                             data.path = data.path ? `/${data.locale}/${data.path}` : `/${data.locale}`
