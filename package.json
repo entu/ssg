@@ -1,9 +1,9 @@
 {
   "name": "entu-ssg",
+  "version": "5.4.10",
   "productName": "Entu SSG",
-  "version": "5.4.9",
-  "author": "Argo Roots <argo@roots.ee>",
   "description": "Simple Pug (Jade), Markdown, Yaml static site generator",
+  "author": "Argo Roots <argo@roots.ee>",
   "keywords": [
     "ssg",
     "cms",
@@ -14,23 +14,15 @@
     "markdown",
     "yaml"
   ],
-  "homepage": "https://entu.site",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/entu/ssg.git"
-  },
-  "bugs": {
-    "url": "https://github.com/entu/ssg/issues"
-  },
   "main": "src/index.js",
+  "bin": {
+    "entu-ssg": "src/index.js"
+  },
   "scripts": {
     "build": "node src/index.js build",
     "serve": "node src/index.js serve",
     "docs": "node src/index.js build docs/source/config.yaml full"
-  },
-  "bin": {
-    "entu-ssg": "src/index.js"
   },
   "dependencies": {
     "async": "3.2.4",
@@ -45,7 +37,7 @@
     "lodash": "4.17.21",
     "markdown-it": "13.0.1",
     "markdown-it-attrs": "4.1.4",
-    "markdown-it-multimd-table": "4.1.3",
+    "markdown-it-multimd-table": "4.2.0",
     "markdown-it-sup": "1.0.0",
     "pug": "3.0.2",
     "request": "2.88.2",
