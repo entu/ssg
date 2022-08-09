@@ -20,9 +20,9 @@
     "entu-ssg": "src/index.js"
   },
   "scripts": {
-    "build": "node src/index.js build",
     "serve": "node src/index.js serve",
-    "docs": "node src/index.js build docs/source/config.yaml full"
+    "build": "node src/index.js build",
+    "build:docs": "node src/index.js build docs/entu-ssg.yaml full"
   },
   "dependencies": {
     "async": "3.2.4",
