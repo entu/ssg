@@ -1,4 +1,4 @@
-node_modules
-release
 _site/build.json
 _site/index.html
+node_modules
+release
