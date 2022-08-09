@@ -1,4 +1,3 @@
-_site/build.json
-_site/index.html
+_site
 node_modules
 release
