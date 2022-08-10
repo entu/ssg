@@ -44,7 +44,7 @@ Sites build process is configurable by Yaml file and its path must be first argu
 - __source__ - Folder with source files (realtive to build config.yaml). If not set uses _src_ folder.
 - __js__ - Folder with source JavaScript files (realtive to build config.yaml). Files will be combined to _script.js_ file in build folder.
 - __styl__ - Folder with Stylus files (realtive to build config.yaml). Files will be converted and combined to _style.css_ file in build folder.
-- __build__ - Folder to put generated HTML (realtive to build config.yaml).
+- __build__ - Folder to put generated HTML (realtive to build config.yaml). If not set uses _dist_ folder.
 - __assets__ - ***DEPRECATED** in v5.6! Folder with static assets (JS, images, ...).*
 - __protectedFromCleanup__ - List of paths what is not deleted if _build.sh_ is ran with _cleanup_ parameter. Relative to _build_ path.
 - __server.port__ - What port to use for serving on localhost.
@@ -60,17 +60,17 @@ Sites build process is configurable by Yaml file and its path must be first argu
 locales:
   - en
   - et
-source: ./source
+defaultLocale: et
+
+source: ./src
 js: ./source/_scripts
 styl: ./source/_styles
-build: ./build
-assets: ./assets
-protectedFromCleanup:
-  - assets
-  - index.html
+build: ./dist
+
 server:
   port: 4000
-  assets: /assets/
+  public: ./public
+
 dev:
   aliases: true
   paths:
