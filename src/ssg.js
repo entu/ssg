@@ -32,16 +32,17 @@ module.exports = class {
 
         this.locales = _.get(conf, 'locales') || ['']
         this.defaultLocale = _.get(conf, 'defaultLocale') || null
-        this.sourceDir = _.get(conf, 'source') || './'
+        this.sourceDir = _.get(conf, 'source') || './src'
         this.sourceDirJs = _.get(conf, 'js')
         this.sourceDirStyl = _.get(conf, 'styl')
         this.buildDir = _.get(conf, 'build') || './'
-        this.assetsDir = _.get(conf, 'assets') || './'
+        this.assetsDir = _.get(conf, 'assets') // deprecated
         this.aliases = _.get(conf, 'dev.aliases', true)
         this.paths = _.get(conf, 'dev.paths') || []
         this.ignorePaths = _.get(conf, 'dev.ignorePaths') || []
         this.serverPort = _.get(conf, 'server.port') || null
-        this.serverAssets = _.get(conf, 'server.assets') || '/'
+        this.serverAssets = _.get(conf, 'server.assets') // deprecated
+        this.serverPublic = _.get(conf, 'server.public') || './public'
         this.state = {}
         this.globalData = {}
         this.globalDataFile = {}
@@ -60,8 +61,11 @@ module.exports = class {
         if (this.buildDir.substr(0, 1) === '.') {
             this.buildDir = path.resolve(path.join(path.dirname(confFile), this.buildDir))
         }
-        if (this.assetsDir.substr(0, 1) === '.') {
+        if (this.assetsDir && this.assetsDir.substr(0, 1) === '.') {
             this.assetsDir = path.resolve(path.join(path.dirname(confFile), this.assetsDir))
+        }
+        if (this.serverPublic.substr(0, 1) === '.') {
+            this.serverPublic = path.resolve(path.join(path.dirname(confFile), this.serverPublic))
         }
 
         this.paths = this.paths.map(p => path.resolve(path.join(this.sourceDir, p)))
@@ -298,26 +302,36 @@ module.exports = class {
         try {
             var server = http.createServer((request, response) => {
                 var filePath = request.url.split('?')[0]
-                if (filePath.startsWith(this.serverAssets)) {
-                    filePath = path.join(this.assetsDir, filePath.substr(this.serverAssets.length - 1))
-                } else {
-                    filePath = path.join(this.buildDir, filePath)
-                }
 
                 if (!path.basename(filePath).includes('.')) {
                     filePath = path.join(filePath, 'index.html')
                 }
 
-                var contentType = mime.lookup(path.extname(filePath)) || 'application/octet-stream'
+                var filePathWithDir = path.join(this.buildDir, filePath)
 
-                fs.readFile(filePath, (err, content) => {
+                if (this.serverAssets && this.assetsDir && filePath.startsWith(this.serverAssets)) {
+                    filePathWithDir = path.join(this.assetsDir, filePath.substr(this.serverAssets.length - 1))
+                }
+
+                var contentType = mime.lookup(path.extname(filePathWithDir)) || 'application/octet-stream'
+
+                fs.readFile(filePathWithDir, (err, content) => {
                     if (err) {
-                        response.writeHead(404, { 'Content-Type': 'text/plain' })
-                        response.end('404\n')
-                        callback({
-                            event: err.code,
-                            source: filePath.replace(this.buildDir, '').replace(this.assetsDir, this.serverAssets),
-                            error: err.message.replace(`${err.code}: `, '')
+                        filePathWithDir = path.join(this.serverPublic, filePath)
+
+                        fs.readFile(filePathWithDir, (err, content) => {
+                            if (err) {
+                                response.writeHead(404, { 'Content-Type': 'text/plain' })
+                                response.end('404\n')
+                                callback({
+                                    event: err.code,
+                                    source: filePathWithDir.replace(this.buildDir, '').replace(this.assetsDir, this.serverAssets),
+                                    error: err.message.replace(`${err.code}: `, '')
+                                })
+                            } else {
+                                response.writeHead(200, { 'Content-Type': contentType })
+                                response.end(content, 'utf-8')
+                            }
                         })
                     } else {
                         response.writeHead(200, { 'Content-Type': contentType })

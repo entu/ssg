@@ -41,14 +41,15 @@ Sites build process is configurable by Yaml file and its path must be first argu
 
 - __locales__ - List of locale folders to generate. You can put locale identificator to filename (like index.en.pug or data.et.yaml) for locale specific content.
 - __defaultLocale__ - If set, page paths in this locale will not get locale prefix (_/en/about_ will be just _/about_).
-- __source__ - Folder with source files (realtive to build config.yaml).
+- __source__ - Folder with source files (realtive to build config.yaml). If not set uses _src_ folder.
 - __js__ - Folder with source JavaScript files (realtive to build config.yaml). Files will be combined to _script.js_ file in build folder.
 - __styl__ - Folder with Stylus files (realtive to build config.yaml). Files will be converted and combined to _style.css_ file in build folder.
 - __build__ - Folder to put generated HTML (realtive to build config.yaml).
-- __assets__ - Folder with static assets (JS, images, ...).
+- __assets__ - ***DEPRECATED** in v5.6! Folder with static assets (JS, images, ...).*
 - __protectedFromCleanup__ - List of paths what is not deleted if _build.sh_ is ran with _cleanup_ parameter. Relative to _build_ path.
 - __server.port__ - What port to use for serving on localhost.
-- __server.assets__ - Serving page in localhost will map this url to folder specified in _assets_ parameter.
+- __server.assets__ - ***DEPRECATED** in v5.6! Serving page in localhost will map this url to folder specified in _assets_ parameter.*
+- __server.public__ - Serving page in localhost will serve content of this folder from / path. If not set uses _public_ folder. **NB!** On build/deploy You must copy files in this folder to _build_ folder.
 - __dev.aliases__ - Build pages aliases.
 - __dev.paths__ - List of (source) paths to build. Relative to _source_ path.
 - __dev.ignorePaths__ - List of (source) paths to ignore on build. Relative to _source_ path.

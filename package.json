@@ -1,6 +1,6 @@
 {
   "name": "entu-ssg",
-  "version": "5.5.0",
+  "version": "5.6.0",
   "productName": "Entu SSG",
   "description": "Simple Pug (Jade), Markdown, Yaml static site generator",
   "author": "Argo Roots <argo@roots.ee>",
