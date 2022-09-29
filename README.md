@@ -63,8 +63,8 @@ locales:
 defaultLocale: et
 
 source: ./src
-js: ./source/_scripts
-styl: ./source/_styles
+js: ./src/_scripts
+styl: ./src/_styles
 build: ./dist
 
 server:
