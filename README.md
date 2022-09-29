@@ -184,7 +184,7 @@ You can put locale identificator to filename (like script.en.js) for locale spec
 ### ... source folder like this ...
 
 ```
-- source
+- src
     |- _scripts
     |   |- somescript.js
     |   +- somescript2.js
@@ -220,7 +220,7 @@ You can put locale identificator to filename (like script.en.js) for locale spec
 ### ... will be converted to build folder like this
 
 ```
-- build
+- dist
     |- en
     |   |- index.html
     |   |- testpage1
