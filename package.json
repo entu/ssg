@@ -1,6 +1,6 @@
 {
   "name": "entu-ssg",
-  "version": "5.6.3",
+  "version": "5.6.4",
   "productName": "Entu SSG",
   "description": "Simple Pug (Jade), Markdown, Yaml static site generator",
   "author": "Argo Roots <argo@roots.ee>",
@@ -42,6 +42,6 @@
     "pug": "3.0.2",
     "request": "2.88.2",
     "stylus": "0.59.0",
-    "uglify-js": "3.17.3"
+    "uglify-js": "3.17.4"
   }
 }
