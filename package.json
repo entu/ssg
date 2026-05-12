@@ -43,5 +43,8 @@
     "pug": "3.0.3",
     "stylus": "0.64.0",
     "uglify-js": "3.19.3"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
   }
 }
