@@ -1,7 +1,7 @@
 'use strict'
 
 const _ = require('lodash')
-const { minify } = require('html-minifier')
+const { minify } = require('html-minifier-terser')
 const async = require('async')
 const chokidar = require('chokidar')
 const fs = require('fs-extra')
@@ -427,25 +427,25 @@ module.exports = class {
                                 dependencies.push(_.get(page, ['styl', locale, 'filename']))
                             }
 
-                            const fileContent = minify(html, htmlMinifyConf)
+                            minify(html, htmlMinifyConf).then((fileContent) => {
+                                fs.outputFile(buildFile, fileContent, (err) => {
+                                    if (err) { return callback(this.parseErr(err, dataToTemplate.filename)) }
 
-                            fs.outputFile(buildFile, fileContent, (err) => {
-                                if (err) { return callback(this.parseErr(err, dataToTemplate.filename)) }
+                                    let result = {
+                                        source: template.filename.replace(this.sourceDir, ''),
+                                        build: buildFile.replace(this.buildDir, ''),
+                                    }
+                                    if (dataToTemplate.path !== buildPath) {
+                                        result.alias = true
+                                    }
+                                    if (dependencies.length > 0) {
+                                        result.dependencies = dependencies.map(v => v.replace(this.sourceDir, ''))
+                                    }
+                                    outputFiles.push(result)
 
-                                let result = {
-                                    source: template.filename.replace(this.sourceDir, ''),
-                                    build: buildFile.replace(this.buildDir, ''),
-                                }
-                                if (dataToTemplate.path !== buildPath) {
-                                    result.alias = true
-                                }
-                                if (dependencies.length > 0) {
-                                    result.dependencies = dependencies.map(v => v.replace(this.sourceDir, ''))
-                                }
-                                outputFiles.push(result)
-
-                                callback(null)
-                            })
+                                    callback(null)
+                                })
+                            }, (err) => callback(this.parseErr(err, dataToTemplate.filename)))
                         } catch (err) {
                             callback(this.parseErr(err, data.filename))
                         }
