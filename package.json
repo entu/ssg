@@ -29,7 +29,7 @@
     "autoprefixer-stylus": "github:argoroots/autoprefixer-stylus#v1.0.7",
     "chokidar": "4.0.3",
     "fs-extra": "11.3.0",
-    "html-minifier": "4.0.0",
+    "html-minifier-terser": "7.2.0",
     "js-yaml": "4.1.0",
     "jstransformer-markdown-it": "3.0.0",
     "jstransformer-stylus": "1.5.0",
